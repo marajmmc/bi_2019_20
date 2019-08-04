@@ -73,6 +73,7 @@ abstract class Root_Controller extends CI_Controller
         $data['username']=$username;
         $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view("login",$data,true));
         $ajax['system_content'][]=array("id"=>"#system_menus","html"=>'');
+        $ajax['system_content'][]=array("id"=>"#system_user_info","html"=>'');
         if($message)
         {
             $ajax['system_message']=$message;
@@ -82,9 +83,12 @@ abstract class Root_Controller extends CI_Controller
     }
     public function dashboard_page($message="")
     {
+        //$this->load->helper('dashboard');
+        $dashboard_items = $this->load->view('dashboard_items', '', true);
         $ajax['status']=true;
-        $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view("dashboard",'',true));
+        $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view("dashboard",array('dashboard_items'=>$dashboard_items),true));
         $ajax['system_content'][]=array("id"=>"#system_menus","html"=>$this->load->view("menu",'',true));
+        $ajax['system_content'][]=array("id"=>"#system_user_info","html"=>$this->load->view("menu_user_info",'',true));
         if($message)
         {
             $ajax['system_message']=$message;

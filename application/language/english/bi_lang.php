@@ -101,11 +101,15 @@ $lang['LABEL_SELECT_ALL'] = 'All';
 $lang['LABEL_YES'] = 'Yes';
 $lang['LABEL_NO'] = 'No';
 
+$lang['LABEL_FROM'] = 'From';
+$lang['LABEL_TO'] = 'To';
+
 $lang['LABEL_SL_NO'] = 'S/N';
 $lang['ACTION'] = 'Action';
 
 $lang['LABEL_ID'] = 'ID';
-$lang['LABEL_ORDER'] = 'Ordering';
+$lang['LABEL_ORDER'] = 'Order';
+$lang['LABEL_ORDERING'] = 'Ordering';
 $lang['LABEL_ADD_MORE'] = 'Add more';
 $lang['LABEL_SEARCH'] = 'Search';
 $lang['LABEL_DESCRIPTION'] = 'Description';
@@ -171,6 +175,8 @@ $lang['LABEL_BANK_NAME']='Bank Name';
 $lang['LABEL_BANK_ACCOUNT_NUMBER']='Bank Account Number';
 
 // System file upload related information
+$lang['LABEL_IMAGE'] = 'Image';
+$lang['LABEL_VIDEO'] = 'Video';
 $lang['LABEL_PICTURE'] = 'Picture';
 $lang['LABEL_PROFILE_PICTURE'] = 'Profile Picture';
 
@@ -305,6 +311,7 @@ $lang['LABEL_STOCK_OUTLET'] = 'Outlet Stock';
 $lang['LABEL_CURRENCY_SYMBOL'] = 'Currency Symbol';
 $lang['LABEL_CURRENCY_RATE'] = 'Currency Rate';
 $lang['LABEL_CURRENCY_NAME']='Currency';
+$lang['LABEL_PRICE'] = 'Price (Taka)';
 $lang['LABEL_PRICE_TAKA_UNIT'] = 'Unit Price (Taka)';
 $lang['LABEL_PRICE_TAKA_TOTAL']='Total Price (Taka)';
 $lang['LABEL_PRICE_CURRENCY_UNIT'] = 'Unit Price (Currency)';
@@ -398,3 +405,27 @@ $lang['LABEL_CUSTOMER_TYPE'] = 'Customer Type';
 $lang['LABEL_MAP_ADDRESS'] = 'Google Map Link';
 $lang['LABEL_INCHARGE'] = 'In-charge';
 
+//Market Share
+$lang['LABEL_ARM_VARIETY_NAME'] = 'Competitor Variety';
+$lang['LABEL_COMPETITOR_VARIETY_NAME'] = 'Competitor Variety';
+$lang['LABEL_ARM_VARIETY_COMPARE_NAME'] = 'ARM Varieties Compared';
+$lang['LABEL_MARKET_SIZE'] = 'Market Size';
+$lang['LABEL_COMPETITOR_MARKET_SIZE'] = 'Competitor Market Size (Kg)';
+$lang['LABEL_AREA_NAME'] = 'Area Name';
+$lang['LABEL_AREA'] = 'Area';
+$lang['LABEL_USP'] = 'USP';
+$lang['LABEL_CHARACTERISTIC'] = 'Characteristic';
+
+// Characteristics
+$lang['LABEL_USP'] = 'USP';
+$lang['LABEL_CHARACTERISTICS'] = 'Characteristics';
+$lang['LABEL_NUMBER_OF_IMAGES'] = 'No. of Images';
+$lang['LABEL_NUMBER_OF_VIDEOS'] = 'No. of videos';
+$lang['LABEL_CULTIVATION_PERIOD_1'] = 'Cultivation Period 1';
+$lang['LABEL_CULTIVATION_PERIOD_2'] = 'Cultivation Period 2';
+$lang['LABEL_COMPARE_WITH_OTHER_VARIETY'] = 'Compare With Other Variety';
+
+// ARM & Competitor
+$lang['LABEL_COMPARISON_SETUP'] = 'Comparison Setup';
+$lang['LABEL_LOAD_VARIETY'] = 'Load Variety';
+$lang['LABEL_ARM_VARIETY_NAME'] = 'ARM Variety Name';

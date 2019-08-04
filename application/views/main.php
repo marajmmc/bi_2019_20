@@ -160,10 +160,15 @@ if($result)
             var system_report_color_type='#6CAB44';
         </script>
         <header class="hidden-print">
-
             <img alt="Logo" height="40" class="site_logo pull-left" src="<?php echo str_replace('bi_2019_20','login_2018_19',base_url('images/logo.png'));?>">
-            <div class="site_title pull-left">A R. MALIKSEEDS (PVT) LTD.</div>
+            <div class="site_title pull-left">Business Intelligence (BI)</div>
+            <!--<div class="site_title pull-left">A. R. MALIK SEEDS (PVT) LTD.</div>-->
 
+            <div id="system_user_info" class="pull-right" style="color:#fff">
+                <?php
+                $CI->load->view('menu_user_info');
+                ?>
+            </div>
         </header>
 
         <div class="container-fluid" style="margin-bottom: 40px;">
