@@ -23,18 +23,20 @@ $CI->db->select('COUNT(*) as competitor_count');
 $CI->db->where('date_created <=', $previous_Month_LastDate);
 $previous_month_competitors = $CI->db->get()->row_array();
 ?>
-
-<table style="width:100%">
-    <tr>
-        <th colspan="2" style="text-decoration:underline; padding-bottom:5px">Competitors:</th>
-    </tr>
-    <tr>
-        <td style="text-align:left">Current Month (<b><?php echo date('M, y'); ?></b>)</td>
-        <td style="text-align:left">: <?php echo $current_month_competitors['competitor_count']; ?> (<a href="javascript:void();">view</a>)
-        </td>
-    </tr>
-    <tr>
-        <td style="text-align:left">Last Month (<b><?php echo date('M, y', strtotime('-1 months')); ?></b>)</td>
-        <td style="text-align:left">: <?php echo $previous_month_competitors['competitor_count']; ?> (<a href="javascript:void();">view</a>)</td>
-    </tr>
-</table>
+<div style="padding:15px">
+    <table style="width:100%">
+        <tr>
+            <th colspan="2" style="text-decoration:underline; padding-bottom:5px">Competitors:</th>
+        </tr>
+        <tr>
+            <td style="text-align:left">Current Month (<b><?php echo date('M, y'); ?></b>)</td>
+            <td style="text-align:left">: <?php echo $current_month_competitors['competitor_count']; ?> (<a href="javascript:void();">view</a>)
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align:left">Last Month (<b><?php echo date('M, y', strtotime('-1 months')); ?></b>)</td>
+            <td style="text-align:left">: <?php echo $previous_month_competitors['competitor_count']; ?> (<a href="javascript:void();">view</a>)
+            </td>
+        </tr>
+    </table>
+</div>

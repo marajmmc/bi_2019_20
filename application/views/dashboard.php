@@ -45,7 +45,7 @@ $CI = & get_instance();
         </div> */ ?>
 
         <!--<div class="col-lg-9 col-md-8 col-sm-7 col-xs-6" style="padding-top:15px">-->
-        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="padding-top:15px">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="padding:15px 0">
 
             <?php $CI->load->view('dashboard_items'); ?>
 

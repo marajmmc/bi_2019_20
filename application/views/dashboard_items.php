@@ -1,10 +1,50 @@
 <?php
 if (!defined('BASEPATH')) exit('No direct script access allowed');
 $CI = & get_instance();
+
+$main_grid_class_large = 'col-lg-12 col-md-12 col-sm-12 col-xs-12';
+$main_grid_class = 'col-lg-3 col-md-6 col-sm-6 col-xs-12';
 ?>
 
 <div class="row">
-    <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+
+    <div class="<?php echo $main_grid_class_large; ?>">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <label class=""><a class="external text-danger report-header collapsed" data-toggle="collapse" data-target="#accordion_10" data-report-view="sales_variety" href="#">+ Variety-wise Sales</a></label>
+                </h4>
+            </div>
+
+            <div id="accordion_10" class="panel-collapse collapse">
+                <div class="row show-grid" style="padding:0; margin:0">
+                    <div class="inner-container">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="<?php echo $main_grid_class_large; ?>">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <label class=""><a class="external text-danger report-header collapsed" data-toggle="collapse" data-target="#accordion_11" data-report-view="sales_showroom" href="#">+ Showroom-wise Sales</a></label>
+                </h4>
+            </div>
+
+            <div id="accordion_11" class="panel-collapse collapse">
+                <div class="row show-grid" style="padding:0; margin:0">
+                    <div class="inner-container">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="<?php echo $main_grid_class; ?>">
 
         <div class="panel panel-default">
             <div class="panel-heading">
@@ -14,9 +54,9 @@ $CI = & get_instance();
             </div>
 
             <div id="accordion_1" class="panel-collapse collapse">
-                <div class="row show-grid" style="padding:15px 0">
+                <div class="row show-grid" style="padding:0; margin:0">
                     <div class="col-xs-12">
-                        <div class="inner-container" style="height:220px">
+                        <div class="inner-container">
                             <table style="width:100%">
                                 <tr>
                                     <td style="text-align:left">Employee</td>
@@ -63,10 +103,40 @@ $CI = & get_instance();
             </div>
 
             <div id="accordion_2" class="panel-collapse collapse">
-                <div class="row show-grid" style="padding:15px 0">
-                    <div class="col-xs-12">
-                        <div class="inner-container" style="height:220px">
+                <div class="row show-grid" style="padding:0; margin:0">
+                    <div class="inner-container">
 
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="<?php echo $main_grid_class; ?>">
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <label class=""><a class="external text-danger report-header collapsed" data-toggle="collapse" data-target="#accordion_4" href="#">+ Primary Consumer Analysis</a></label>
+                </h4>
+            </div>
+
+            <div id="accordion_4" class="panel-collapse collapse">
+                <div class="row show-grid" style="padding:0; margin:0">
+                    <div class="col-xs-12">
+                        <div class="inner-container">
+                            <table style="width:100%">
+                                <tr>
+                                    <td style="text-align:left">Farmer</td>
+                                    <td style="text-align:left">: 405 | 413 (<a href="javascript:void();">view</a>)
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:left">Lead Farmer</td>
+                                    <td style="text-align:left">: 44 | 52 (<a href="javascript:void();">view</a>)
+                                    </td>
+                                </tr>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -76,14 +146,93 @@ $CI = & get_instance();
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h4 class="panel-title">
+                    <label class=""><a class="external text-danger report-header collapsed" data-toggle="collapse" data-target="#accordion_5" data-report-view="market_share" href="#">+ Market Share</a></label>
+                </h4>
+            </div>
+
+            <div id="accordion_5" class="panel-collapse collapse">
+                <div class="row show-grid" style="padding:0; margin:0">
+                    <div class="col-xs-12">
+                        <div class="inner-container">
+                            <img src="<?php echo site_url('/images/mkt-share.jpg') ?>" style="width:100%;max-height:230px" alt="Image not Found"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="<?php echo $main_grid_class; ?>">
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <label class=""><a class="external text-danger report-header collapsed" data-toggle="collapse" data-target="#accordion_6" href="#">+ Sales &amp; Target Achievement</a></label>
+                </h4>
+            </div>
+
+            <div id="accordion_6" class="panel-collapse collapse">
+                <div class="row show-grid" style="padding:0; margin:0">
+                    <div class="col-xs-12">
+                        <div class="inner-container">
+                            <img src="<?php echo site_url('/images/sales-target.jpg') ?>" style="width:100%;max-height:230px" alt="Image not Found"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <label class=""><a class="external text-danger report-header collapsed" data-toggle="collapse" data-target="#accordion_7" href="#">+ Weather Status</a></label>
+                </h4>
+            </div>
+
+            <div id="accordion_7" class="panel-collapse collapse">
+                <div class="row show-grid" style="padding:0; margin:0">
+                    <div class="col-xs-12">
+                        <div class="inner-container">
+                            <img src="<?php echo site_url('/images/weather-forecast.jpg') ?>" style="width:100%;max-height:230px" alt="Image not Found"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="<?php echo $main_grid_class; ?>">
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <label class=""><a class="external text-danger report-header collapsed" data-toggle="collapse" data-target="#accordion_9" data-report-view="showroom" href="#">+ Showroom</a></label>
+                </h4>
+            </div>
+
+            <div id="accordion_9" class="panel-collapse collapse">
+                <div class="row show-grid" style="padding:0; margin:0">
+                    <div class="col-xs-12">
+                        <div class="inner-container">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
                     <label class=""><a class="external text-danger report-header collapsed" data-toggle="collapse" data-target="#accordion_3" href="#">+ Business Partners</a></label>
                 </h4>
             </div>
 
             <div id="accordion_3" class="panel-collapse collapse">
-                <div class="row show-grid" style="padding:15px 0">
+                <div class="row show-grid" style="padding:0; margin:0">
                     <div class="col-xs-12">
-                        <div class="inner-container" style="height:220px">
+                        <div class="inner-container">
                             <table style="width:100%">
                                 <tr>
                                     <td style="text-align:left">Distributor</td>
@@ -108,150 +257,6 @@ $CI = & get_instance();
         </div>
 
     </div>
-    <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
-
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    <label class=""><a class="external text-danger report-header collapsed" data-toggle="collapse" data-target="#accordion_4" href="#">+ Primary Consumer Analysis</a></label>
-                </h4>
-            </div>
-
-            <div id="accordion_4" class="panel-collapse collapse">
-                <div class="row show-grid" style="padding:15px 0">
-                    <div class="col-xs-12">
-                        <div class="inner-container" style="height:220px">
-                            <table style="width:100%">
-                                <tr>
-                                    <td style="text-align:left">Farmer</td>
-                                    <td style="text-align:left">: 405 | 413 (<a href="javascript:void();">view</a>)
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="text-align:left">Lead Farmer</td>
-                                    <td style="text-align:left">: 44 | 52 (<a href="javascript:void();">view</a>)
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    <label class=""><a class="external text-danger report-header collapsed" data-toggle="collapse" data-target="#accordion_5" href="#">+ Market Share</a></label>
-                </h4>
-            </div>
-
-            <div id="accordion_5" class="panel-collapse collapse">
-                <div class="row show-grid" style="padding:15px 0">
-                    <div class="col-xs-12">
-                        <div class="inner-container" style="height:220px">
-                            <img src="<?php echo site_url('/images/mkt-share.jpg') ?>" style="width:100%;max-height:230px" alt="Image not Found"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-    <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
-
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    <label class=""><a class="external text-danger report-header collapsed" data-toggle="collapse" data-target="#accordion_6" href="#">+ Sales &amp; Target Achievement</a></label>
-                </h4>
-            </div>
-
-            <div id="accordion_6" class="panel-collapse collapse">
-                <div class="row show-grid" style="padding:15px 0">
-                    <div class="col-xs-12">
-                        <div class="inner-container" style="height:220px">
-                            <img src="<?php echo site_url('/images/sales-target.jpg') ?>" style="width:100%;max-height:230px" alt="Image not Found"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    <label class=""><a class="external text-danger report-header collapsed" data-toggle="collapse" data-target="#accordion_7" href="#">+ Weather Status</a></label>
-                </h4>
-            </div>
-
-            <div id="accordion_7" class="panel-collapse collapse">
-                <div class="row show-grid" style="padding:15px 0">
-                    <div class="col-xs-12">
-                        <div class="inner-container" style="height:220px">
-                            <img src="<?php echo site_url('/images/weather-forecast.jpg') ?>" style="width:100%;max-height:230px" alt="Image not Found"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-    <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
-
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    <label class=""><a class="external text-danger report-header collapsed" data-toggle="collapse" data-target="#accordion_8" data-report-view="variety" href="#">+ Variety</a></label>
-                </h4>
-            </div>
-
-            <div id="accordion_8" class="panel-collapse collapse">
-                <div class="row show-grid" style="padding:15px 0">
-                    <div class="col-xs-12">
-                        <div class="inner-container" style="height:220px">
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    <label class=""><a class="external text-danger report-header collapsed" data-toggle="collapse" data-target="#accordion_9" href="#">+ Showroom</a></label>
-                </h4>
-            </div>
-
-            <div id="accordion_9" class="panel-collapse collapse">
-                <div class="row show-grid" style="padding:15px 0">
-                    <div class="col-xs-12">
-                        <div class="inner-container" style="height:220px">
-                            <table style="width:100%">
-                                <tr>
-                                    <td style="text-align:left">Showroom</td>
-                                    <td style="text-align:left">: 50 | 53 (<a href="javascript:void();">view</a>)
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="text-align:left">Best Sales</td>
-                                    <td style="text-align:left">: 10M | 7M (<a href="javascript:void();">view</a>)
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="text-align:left">Top Variety Sales</td>
-                                    <td style="text-align:left">: Okra | White Love (<a href="javascript:void();">view</a>)
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
 </div>
 
 <div id="loading" style="display:none">
@@ -259,6 +264,8 @@ $CI = & get_instance();
         <span style="position:absolute; top:40%; left:35%; font-size:1.5em">Loading...</span>
     </div>
 </div>
+
+<style>.inner-container{height:300px}</style>
 
 <script type="text/javascript">
     jQuery(document).ready(function ($) {
