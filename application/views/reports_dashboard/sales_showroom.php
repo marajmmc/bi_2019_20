@@ -2,23 +2,24 @@
 if (!defined('BASEPATH')) exit('No direct script access allowed');
 $CI = & get_instance();
 
-$bar_width = 22;
+$bar_width = 23;
 $from_date = date('2018-01-01'); // Y-m-01
 
 $CI->db->from($CI->config->item('table_pos_sale') . ' s');
-$CI->db->select("s.outlet_id, SUM(s.amount_payable_actual) AS amount_sold");
+$CI->db->select("s.outlet_id, SUM(s.amount_payable_actual) amount_sold");
 
 $CI->db->join($CI->config->item('table_login_csetup_cus_info') . ' ci', 'ci.customer_id = s.outlet_id');
 $CI->db->select("ci.name outlet_name");
 
 $CI->db->where('s.date_sale >=', System_helper::get_time($from_date));
 $CI->db->group_by('s.outlet_id');
+$CI->db->order_by('ci.name', 'ASC');
 $results = $CI->db->get()->result_array();
 ?>
 
 <div style="padding:15px; width:100%; height:100%; overflow-x:scroll">
 
-    <div id='jqxShowroomSalesChart' style="width:<?php echo $bar_width * (count($results)) ?>px; height:600px"/>
+    <div id='jqxShowroomSalesChart' style="width:<?php echo $bar_width * (count($results)) ?>px; height:450px"/>
 
 </div>
 

@@ -21,7 +21,7 @@ $items = $CI->db->get()->result_array();
             ?>
             <tr>
                 <td style="text-align:left">Total <?php echo $item['type_name']; ?></td>
-                <td style="text-align:left">: <?php echo $item['cus_count']; ?> (<a href="javascript:void();">view</a>)
+                <td style="text-align:left">: <?php echo $item['cus_count']; ?> (<a>view</a>)
                 </td>
             </tr>
         <?php

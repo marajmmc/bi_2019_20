@@ -15,12 +15,13 @@ $CI->db->select("v.name variety_name");
 
 $CI->db->where('s.date_sale >=', System_helper::get_time($from_date));
 $CI->db->group_by('sd.variety_id');
+$CI->db->order_by('v.name', 'ASC');
 $results = $CI->db->get()->result_array();
 ?>
 
 <div style="padding:15px; width:100%; height:100%; overflow-x:scroll">
 
-    <div id='jqxVarietySalesChart' style="width:<?php echo $bar_width * (count($results)) ?>px; height:600px"/>
+    <div id='jqxVarietySalesChart' style="width:<?php echo $bar_width * (count($results)) ?>px; height:400px"/>
 
 </div>
 

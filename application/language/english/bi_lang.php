@@ -129,7 +129,7 @@ $lang['LABEL_STATUS_RECEIVED']='Received Status';
 $lang['LABEL_STATUS_CLOSED']='Closed Status';
 $lang['LABEL_STATUS_LC_PENDING']='Pending';
 $lang['LABEL_STATUS_LC_COMPLETE']='Completed';
-$lang['LABEL_STATUS_OPEN_FORWARD']='Forward Status';
+$lang['LABEL_STATUS_FORWARD']='Forward Status';
 $lang['LABEL_STATUS_OPEN']='LC Status';
 $lang['LABEL_STATUS_REQUEST']='Request Status';
 $lang['LABEL_STATUS_APPROVE']='Approve Status';
@@ -334,7 +334,7 @@ $lang['LABEL_DIVISION_NAME'] = 'Division';
 $lang['LABEL_ZONE_NAME'] = 'Zone';
 $lang['LABEL_TERRITORY_NAME'] = 'Territory';
 $lang['LABEL_DISTRICT_NAME'] = 'District';
-$lang['LABEL_UPAZILLA_NAME'] = 'Upazila';
+$lang['LABEL_UPAZILLA_NAME'] = 'Upazilla';
 $lang['LABEL_UNION_NAME'] = 'Union';
 
 //crop classification
@@ -409,7 +409,7 @@ $lang['LABEL_INCHARGE'] = 'In-charge';
 $lang['LABEL_ARM_VARIETY_NAME'] = 'Competitor Variety';
 $lang['LABEL_COMPETITOR_VARIETY_NAME'] = 'Competitor Variety';
 $lang['LABEL_ARM_VARIETY_COMPARE_NAME'] = 'ARM Varieties Compared';
-$lang['LABEL_MARKET_SIZE'] = 'Market Size';
+$lang['LABEL_MARKET_SIZE'] = 'Market Size (Kg)';
 $lang['LABEL_COMPETITOR_MARKET_SIZE'] = 'Competitor Market Size (Kg)';
 $lang['LABEL_AREA_NAME'] = 'Area Name';
 $lang['LABEL_AREA'] = 'Area';

@@ -4,54 +4,58 @@ $CI = & get_instance();
 
 ?>
 
-<div style="padding:15px; width:100%; height:100%; overflow-x:scroll">
-    <div id='jqxMarketShareChart' style="width: 100%; height: 100%; position:relative; left:0px; top:0px;">  </div>
+<div style="width:100%; height:100%; overflow-x:scroll">
+    <div id='jqxMarketShareChart' style="width: 100%; height: 330px; position:relative; left:0px; top:0px;">  </div>
 </div>
 
 <script type="text/javascript" src="<?php echo str_replace('bi_2019_20', 'login_2018_19', base_url('js/jqx/jqxchart.js')); ?>"></script>
 
 <script type="text/javascript">
     $(document).ready(function () {
+        system_preset({controller:'<?php echo $CI->router->class; ?>'});
         // prepare chart data as an array
-        var source =
-        {
-            datatype: "csv",
-            datafields: [
-                { name: 'Company' },
-                { name: 'Share' }
-            ],
-            url: '<?php echo site_url('/images/text_data/market_share_data.txt') ?>'
-        };
-        var dataAdapter = new $.jqx.dataAdapter(source, { async: false, autoBind: true, loadError: function (xhr, status, error) { alert('Error loading "' + source.url + '" : ' + error); } });
+        var dataSource = [
+              {company:"ARM", percentage: 35},
+              {company:"Syngenta", percentage: 20},
+              {company:"ACI", percentage: 15},
+              {company:"Supreme Seed", percentage: 18},
+              {company:"United Seed", percentage: 4},
+              {company:"Metal Seed", percentage: 8}
+        ];
+
         // prepare jqxChart settings
         var settings = {
             title: "Market Share (Seed)",
             description: "(ARM Versus Competitor)",
             enableAnimations: true,
-            showLegend: false,
-            showBorderLine: false,
-            legendPosition: { left: 5, top: 5, width: 5, height: 5 },
+            showLegend: true,
+            showBorderLine: true,
             padding: { left: 5, top: 5, right: 5, bottom: 5 },
-            titlePadding: { left: 0, top: 0, right: 0, bottom: 0 },
-            source: dataAdapter,
-            colorScheme: 'scheme02',
+            titlePadding: { left: 0, top: 0, right: 0, bottom: 10 },
+            source: dataSource,
+
+            colorScheme: 'scheme03',
             seriesGroups:
                 [
                     {
                         type: 'pie',
                         showLabels: true,
                         series:
-                        [
-                            {
-                                displayText: 'Company',
-                                dataField: 'Share',
-                                labelRadius: 80,
-                                initialAngle: 15,
-                                radius: 60,
-                                centerOffset: 0,
-                                formatSettings: { sufix: '%', decimalPlaces: 1 }
-                            }
-                        ]
+                            [
+                                {
+                                    dataField: 'percentage',
+                                    displayText: 'company',
+                                    labelRadius: 100,
+                                    initialAngle: 15,
+                                    radius: 85,
+                                    centerOffset: 0,
+                                    formatFunction: function (value) {
+                                        if (isNaN(value))
+                                            return value;
+                                        return parseFloat(value) + '%';
+                                    }
+                                }
+                            ]
                     }
                 ]
         };

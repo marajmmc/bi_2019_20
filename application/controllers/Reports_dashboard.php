@@ -23,4 +23,35 @@ class Reports_dashboard extends Root_Controller
         echo json_encode($data, true);
         exit;
     }
+
+    public function get_market_share()
+    {
+        /*$data='[
+                  {
+                    "ARM": 35
+                  },
+                  {
+                    "Syngenta": "20"
+                  },
+                  {
+                    "ACI": "15"
+                  },
+                  {
+                    "Supreme Seed": "18"
+                  },
+                  {
+                    "United Seed": "4"
+                  },
+                  {
+                    "Metal Seed": "8"
+                  },
+               ]';*/
+
+        $items = array(
+            'ARM' => 35,
+            'Syngenta' => 65
+        );
+
+        $this->json_return($items);
+    }
 }
