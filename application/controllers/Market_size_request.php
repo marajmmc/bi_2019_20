@@ -6,6 +6,7 @@ class Market_size_request extends Root_Controller
     public $permissions;
     public $controller_url;
     public $locations;
+    public $common_view_location;
 
     public function __construct()
     {
@@ -13,6 +14,7 @@ class Market_size_request extends Root_Controller
         $this->message = "";
         $this->permissions = User_helper::get_permission(get_class($this));
         $this->controller_url = strtolower(get_class($this));
+        $this->common_view_location = 'market_size_request';
         $this->locations = User_helper::get_locations();
         if (!($this->locations))
         {
@@ -20,6 +22,7 @@ class Market_size_request extends Root_Controller
             $ajax['system_message'] = $this->lang->line('MSG_LOCATION_NOT_ASSIGNED_OR_INVALID');
             $this->json_return($ajax);
         }
+        $this->load->helper('bi_helper');
     }
 
     public function index($action = "list", $id = 0)
@@ -31,6 +34,14 @@ class Market_size_request extends Root_Controller
         elseif ($action == "get_items")
         {
             $this->system_get_items();
+        }
+        elseif ($action == "list_all")
+        {
+            $this->system_list_all();
+        }
+        elseif ($action == "get_items_all")
+        {
+            $this->system_get_items_all();
         }
         elseif ($action == "add")
         {
@@ -64,6 +75,10 @@ class Market_size_request extends Root_Controller
         {
             $this->system_set_preference('list');
         }
+        elseif ($action == "set_preference")
+        {
+            $this->system_set_preference('list_all');
+        }
         elseif ($action == "save_preference")
         {
             System_helper::save_preference();
@@ -83,10 +98,12 @@ class Market_size_request extends Root_Controller
         $data['territory_name'] = 1;
         $data['zone_name'] = 1;
         $data['division_name'] = 1;
+        $data['number_of_edit'] = 1;
         if ($method == 'list_all')
         {
             $data['status'] = 1;
             $data['status_forward'] = 1;
+            $data['status_approved'] = 1;
         }
         return $data;
     }
@@ -120,7 +137,7 @@ class Market_size_request extends Root_Controller
             $method = 'list';
             $data = array();
             $data['system_preference_items'] = System_helper::get_preference($user->user_id, $this->controller_url, $method, $this->get_preference_headers($method));
-            $data['title'] = "Upazilla Wise Market Size List";
+            $data['title'] = $this->lang->line('LABEL_UPAZILLA_NAME') . " Wise Market Size List";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/list", $data, true));
             if ($this->message)
@@ -141,7 +158,7 @@ class Market_size_request extends Root_Controller
     private function system_get_items()
     {
         $this->db->from($this->config->item('table_bi_market_size_request') . ' ms');
-        $this->db->select('ms.*');
+        $this->db->select('ms.*, revision_count number_of_edit');
 
         $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = ms.upazilla_id');
         $this->db->select('upazilla.name upazilla_name');
@@ -159,6 +176,62 @@ class Market_size_request extends Root_Controller
         $this->db->select('division.name division_name');
 
         $this->db->where('ms.status', $this->config->item('system_status_active'));
+        $this->db->where('ms.status_forward !=', $this->config->item('system_status_forwarded'));
+        $this->db->order_by('division.name');
+        $this->db->order_by('zone.name');
+        $this->db->order_by('territory.name');
+        $this->db->order_by('district.name');
+        $this->db->order_by('ms.id');
+        $items = $this->db->get()->result_array();
+        $this->json_return($items);
+    }
+
+    private function system_list_all()
+    {
+        if (isset($this->permissions['action0']) && ($this->permissions['action0'] == 1))
+        {
+            $user = User_helper::get_user();
+            $method = 'list_all';
+            $data = array();
+            $data['system_preference_items'] = System_helper::get_preference($user->user_id, $this->controller_url, $method, $this->get_preference_headers($method));
+            $data['title'] = $this->lang->line('LABEL_UPAZILLA_NAME') . " Wise Market Size All List";
+            $ajax['status'] = true;
+            $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/list_all", $data, true));
+            if ($this->message)
+            {
+                $ajax['system_message'] = $this->message;
+            }
+            $ajax['system_page_url'] = site_url($this->controller_url . '/index/' . $method);
+            $this->json_return($ajax);
+        }
+        else
+        {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+    }
+
+    private function system_get_items_all()
+    {
+        $this->db->from($this->config->item('table_bi_market_size_request') . ' ms');
+        $this->db->select('ms.*, revision_count number_of_edit');
+
+        $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = ms.upazilla_id');
+        $this->db->select('upazilla.name upazilla_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id');
+        $this->db->select('district.name district_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
+        $this->db->select('territory.name territory_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
+        $this->db->select('zone.name zone_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
+        $this->db->select('division.name division_name');
+
         $this->db->order_by('division.name');
         $this->db->order_by('zone.name');
         $this->db->order_by('territory.name');
@@ -348,33 +421,15 @@ class Market_size_request extends Root_Controller
         }
 
         $market_size_array = array();
-        if ($item['id'] > 0)
+        foreach ($crop_wise_market_size as $crop_type_id => $market_size)
         {
-            foreach ($crop_wise_market_size as $crop_id => $market_size)
+            if ((trim($market_size['new']) != '') && ($market_size['new'] != $market_size['old']))
             {
-                foreach ($market_size as $crop_type_id => $size)
-                {
-                    if (is_numeric($size) && ($size > 0))
-                    {
-                        $market_size_array[$crop_id][$crop_type_id] = $size;
-                    }
-                }
+                $market_size_array[$crop_type_id] = $market_size['new'];
             }
         }
-        else
-        {
-            foreach ($crop_wise_market_size as $crop_id => $market_size)
-            {
-                foreach ($market_size as $crop_type_id => $size)
-                {
-                    if (is_numeric($size) && ($size > 0))
-                    {
-                        $market_size_array[$crop_id][$crop_type_id] = $size;
-                    }
-                }
-            }
-            $item['market_size'] = json_encode($market_size_array, TRUE);
-        }
+
+        $item['market_size'] = json_encode($market_size_array, TRUE);
 
         $this->db->trans_start(); //DB Transaction Handle START
         if ($item_id > 0) // Revision Update if EDIT
@@ -420,91 +475,12 @@ class Market_size_request extends Root_Controller
             {
                 $item_id = $this->input->post('id');
             }
-
             $data = array();
-            $this->db->from($this->config->item('table_bi_market_size_request') . ' ms');
-            $this->db->select('ms.*');
+            $data['item_id'] = $item_id;
 
-            $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = ms.upazilla_id');
-            $this->db->select('upazilla.name upazilla_name');
-
-            $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id');
-            $this->db->select('district.name district_name');
-
-            $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
-            $this->db->select('territory.name territory_name');
-
-            $this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
-            $this->db->select('zone.name zone_name');
-
-            $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
-            $this->db->select('division.name division_name');
-
-            $this->db->where('ms.id', $item_id);
-            $this->db->where('ms.status', $this->config->item('system_status_active'));
-            $result = $this->db->get()->row_array();
-            if (!$result)
-            {
-                System_helper::invalid_try(__FUNCTION__, $item_id, 'ID Not Exists');
-                $ajax['status'] = false;
-                $ajax['system_message'] = 'Invalid Try.';
-                $this->json_return($ajax);
-            }
-
-            $user_ids = array(
-                $result['user_created'] => $result['user_created'],
-                $result['user_updated'] => $result['user_updated']
-            );
-            $user_info = System_helper::get_users_info($user_ids);
-
-            $items = array();
-            // Competitor Basic Information
-            $items[0] = array(
-                'header' => 'Competitor\'s Variety Information',
-                'div_id' => 'basic_info',
-                'collapse' => 'in',
-                'data' => array(
-                    array(
-                        'label_1' => $this->lang->line('LABEL_COMPETITOR_NAME'),
-                        'value_1' => $result['competitor_name'],
-                        'label_2' => $this->lang->line('LABEL_CROP_NAME'),
-                        'value_2' => $result['crop_name']
-                    ),
-                    array(
-                        'label_1' => $this->lang->line('LABEL_CROP_TYPE_NAME'),
-                        'value_1' => $result['crop_type_name'],
-                        'label_2' => $this->lang->line('LABEL_VARIETY_NAME'),
-                        'value_2' => $result['variety_name']
-                    ),
-                    array(
-                        'label_1' => $this->lang->line('LABEL_HYBRID'),
-                        'value_1' => $result['hybrid'],
-                        'label_2' => $this->lang->line('LABEL_STATUS'),
-                        'value_2' => $result['status']
-                    ),
-                    array(
-                        'label_1' => $this->lang->line('LABEL_CREATED_BY'),
-                        'value_1' => $user_info[$result['user_created']]['name'],
-                        'label_2' => $this->lang->line('LABEL_DATE_CREATED_TIME'),
-                        'value_2' => System_helper::display_date_time($result['date_created'])
-                    )
-                )
-            );
-
-            if ($result['user_updated'] > 0)
-            {
-                $items[0]['data'][] = array(
-                    'label_1' => $this->lang->line('LABEL_UPDATED_BY'),
-                    'value_1' => $user_info[$result['user_updated']]['name'],
-                    'label_2' => $this->lang->line('LABEL_DATE_UPDATED_TIME'),
-                    'value_2' => System_helper::display_date_time($result['date_updated'])
-                );
-            }
-
-            $data['items'] = $items;
-            $data['title'] = "Competitor Variety Details ( ID:" . $item_id . " )";
+            $data['title'] = "Market Size Details ( ID:" . $item_id . " )";
             $ajax['status'] = true;
-            $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/details", $data, true));
+            $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->common_view_location . "/details", $data, true));
             if ($this->message)
             {
                 $ajax['system_message'] = $this->message;
@@ -520,6 +496,144 @@ class Market_size_request extends Root_Controller
         }
     }
 
+
+    private function system_forward($id)
+    {
+        if (isset($this->permissions['action7']) && ($this->permissions['action7'] == 1))
+        {
+            if ($id > 0)
+            {
+                $item_id = $id;
+            }
+            else
+            {
+                $item_id = $this->input->post('id');
+            }
+
+            $data = array();
+            $this->db->from($this->config->item('table_bi_market_size_request') . ' ms');
+            $this->db->select('ms.*');
+
+            $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = ms.upazilla_id');
+            $this->db->select('upazilla.name upazilla_name');
+
+            $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id', 'INNER');
+            $this->db->select('district.id district_id, district.name district_name');
+
+            $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
+            $this->db->select('territory.id territory_id, territory.name territory_name');
+
+            $this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
+            $this->db->select('zone.id zone_id, zone.name zone_name');
+
+            $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
+            $this->db->select('division.id division_id, division.name division_name');
+
+            $this->db->where('ms.id', $item_id);
+            $this->db->where('ms.status', $this->config->item('system_status_active'));
+            $this->db->order_by('district.name');
+            $this->db->order_by('upazilla.name');
+            $data['item'] = $this->db->get()->row_array();
+            if (!$data['item'])
+            {
+                System_helper::invalid_try(__FUNCTION__, $item_id, 'ID Not Exists');
+                $ajax['status'] = false;
+                $ajax['system_message'] = 'Invalid Try.';
+                $this->json_return($ajax);
+            }
+
+            $data['title'] = "Forward Market Size ( ID:" . $item_id . " )";
+            $ajax['status'] = true;
+            $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/forward", $data, true));
+            if ($this->message)
+            {
+                $ajax['system_message'] = $this->message;
+            }
+            $ajax['system_page_url'] = site_url($this->controller_url . '/index/forward/' . $item_id);
+            $this->json_return($ajax);
+        }
+        else
+        {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+    }
+
+    private function system_save_forward()
+    {
+        $item_id = $this->input->post('id');
+        $item = $this->input->post('item');
+        $user = User_helper::get_user();
+        $time = time();
+
+        //Permission Checking
+        if (!(isset($this->permissions['action7']) && ($this->permissions['action7'] == 1)))
+        {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+
+        $this->db->from($this->config->item('table_bi_market_size_request') . ' ms');
+        $this->db->select('ms.*');
+
+        $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = ms.upazilla_id');
+        $this->db->select('upazilla.name upazilla_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id', 'INNER');
+        $this->db->select('district.id district_id, district.name district_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
+        $this->db->select('territory.id territory_id, territory.name territory_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
+        $this->db->select('zone.id zone_id, zone.name zone_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
+        $this->db->select('division.id division_id, division.name division_name');
+
+        $this->db->where('ms.id', $item_id);
+        $this->db->where('ms.status', $this->config->item('system_status_active'));
+        $this->db->order_by('district.name');
+        $this->db->order_by('upazilla.name');
+        $result = $this->db->get()->row_array();
+        if (!$result)
+        {
+            System_helper::invalid_try(__FUNCTION__, $item_id, 'ID Not Exists');
+            $ajax['status'] = false;
+            $ajax['system_message'] = 'Invalid Try.';
+            $this->json_return($ajax);
+        }
+        if ($item['status_forward'] != $this->config->item('system_status_forwarded'))
+        {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line('LABEL_STATUS_FORWARD') . ' field is required.';
+            $this->json_return($ajax);
+        }
+
+        $this->db->trans_start(); //DB Transaction Handle START
+
+        $item['date_forwarded'] = $time;
+        $item['user_forwarded'] = $user->user_id;
+        // Main Table UPDATE
+        Query_helper::update($this->config->item('table_bi_market_size_request'), $item, array("id =" . $item_id), FALSE);
+
+        $this->db->trans_complete(); //DB Transaction Handle END
+        if ($this->db->trans_status() === TRUE)
+        {
+            $ajax['status'] = true;
+            $this->message = $this->lang->line("MSG_SAVED_SUCCESS");
+            $this->system_list();
+        }
+        else
+        {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line("MSG_SAVED_FAIL");
+            $this->json_return($ajax);
+        }
+    }
+
     private function system_get_market_size()
     {
         $post = $this->input->post();
@@ -527,16 +641,17 @@ class Market_size_request extends Root_Controller
 
         $data['html_container_id'] = $post['html_container_id'];
         $data['upazilla_id'] = $post['upazilla_id'];
-
-        // From Request table (Current Requesting Market Size for this Upazilla)
         $data['market_size_edit'] = json_decode($post['market_size_edit'], TRUE);
 
         // From Main table (Previously Approved Market Size for this Upazilla)
         $this->db->from($this->config->item('table_bi_market_size_main'));
-        $this->db->select('market_size');
+        $this->db->select('*');
         $this->db->where('upazilla_id', $data['upazilla_id']);
-        $row = $this->db->get()->row_array();
-        $data['market_size_old'] = json_decode($row['market_size'], TRUE);
+        $results = $this->db->get()->result_array();
+        foreach ($results as $result)
+        {
+            $data['market_size_old'][$result['type_id']] = $result['market_size_kg'];
+        }
 
         // -------------------- For crop count -------------------------------
         $this->db->from($this->config->item('table_login_setup_classification_crop_types') . ' crop_types');
@@ -564,9 +679,13 @@ class Market_size_request extends Root_Controller
             }
         }
         //-------------------------------------------------------------------
-
         // Table Title
         $data['table_title'] = $post['upazilla_name'] . " - Market Size";
+
+        /*echo '<pre>';
+        print_r($data);
+        echo '</pre>';
+        die('===============');*/
 
         if ($data)
         {
@@ -591,20 +710,28 @@ class Market_size_request extends Root_Controller
             $this->message = $this->lang->line('LABEL_UPAZILLA_NAME') . ' field is required.';
             return false;
         }
+
         $market_size_not_found = TRUE;
-        foreach ($post['crop_wise_market_size'] as $market_size)
+        $market_size_new_not_entry = TRUE;
+        foreach ($post['crop_wise_market_size'] as $type_id => $market_size)
         {
-            foreach ($market_size as $size)
+            if (trim($market_size['new']) != '')
             {
-                if (is_numeric($size) && ($size > 0))
+                $market_size_not_found = FALSE;
+                if (($market_size['new'] != $market_size['old']))
                 {
-                    $market_size_not_found = FALSE;
+                    $market_size_new_not_entry = FALSE;
                 }
             }
         }
         if ($market_size_not_found)
         {
             $this->message = 'At least one ' . $this->lang->line('LABEL_MARKET_SIZE') . ' need to save.';
+            return false;
+        }
+        if ($market_size_new_not_entry)
+        {
+            $this->message = 'No change found in given ' . $this->lang->line('LABEL_MARKET_SIZE') . '.';
             return false;
         }
         return true;

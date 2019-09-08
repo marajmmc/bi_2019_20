@@ -1,10 +1,3 @@
-<?php
-/*echo '<pre>';
-print_r($crop_old);
-print_r($crop_edit);
-echo '</pre>';*/
-?>
-
 <table class="table table-bordered">
     <thead>
         <tr>
@@ -24,8 +17,17 @@ echo '</pre>';*/
             $init_crop_id = -1;
             foreach ($crops as $crop)
             {
-                $size_old = (isset($market_size_old[$crop['crop_id']][$crop['crop_type_id']]))? $market_size_old[$crop['crop_id']][$crop['crop_type_id']]: '-';
-                $size_edit = (isset($market_size_edit[$crop['crop_id']][$crop['crop_type_id']]))? $market_size_edit[$crop['crop_id']][$crop['crop_type_id']]: '';
+                $size_old = (isset($market_size_old[$crop['crop_type_id']])) ? $market_size_old[$crop['crop_type_id']] : '';
+                if (isset($market_size_edit[$crop['crop_type_id']]))
+                {
+                    $size_edit = $market_size_edit[$crop['crop_type_id']];
+                    $diff_class = 'bg-danger';
+                }
+                else
+                {
+                    $size_edit = $size_old;
+                    $diff_class = '';
+                }
                 ?>
                 <tr>
                     <?php
@@ -40,9 +42,12 @@ echo '</pre>';*/
                     }
                     ?>
                     <td><?php echo $crop['crop_type_name']; ?></td>
-                    <td><?php echo $size_old; ?></td>
-                    <td>
-                        <input type="text" name="crop_wise_market_size[<?php echo $crop['crop_id']; ?>][<?php echo $crop['crop_type_id']; ?>]" class="form-control float_type_positive crop_wise_market_size" value="<?php echo $size_edit; ?>" style="text-align:left"/>
+                    <td class="<?php echo $diff_class; ?>">
+                        <input type="hidden" name="crop_wise_market_size[<?php echo $crop['crop_type_id']; ?>][old]" value="<?php echo $size_old; ?>"/>
+                        <?php echo $size_old; ?>
+                    </td>
+                    <td style="padding:0">
+                        <input type="text" name="crop_wise_market_size[<?php echo $crop['crop_type_id']; ?>][new]" class="form-control float_type_positive crop_wise_market_size" value="<?php echo $size_edit; ?>" style="text-align:left"/>
                     </td>
                 </tr>
             <?php
@@ -52,4 +57,7 @@ echo '</pre>';*/
     </tbody>
 </table>
 
-<style>.table_head th{white-space: nowrap; text-align: center}</style>
+<style>
+    .table_head th{white-space: nowrap; text-align: center}
+    .mismatch{background:lightcoral}
+</style>
