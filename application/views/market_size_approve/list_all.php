@@ -131,6 +131,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                     { text: '<?php echo $CI->lang->line('LABEL_ZONE_NAME'); ?>', dataField: 'zone_name', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['zone_name']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_DIVISION_NAME'); ?>', dataField: 'division_name', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['division_name']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_NUMBER_OF_EDIT'); ?>', dataField: 'number_of_edit', width: '60', filtertype: 'none', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['number_of_edit']?0:1;?>},
+                    { text: '<?php echo $CI->lang->line('LABEL_FORWARDED_BY'); ?>', dataField: 'forwarded_by', width: '180', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['forwarded_by']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_STATUS_APPROVE'); ?>', dataField: 'status_approved', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['status_approved']?0:1;?>}
                 ]
             });

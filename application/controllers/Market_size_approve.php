@@ -83,6 +83,7 @@ class Market_size_approve extends Root_Controller
         $data['zone_name'] = 1;
         $data['division_name'] = 1;
         $data['number_of_edit'] = 1;
+        $data['forwarded_by'] = 1;
         if ($method == 'list_all')
         {
             $data['status_approved'] = 1;
@@ -156,6 +157,25 @@ class Market_size_approve extends Root_Controller
 
         $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
         $this->db->select('division.name division_name');
+        if ($this->locations['division_id'] > 0)
+        {
+            $this->db->where('division.id', $this->locations['division_id']);
+            if ($this->locations['zone_id'] > 0)
+            {
+                $this->db->where('zone.id', $this->locations['zone_id']);
+                if ($this->locations['territory_id'] > 0)
+                {
+                    $this->db->where('territory.id', $this->locations['territory_id']);
+                    if ($this->locations['district_id'] > 0)
+                    {
+                        $this->db->where('district.id', $this->locations['district_id']);
+                    }
+                }
+            }
+        }
+
+        $this->db->join($this->config->item('table_login_setup_user_info') . ' user_info', 'user_info.id = ms.user_forwarded');
+        $this->db->select('user_info.name forwarded_by');
 
         $this->db->where('ms.status', $this->config->item('system_status_active'));
         $this->db->where('ms.status_forward', $this->config->item('system_status_forwarded'));
@@ -197,6 +217,20 @@ class Market_size_approve extends Root_Controller
 
     private function system_get_items_all()
     {
+        $current_records = $this->input->post('total_records');
+        if (!$current_records)
+        {
+            $current_records = 0;
+        }
+        $pagesize = $this->input->post('pagesize');
+        if (!$pagesize)
+        {
+            $pagesize = 100;
+        }
+        else
+        {
+            $pagesize = $pagesize * 2;
+        }
         $this->db->from($this->config->item('table_bi_market_size_request') . ' ms');
         $this->db->select('ms.*, revision_count number_of_edit');
 
@@ -214,6 +248,25 @@ class Market_size_approve extends Root_Controller
 
         $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
         $this->db->select('division.name division_name');
+        if ($this->locations['division_id'] > 0)
+        {
+            $this->db->where('division.id', $this->locations['division_id']);
+            if ($this->locations['zone_id'] > 0)
+            {
+                $this->db->where('zone.id', $this->locations['zone_id']);
+                if ($this->locations['territory_id'] > 0)
+                {
+                    $this->db->where('territory.id', $this->locations['territory_id']);
+                    if ($this->locations['district_id'] > 0)
+                    {
+                        $this->db->where('district.id', $this->locations['district_id']);
+                    }
+                }
+            }
+        }
+
+        $this->db->join($this->config->item('table_login_setup_user_info') . ' user_info', 'user_info.id = ms.user_forwarded');
+        $this->db->select('user_info.name forwarded_by');
 
         $this->db->where('ms.status', $this->config->item('system_status_active'));
         $this->db->where('ms.status_forward', $this->config->item('system_status_forwarded'));
@@ -222,6 +275,7 @@ class Market_size_approve extends Root_Controller
         $this->db->order_by('territory.name');
         $this->db->order_by('district.name');
         $this->db->order_by('ms.id');
+        $this->db->limit($pagesize, $current_records);
         $items = $this->db->get()->result_array();
         $this->json_return($items);
     }
@@ -295,14 +349,19 @@ class Market_size_approve extends Root_Controller
             $this->db->where('ms.status', $this->config->item('system_status_active'));
             $this->db->where('ms.status_forward', $this->config->item('system_status_forwarded'));
             $this->db->where('ms.status_approved !=', $this->config->item('system_status_approved'));
-            $this->db->order_by('district.name');
-            $this->db->order_by('upazilla.name');
             $data['item'] = $this->db->get()->row_array();
             if (!$data['item'])
             {
                 System_helper::invalid_try(__FUNCTION__, $item_id, 'ID Not Exists');
                 $ajax['status'] = false;
                 $ajax['system_message'] = 'Invalid Try.';
+                $this->json_return($ajax);
+            }
+            if (!$this->check_my_editable($data['item']))
+            {
+                System_helper::invalid_try(__FUNCTION__, $item_id, 'Trying to Approve Market Size of other Location');
+                $ajax['status'] = false;
+                $ajax['system_message'] = 'Trying to Approve Market Size of other Location';
                 $this->json_return($ajax);
             }
 
@@ -333,11 +392,6 @@ class Market_size_approve extends Root_Controller
 
     private function system_save_approve()
     {
-        /*echo '<pre>';
-        print_r($this->input->post());
-        echo '</pre>';*/
-
-
         $item_id = $this->input->post('id');
         $item = $this->input->post('item');
         $user = User_helper::get_user();
@@ -371,8 +425,6 @@ class Market_size_approve extends Root_Controller
 
         $this->db->where('ms.id', $item_id);
         $this->db->where('ms.status', $this->config->item('system_status_active'));
-        $this->db->order_by('district.name');
-        $this->db->order_by('upazilla.name');
         $result = $this->db->get()->row_array();
         if (!$result)
         {
@@ -381,23 +433,35 @@ class Market_size_approve extends Root_Controller
             $ajax['system_message'] = 'Invalid Try.';
             $this->json_return($ajax);
         }
-        if ($item['status_approved'] != $this->config->item('system_status_approved'))
+        if (!$this->check_my_editable($result))
+        {
+            System_helper::invalid_try(__FUNCTION__, $item_id, 'Trying to Approve Market Size of other Location');
+            $ajax['status'] = false;
+            $ajax['system_message'] = 'Trying to Approve Market Size of other Location';
+            $this->json_return($ajax);
+        }
+        if (!$this->check_validation())
         {
             $ajax['status'] = false;
-            $ajax['system_message'] = $this->lang->line('LABEL_STATUS_APPROVE') . ' field is required.';
+            $ajax['system_message'] = $this->message;
             $this->json_return($ajax);
         }
 
-        $market_sizes = json_decode($result['market_size'], TRUE);
-        /*echo '<pre>';
-        print_r($market_sizes);
-        print_r($result);
-        echo '</pre>';
-        die('=====================');*/
-
         $this->db->trans_start(); //DB Transaction Handle START
 
-        if($item['status_approved'] == $this->config->item('system_status_approved'))
+        if($item['status_approved'] == $this->config->item('system_status_rollback'))
+        {
+            $item['status_forward'] = $this->config->item('system_status_pending');
+            $item['date_updated'] = $time;
+            $item['user_updated'] = $user->user_id;
+        }
+        else if ($item['status_approved'] == $this->config->item('system_status_rejected'))
+        {
+            $item['status_approved'] = $this->config->item('system_status_rejected');
+            $item['date_approved'] = $time;
+            $item['user_approved'] = $user->user_id;
+        }
+        else
         {
             $market_sizes = json_decode($result['market_size'], TRUE);
             foreach($market_sizes as $type_id => $market_size)
@@ -407,9 +471,9 @@ class Market_size_approve extends Root_Controller
 
             $item['date_approved'] = $time;
             $item['user_approved'] = $user->user_id;
-            // Main Table UPDATE
-            Query_helper::update($this->config->item('table_bi_market_size_request'), $item, array("id =" . $item_id), FALSE);
         }
+        // Main Table UPDATE
+        Query_helper::update($this->config->item('table_bi_market_size_request'), $item, array("id =" . $item_id), FALSE);
 
         $this->db->trans_complete(); //DB Transaction Handle END
         if ($this->db->trans_status() === TRUE)
@@ -424,5 +488,45 @@ class Market_size_approve extends Root_Controller
             $ajax['system_message'] = $this->lang->line("MSG_SAVED_FAIL");
             $this->json_return($ajax);
         }
+    }
+
+    private function check_validation()
+    {
+        $item = $this->input->post('item');
+        $this->load->library('form_validation');
+        
+        $this->form_validation->set_rules('item[status_approved]', $this->lang->line('LABEL_STATUS_APPROVE'), 'trim|required');
+        // `Remarks` is mandatory for Rollback & Reject.
+        if (($item['status_approved'] == $this->config->item('system_status_rollback')) || ($item['status_approved'] == $this->config->item('system_status_rejected')))
+        {
+            $this->form_validation->set_rules('item[remarks_approved]', $this->lang->line('LABEL_REMARKS'), 'trim|required');
+        }
+        if ($this->form_validation->run() == FALSE)
+        {
+            $this->message = validation_errors();
+            return false;
+        }
+        return true;
+    }
+
+    private function check_my_editable($item)
+    {
+        if (($this->locations['division_id'] > 0) && ($this->locations['division_id'] != $item['division_id']))
+        {
+            return false;
+        }
+        if (($this->locations['zone_id'] > 0) && ($this->locations['zone_id'] != $item['zone_id']))
+        {
+            return false;
+        }
+        if (($this->locations['territory_id'] > 0) && ($this->locations['territory_id'] != $item['territory_id']))
+        {
+            return false;
+        }
+        if (($this->locations['district_id'] > 0) && ($this->locations['district_id'] != $item['district_id']))
+        {
+            return false;
+        }
+        return true;
     }
 }

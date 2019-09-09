@@ -99,6 +99,7 @@ class Market_size_request extends Root_Controller
         $data['zone_name'] = 1;
         $data['division_name'] = 1;
         $data['number_of_edit'] = 1;
+        $data['requested_by'] = 1;
         if ($method == 'list_all')
         {
             $data['status'] = 1;
@@ -174,6 +175,25 @@ class Market_size_request extends Root_Controller
 
         $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
         $this->db->select('division.name division_name');
+        if ($this->locations['division_id'] > 0)
+        {
+            $this->db->where('division.id', $this->locations['division_id']);
+            if ($this->locations['zone_id'] > 0)
+            {
+                $this->db->where('zone.id', $this->locations['zone_id']);
+                if ($this->locations['territory_id'] > 0)
+                {
+                    $this->db->where('territory.id', $this->locations['territory_id']);
+                    if ($this->locations['district_id'] > 0)
+                    {
+                        $this->db->where('district.id', $this->locations['district_id']);
+                    }
+                }
+            }
+        }
+
+        $this->db->join($this->config->item('table_login_setup_user_info') . ' user_info', 'user_info.id = ms.user_created');
+        $this->db->select('user_info.name requested_by');
 
         $this->db->where('ms.status', $this->config->item('system_status_active'));
         $this->db->where('ms.status_forward !=', $this->config->item('system_status_forwarded'));
@@ -214,6 +234,20 @@ class Market_size_request extends Root_Controller
 
     private function system_get_items_all()
     {
+        $current_records = $this->input->post('total_records');
+        if (!$current_records)
+        {
+            $current_records = 0;
+        }
+        $pagesize = $this->input->post('pagesize');
+        if (!$pagesize)
+        {
+            $pagesize = 100;
+        }
+        else
+        {
+            $pagesize = $pagesize * 2;
+        }
         $this->db->from($this->config->item('table_bi_market_size_request') . ' ms');
         $this->db->select('ms.*, revision_count number_of_edit');
 
@@ -231,12 +265,32 @@ class Market_size_request extends Root_Controller
 
         $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
         $this->db->select('division.name division_name');
+        if ($this->locations['division_id'] > 0)
+        {
+            $this->db->where('division.id', $this->locations['division_id']);
+            if ($this->locations['zone_id'] > 0)
+            {
+                $this->db->where('zone.id', $this->locations['zone_id']);
+                if ($this->locations['territory_id'] > 0)
+                {
+                    $this->db->where('territory.id', $this->locations['territory_id']);
+                    if ($this->locations['district_id'] > 0)
+                    {
+                        $this->db->where('district.id', $this->locations['district_id']);
+                    }
+                }
+            }
+        }
+
+        $this->db->join($this->config->item('table_login_setup_user_info') . ' user_info', 'user_info.id = ms.user_created');
+        $this->db->select('user_info.name requested_by');
 
         $this->db->order_by('division.name');
         $this->db->order_by('zone.name');
         $this->db->order_by('territory.name');
         $this->db->order_by('district.name');
         $this->db->order_by('ms.id');
+        $this->db->limit($pagesize, $current_records);
         $items = $this->db->get()->result_array();
         $this->json_return($items);
     }
@@ -258,11 +312,28 @@ class Market_size_request extends Root_Controller
                 'status' => ''
             );
 
-            $data['upazillas'] = array();
+            $data['divisions'] = Query_helper::get_info($this->config->item('table_login_setup_location_divisions'), array('id value', 'name text'), array('status !="' . $this->config->item('system_status_delete') . '"'));
+            if ($this->locations['division_id'] > 0)
+            {
+                $data['zones'] = Query_helper::get_info($this->config->item('table_login_setup_location_zones'), array('id value', 'name text'), array('division_id =' . $this->locations['division_id']));
+                if ($this->locations['zone_id'] > 0)
+                {
+                    $data['territories'] = Query_helper::get_info($this->config->item('table_login_setup_location_territories'), array('id value', 'name text'), array('zone_id =' . $this->locations['zone_id']));
+                    if ($this->locations['territory_id'] > 0)
+                    {
+                        $data['districts'] = Query_helper::get_info($this->config->item('table_login_setup_location_districts'), array('id value', 'name text'), array('territory_id =' . $this->locations['territory_id']));
+                        if ($this->locations['district_id'] > 0)
+                        {
+                            $data['upazillas'] = Query_helper::get_info($this->config->item('table_login_setup_location_districts'), array('id value', 'name text'), array('district_id =' . $this->locations['district_id']));
+                        }
+                    }
+                }
+            }
+
             $results = Query_helper::get_info($this->config->item('table_login_setup_location_upazillas'), array('id value', 'name text', 'district_id'), array('status ="' . $this->config->item('system_status_active') . '"'), 0, 0, array('ordering ASC'));
             foreach ($results as $result)
             {
-                $data['upazillas'][$result['district_id']][] = $result;
+                $data['system_upazillas'][$result['district_id']][] = $result;
             }
 
             $data['title'] = "New Market Size ( " . ($this->lang->line('LABEL_UPAZILLA_NAME')) . " Wise )";
@@ -326,12 +397,19 @@ class Market_size_request extends Root_Controller
                 $ajax['system_message'] = 'Invalid Try.';
                 $this->json_return($ajax);
             }
+            if (!$this->check_my_editable($data['item']))
+            {
+                System_helper::invalid_try(__FUNCTION__, $item_id, 'Trying to Edit Market Size of other Location');
+                $ajax['status'] = false;
+                $ajax['system_message'] = 'Trying to Edit Market Size of other Location';
+                $this->json_return($ajax);
+            }
 
-            $data['upazillas'] = array();
+            $data['system_upazillas'] = array();
             $results = Query_helper::get_info($this->config->item('table_login_setup_location_upazillas'), array('id value', 'name text', 'district_id'), array('status ="' . $this->config->item('system_status_active') . '"'), 0, 0, array('ordering ASC'));
             foreach ($results as $result)
             {
-                $data['upazillas'][$result['district_id']][] = $result;
+                $data['system_upazillas'][$result['district_id']][] = $result;
             }
 
             $data['title'] = "Edit Competitor Variety ( ID:" . $data['item']['id'] . " )";
@@ -400,6 +478,13 @@ class Market_size_request extends Root_Controller
                 $ajax['system_message'] = 'Invalid Try.';
                 $this->json_return($ajax);
             }
+            if (!$this->check_my_editable($result))
+            {
+                System_helper::invalid_try(__FUNCTION__, $item_id, 'Trying to Save Market Size of other Location');
+                $ajax['status'] = false;
+                $ajax['system_message'] = 'Trying to Save Market Size of other Location';
+                $this->json_return($ajax);
+            }
         }
         else //ADD
         {
@@ -411,7 +496,6 @@ class Market_size_request extends Root_Controller
                 $this->json_return($ajax);
             }
         }
-
         //Validation Checking
         if (!$this->check_validation())
         {
@@ -496,7 +580,6 @@ class Market_size_request extends Root_Controller
         }
     }
 
-
     private function system_forward($id)
     {
         if (isset($this->permissions['action7']) && ($this->permissions['action7'] == 1))
@@ -539,6 +622,13 @@ class Market_size_request extends Root_Controller
                 System_helper::invalid_try(__FUNCTION__, $item_id, 'ID Not Exists');
                 $ajax['status'] = false;
                 $ajax['system_message'] = 'Invalid Try.';
+                $this->json_return($ajax);
+            }
+            if (!$this->check_my_editable($data['item']))
+            {
+                System_helper::invalid_try(__FUNCTION__, $item_id, 'Trying to Forward Market Size of other Location');
+                $ajax['status'] = false;
+                $ajax['system_message'] = 'Trying to Forward Market Size of other Location';
                 $this->json_return($ajax);
             }
 
@@ -611,6 +701,13 @@ class Market_size_request extends Root_Controller
             $ajax['system_message'] = $this->lang->line('LABEL_STATUS_FORWARD') . ' field is required.';
             $this->json_return($ajax);
         }
+        if (!$this->check_my_editable($result))
+        {
+            System_helper::invalid_try(__FUNCTION__, $item_id, 'Trying to Forward Market Size of other Location');
+            $ajax['status'] = false;
+            $ajax['system_message'] = 'Trying to Forward Market Size of other Location';
+            $this->json_return($ajax);
+        }
 
         $this->db->trans_start(); //DB Transaction Handle START
 
@@ -642,6 +739,19 @@ class Market_size_request extends Root_Controller
         $data['html_container_id'] = $post['html_container_id'];
         $data['upazilla_id'] = $post['upazilla_id'];
         $data['market_size_edit'] = json_decode($post['market_size_edit'], TRUE);
+        // Table Title
+        $data['table_title'] = $post['upazilla_name'] . " - Market Size";
+
+        if (trim($post['market_size_edit']) == '')
+        {
+            $request_found = Query_helper::get_info($this->config->item('table_bi_market_size_request'), array('*'), array('upazilla_id =' . $data['upazilla_id'], 'status_approved !="' . $this->config->item('system_status_approved') . '"'), 1);
+            if ($request_found)
+            {
+                $ajax['status'] = false;
+                $ajax['system_message'] = 'A request for ' . $post['upazilla_name'] . ' already pending.';
+                $this->json_return($ajax);
+            }
+        }
 
         // From Main table (Previously Approved Market Size for this Upazilla)
         $this->db->from($this->config->item('table_bi_market_size_main'));
@@ -679,14 +789,6 @@ class Market_size_request extends Root_Controller
             }
         }
         //-------------------------------------------------------------------
-        // Table Title
-        $data['table_title'] = $post['upazilla_name'] . " - Market Size";
-
-        /*echo '<pre>';
-        print_r($data);
-        echo '</pre>';
-        die('===============');*/
-
         if ($data)
         {
             $ajax['status'] = true;
@@ -696,10 +798,9 @@ class Market_size_request extends Root_Controller
         else
         {
             $ajax['status'] = false;
-            $ajax['system_message'] = $this->lang->line("SET_LEADING_FARMER_AND_DEALER");
+            $ajax['system_message'] = 'No market size found.';
             $this->json_return($ajax);
         }
-
     }
 
     private function check_validation()
@@ -732,6 +833,27 @@ class Market_size_request extends Root_Controller
         if ($market_size_new_not_entry)
         {
             $this->message = 'No change found in given ' . $this->lang->line('LABEL_MARKET_SIZE') . '.';
+            return false;
+        }
+        return true;
+    }
+
+    private function check_my_editable($item)
+    {
+        if (($this->locations['division_id'] > 0) && ($this->locations['division_id'] != $item['division_id']))
+        {
+            return false;
+        }
+        if (($this->locations['zone_id'] > 0) && ($this->locations['zone_id'] != $item['zone_id']))
+        {
+            return false;
+        }
+        if (($this->locations['territory_id'] > 0) && ($this->locations['territory_id'] != $item['territory_id']))
+        {
+            return false;
+        }
+        if (($this->locations['district_id'] > 0) && ($this->locations['district_id'] != $item['district_id']))
+        {
             return false;
         }
         return true;

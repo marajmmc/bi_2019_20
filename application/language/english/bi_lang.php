@@ -130,6 +130,7 @@ $lang['LABEL_FORWARDED_BY'] = 'Forwarded By';
 $lang['LABEL_APPROVED_BY'] = 'Approved By';
 $lang['LABEL_DELIVERED_BY'] = 'Delivered By';
 $lang['LABEL_RECEIVED_BY'] = 'Received By';
+$lang['LABEL_REQUESTED_BY'] = 'Requested By';
 
 /* Status */
 $lang['LABEL_STATUS']='Status';
@@ -382,6 +383,7 @@ $lang['LABEL_STOCK_OUT']='Stock Out';
 $lang['LABEL_FORWARDED']='Forwarded';
 $lang['LABEL_APPROVED']='Approved';
 $lang['LABEL_REJECTED']='Rejected';
+$lang['LABEL_ROLLBACK']='Rollback';
 $lang['LABEL_DELIVERED']='Delivered';
 $lang['LABEL_RECEIVED']='Received';
 
