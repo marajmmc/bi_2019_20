@@ -91,6 +91,6 @@
 <script>
     jQuery(document).ready(function()
     {
-
+        $(".date_large").datepicker({dateFormat : "dd-M",changeMonth: true,changeYear: true,yearRange: "c-2:c+2"});
     });
 </script>
