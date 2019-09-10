@@ -245,6 +245,10 @@ foreach ($results as $result)
         </div>
         <div class="row show-grid">
             <div class="col-sm-12" id="items_container">
+                <?php
+                if ($item['id']>0)
+                {
+                    ?>
                 <table class="table table-bordered">
                     <thead>
                     <tr>
@@ -265,7 +269,7 @@ foreach ($results as $result)
                     </thead>
                     <tbody>
                     <?php
-                    if ($crops)
+                    if (sizeof($crops)>0)
                     {
                         $cultivation_period=json_decode($item['cultivation_period'],TRUE);
                         $init_crop_id = -1;
@@ -324,26 +328,37 @@ foreach ($results as $result)
                                 <td>
                                     <div class='input-group date' id='datetimepicker1'>
                                         <input type="text" name="items[<?php echo $crop['crop_type_id']; ?>][date_start]" class="form-control date_large" value="<?php echo $date_start?$date_start:''; ?>" readonly="true" />
-                        <span class="input-group-addon">
-                            <span class="glyphicon glyphicon-calendar"></span>
-                        </span>
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
                                     </div>
                                 </td>
                                 <td>
                                     <div class='input-group date' id='datetimepicker1'>
                                         <input type="text" name="items[<?php echo $crop['crop_type_id']; ?>][date_end]" class="form-control date_large" value="<?php echo $date_end?$date_end:''; ?>" readonly="true" />
-                        <span class="input-group-addon">
-                            <span class="glyphicon glyphicon-calendar"></span>
-                        </span>
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
                                     </div>
                                 </td>
                             </tr>
                         <?php
                         }
                     }
+                    else
+                    {
+                        ?>
+                    <tr>
+                        <th colspan="21"> Data not found</th>
+                    </tr>
+                    <?php
+                    }
                     ?>
                     </tbody>
                 </table>
+                <?php
+                }
+                ?>
             </div>
         </div>
     </div>
