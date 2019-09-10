@@ -75,7 +75,7 @@ class Market_size_request extends Root_Controller
         {
             $this->system_set_preference('list');
         }
-        elseif ($action == "set_preference")
+        elseif ($action == "set_preference_all")
         {
             $this->system_set_preference('list_all');
         }
@@ -513,7 +513,7 @@ class Market_size_request extends Root_Controller
             }
         }
 
-        $item['market_size'] = json_encode($market_size_array, TRUE);
+        $item['market_size'] = json_encode($market_size_array);
 
         $this->db->trans_start(); //DB Transaction Handle START
         if ($item_id > 0) // Revision Update if EDIT

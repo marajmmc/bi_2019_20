@@ -131,6 +131,8 @@ $lang['LABEL_APPROVED_BY'] = 'Approved By';
 $lang['LABEL_DELIVERED_BY'] = 'Delivered By';
 $lang['LABEL_RECEIVED_BY'] = 'Received By';
 $lang['LABEL_REQUESTED_BY'] = 'Requested By';
+$lang['LABEL_ROLLBACK_BY'] = 'Rollback By';
+$lang['LABEL_REJECTED_BY'] = 'Rejected By';
 
 /* Status */
 $lang['LABEL_STATUS']='Status';
@@ -231,6 +233,8 @@ $lang['LABEL_DATE_DELIVERED_TIME']='Delivered Time';
 $lang['LABEL_DATE_RELEASED_TIME']='Release Time';
 $lang['LABEL_DATE_RECEIVED_TIME']='Received Time';
 $lang['LABEL_DATE_COMPLETED_TIME']='Completed Time';
+$lang['LABEL_DATE_ROLLBACK_TIME']='Rollback Time';
+$lang['LABEL_DATE_REJECTED_TIME']='Rejected Time';
 $lang['LABEL_DATE_CONVERT']='Convert Date';
 $lang['LABEL_DATE_REQUEST']='Date for Request';
 $lang['LABEL_DATE_APPROVE']='Date for Approve';

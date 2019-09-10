@@ -3,6 +3,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Bi_helper
 {
+    public static $warning_color = '#ff6a6a';
 
     public static function get_market_size_info($item_id, $controller_url, $collapse='in')
     {
@@ -97,6 +98,8 @@ class Bi_helper
             $result['user_created'] => $result['user_created'],
             $result['user_updated'] => $result['user_updated'],
             $result['user_forwarded'] => $result['user_forwarded'],
+            $result['user_rollback'] => $result['user_rollback'],
+            $result['user_rejected'] => $result['user_rejected'],
             $result['user_approved'] => $result['user_approved']
         );
         $user_info = System_helper::get_users_info($user_ids);
@@ -146,6 +149,32 @@ class Bi_helper
                 'value_1' => $user_info[$result['user_forwarded']]['name'],
                 'label_2' => $CI->lang->line('LABEL_DATE_FORWARDED_TIME'),
                 'value_2' => System_helper::display_date_time($result['date_forwarded'])
+            );
+        }
+        if ($result['user_rollback'] > 0)
+        {
+            $item['data'][] = array(
+                'label_1' => $CI->lang->line('LABEL_ROLLBACK').' '.$CI->lang->line('LABEL_REMARKS'),
+                'value_1' => '<span style="color:'.Bi_helper::$warning_color.'">'.nl2br($result['remarks_rollback']).'</span>'
+            );
+            $item['data'][] = array(
+                'label_1' => Bi_helper::$warning_color.'">'.$CI->lang->line('LABEL_ROLLBACK_BY'),
+                'value_1' => '<span style="color:'.Bi_helper::$warning_color.'">'.$user_info[$result['user_rollback']]['name'].'</span>',
+                'label_2' => Bi_helper::$warning_color.'">'.$CI->lang->line('LABEL_DATE_ROLLBACK_TIME'),
+                'value_2' => '<span style="color:'.Bi_helper::$warning_color.'">'.System_helper::display_date_time($result['date_rollback']).'</span>'
+            );
+        }
+        if ($result['user_rejected'] > 0)
+        {
+            $item['data'][] = array(
+                'label_1' => $CI->lang->line('LABEL_REJECTED').' '.$CI->lang->line('LABEL_REMARKS'),
+                'value_1' => '<span style="color:'.Bi_helper::$warning_color.'">'.nl2br($result['remarks_rejected']).'</span>'
+            );
+            $item['data'][] = array(
+                'label_1' => $CI->lang->line('LABEL_REJECTED_BY'),
+                'value_1' => '<span style="color:'.Bi_helper::$warning_color.'">'.$user_info[$result['user_rejected']]['name'].'</span>',
+                'label_2' => $CI->lang->line('LABEL_DATE_REJECTED_TIME'),
+                'value_2' => '<span style="color:'.Bi_helper::$warning_color.'">'.System_helper::display_date_time($result['date_rejected']).'</span>'
             );
         }
         if ($result['user_approved'] > 0)

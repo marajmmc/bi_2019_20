@@ -59,7 +59,7 @@ class Market_size_approve extends Root_Controller
         {
             $this->system_set_preference('list');
         }
-        elseif ($action == "set_preference")
+        elseif ($action == "set_preference_all")
         {
             $this->system_set_preference('list_all');
         }
@@ -179,7 +179,7 @@ class Market_size_approve extends Root_Controller
 
         $this->db->where('ms.status', $this->config->item('system_status_active'));
         $this->db->where('ms.status_forward', $this->config->item('system_status_forwarded'));
-        $this->db->where('ms.status_approved !=', $this->config->item('system_status_approved'));
+        $this->db->where('ms.status_approved', $this->config->item('system_status_pending'));
         $this->db->order_by('division.name');
         $this->db->order_by('zone.name');
         $this->db->order_by('territory.name');
@@ -396,7 +396,6 @@ class Market_size_approve extends Root_Controller
         $item = $this->input->post('item');
         $user = User_helper::get_user();
         $time = time();
-
         //Permission Checking
         if (!(isset($this->permissions['action7']) && ($this->permissions['action7'] == 1)))
         {
@@ -404,7 +403,6 @@ class Market_size_approve extends Root_Controller
             $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
             $this->json_return($ajax);
         }
-
         $this->db->from($this->config->item('table_bi_market_size_request') . ' ms');
         $this->db->select('ms.*');
 
@@ -449,29 +447,33 @@ class Market_size_approve extends Root_Controller
 
         $this->db->trans_start(); //DB Transaction Handle START
 
-        if($item['status_approved'] == $this->config->item('system_status_rollback'))
+        if ($item['status_approved'] == $this->config->item('system_status_rollback'))
         {
             $item['status_forward'] = $this->config->item('system_status_pending');
-            $item['date_updated'] = $time;
-            $item['user_updated'] = $user->user_id;
+            $item['remarks_rollback'] = $item['remarks_approved'];
+            $item['date_rollback'] = $time;
+            $item['user_rollback'] = $user->user_id;
+            unset($item['status_approved']);
+            unset($item['remarks_approved']);
         }
         else if ($item['status_approved'] == $this->config->item('system_status_rejected'))
         {
-            $item['status_approved'] = $this->config->item('system_status_rejected');
-            $item['date_approved'] = $time;
-            $item['user_approved'] = $user->user_id;
+            $item['remarks_rejected'] = $item['remarks_approved'];
+            $item['date_rejected'] = $time;
+            $item['user_rejected'] = $user->user_id;
+            unset($item['remarks_approved']);
         }
         else
         {
             $market_sizes = json_decode($result['market_size'], TRUE);
-            foreach($market_sizes as $type_id => $market_size)
+            foreach ($market_sizes as $type_id => $market_size)
             {
-                Query_helper::update($this->config->item('table_bi_market_size_main'), array('market_size_kg'=>$market_size), array("type_id =" . $type_id, "upazilla_id =" . $result['upazilla_id']), FALSE);
+                Query_helper::update($this->config->item('table_bi_market_size_main'), array('market_size_kg' => $market_size), array("type_id =" . $type_id, "upazilla_id =" . $result['upazilla_id']), FALSE);
             }
-
             $item['date_approved'] = $time;
             $item['user_approved'] = $user->user_id;
         }
+
         // Main Table UPDATE
         Query_helper::update($this->config->item('table_bi_market_size_request'), $item, array("id =" . $item_id), FALSE);
 
@@ -494,7 +496,7 @@ class Market_size_approve extends Root_Controller
     {
         $item = $this->input->post('item');
         $this->load->library('form_validation');
-        
+
         $this->form_validation->set_rules('item[status_approved]', $this->lang->line('LABEL_STATUS_APPROVE'), 'trim|required');
         // `Remarks` is mandatory for Rollback & Reject.
         if (($item['status_approved'] == $this->config->item('system_status_rollback')) || ($item['status_approved'] == $this->config->item('system_status_rejected')))
