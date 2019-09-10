@@ -36,6 +36,12 @@ foreach($results as $result)
 {
     $system_districts[$result['territory_id']][]=$result;
 }
+$results=Query_helper::get_info($CI->config->item('table_login_setup_location_upazillas'),array('id value','name text','district_id'),array('status ="'.$CI->config->item('system_status_active').'"'),0,0,array('ordering ASC'));
+$system_upazillas=array();
+foreach($results as $result)
+{
+    $system_upazillas[$result['district_id']][]=$result;
+}
 
 $CI->db->from($CI->config->item('table_login_csetup_customer').' customer');
 $CI->db->join($CI->config->item('table_login_csetup_cus_info').' cus_info','cus_info.customer_id = customer.id','INNER');
@@ -151,6 +157,7 @@ if($result)
             var system_zones=JSON.parse('<?php echo json_encode($system_zones);?>');
             var system_territories=JSON.parse('<?php echo json_encode($system_territories);?>');
             var system_districts=JSON.parse('<?php echo json_encode($system_districts);?>');
+            var system_upazillas=JSON.parse('<?php echo json_encode($system_upazillas);?>');
             var system_customers=JSON.parse('<?php echo json_encode($system_customers);?>');
             var system_all_customers=JSON.parse('<?php echo json_encode($system_all_customers);?>');
             var system_outlets=JSON.parse('<?php echo json_encode($system_outlets);?>');

@@ -5,6 +5,151 @@ class Bi_helper
 {
     public static $warning_color = '#ff6a6a';
 
+    public static function get_basic_info($result)
+    {
+        $CI = & get_instance();
+        //--------- System User Info ------------
+        $user_ids=array();
+        $user_ids[$result['user_created']]=$result['user_created'];
+        if($result['user_updated']>0)
+        {
+            $user_ids[$result['user_updated']]=$result['user_updated'];
+        }
+        if($result['user_forwarded']>0)
+        {
+            $user_ids[$result['user_forwarded']]=$result['user_forwarded'];
+        }
+        if($result['user_approved']>0)
+        {
+            $user_ids[$result['user_approved']]=$result['user_approved'];
+        }
+        $user_info = System_helper::get_users_info($user_ids);
+
+        //---------------- Basic Info ----------------
+        $data = array();
+        $data[] = array
+        (
+            'label_1' => $CI->lang->line('LABEL_DIVISION_NAME'),
+            'value_1' => $result['division_name'],
+            'label_2' => $CI->lang->line('LABEL_ZONE_NAME'),
+            'value_2' => $result['zone_name']
+        );
+
+        $data[] = array
+        (
+            'label_1' => $CI->lang->line('LABEL_TERRITORY_NAME'),
+            'value_1' => $result['territory_name'],
+            'label_2' => $CI->lang->line('LABEL_DISTRICT_NAME'),
+            'value_2' => $result['district_name'],
+        );
+        $data[] = array
+        (
+            'label_1' => $CI->lang->line('LABEL_UPAZILLA_NAME'),
+            'value_1' => $result['upazilla_name'],
+            'label_2' => 'Revision (Edit)',
+            'value_2' => $result['revision_count']
+        );
+        $data[] = array
+        (
+            'label_1' => 'Created By',
+            'value_1' => $user_info[$result['user_created']]['name'] . ' ( ' . $user_info[$result['user_created']]['employee_id'] . ' )',
+            'label_2' => 'Created Time',
+            'value_2' => System_helper::display_date_time($result['date_created'])
+        );
+        if($result['user_updated']>0)
+        {
+            $inactive_update_by='Updated By';
+            $inactive_update_time='Updated Time';
+            if($result['status']==$CI->config->item('system_status_inactive'))
+            {
+                $inactive_update_by='In-Active By';
+                $inactive_update_time='In-Active Time';
+            }
+            $data[] = array(
+                'label_1' => $inactive_update_by,
+                'value_1' => $user_info[$result['user_updated']]['name'] . ' ( ' . $user_info[$result['user_updated']]['employee_id'] . ' )',
+                'label_2' => $inactive_update_time,
+                'value_2' => System_helper::display_date_time($result['date_updated'])
+            );
+        }
+        $data[] = array
+        (
+            'label_1' => $CI->lang->line('LABEL_STATUS_FORWARD'),
+            'value_1' => $result['status_forward'],
+            'label_2' => 'Revision (Forward)',
+            'value_2' => $result['revision_count'],
+        );
+        if($result['status_forward']==$CI->config->item('system_status_forwarded'))
+        {
+            $data[] = array
+            (
+                'label_1' => 'Forwarded By',
+                'value_1' => $user_info[$result['user_forwarded']]['name'] . ' ( ' . $user_info[$result['user_forwarded']]['employee_id'] . ' )',
+                'label_2' => 'Forwarded Time',
+                'value_2' => System_helper::display_date_time($result['date_forwarded'])
+            );
+        }
+        if($result['status_approve']==$CI->config->item('system_status_approved'))
+        {
+            $label_approve=$CI->config->item('system_status_approved');
+        }
+        else if($result['status_approve']==$CI->config->item('system_status_rejected'))
+        {
+            $label_approve='Reject';
+        }
+        /*else if($result['status_approve']==$CI->config->item('system_status_rollback'))
+        {
+            $label_approve=$CI->config->item('system_status_approved');
+        }*/
+        else
+        {
+            $label_approve=$CI->config->item('system_status_approved');
+        }
+        $data[] = array
+        (
+            'label_1' => $label_approve.' Status',
+            'value_1' => $result['status_approve'],
+
+        );
+        if($result['status_approve']!=$CI->config->item('system_status_pending'))
+        {
+            $data[] = array
+            (
+                'label_1' => $label_approve.' By',
+                'value_1' => $user_info[$result['user_approved']]['name'] . ' ( ' . $user_info[$result['user_approved']]['employee_id'] . ' )',
+                'label_2' => $label_approve.' Time',
+                'value_2' => System_helper::display_date_time($result['date_approved'])
+            );
+            $data[] = array
+            (
+                'label_1' => $label_approve.' Remarks',
+                'value_1' => $result['remarks_approve']
+            );
+        }
+        /*if($result['revision_count_rollback']>0)
+        {
+            if($result['status_approve']==$CI->config->item('system_status_pending'))
+            {
+                $data[] = array
+                (
+                    'label_1' => 'Revision (Rollback)',
+                    'value_1' => $result['revision_count_rollback'],
+                    'label_2' => 'Rollback Reason',
+                    'value_2' => $result['remarks_approve']
+                );
+            }
+            else
+            {
+                $data[] = array
+                (
+                    'label_1' => 'Revision (Rollback)',
+                    'value_1' => $result['revision_count_rollback']
+                );
+            }
+
+        }*/
+        return $data;
+    }
     public static function get_market_size_info($item_id, $controller_url, $collapse='in')
     {
         $CI =& get_instance();
@@ -60,7 +205,6 @@ class Bi_helper
 
         return $CI->load->view($controller_url . "/get_market_size_details", $data, true);
     }
-
     public static function get_market_size_location($item_id, $collapse='in')
     {
         $CI =& get_instance();
@@ -189,7 +333,6 @@ class Bi_helper
 
         return $CI->load->view("info_basic", array('accordion' => $item), true);
     }
-
     public static function get_variety_info($item_id, $whose = 'Competitor', $show_basic = true, $show_characteristics = false, $show_images = false, $show_videos = false)
     {
         $CI =& get_instance();
@@ -430,5 +573,23 @@ class Bi_helper
         }
 
         return $items;
+    }
+    public static function cultivation_date_display($date_int)
+    {
+        $return_value=0;
+        if($date_int && strtotime(date('d-M-Y',$date_int)))
+        {
+            $return_value=date('d-M',$date_int);
+        }
+        return $return_value;
+    }
+    public static function cultivation_date_sql($date_string)
+    {
+        $return_value=0;
+        if(strtotime($date_string))
+        {
+            $return_value=strtotime('1970-'.date('m-d',strtotime($date_string)));
+        }
+        return $return_value;
     }
 }
