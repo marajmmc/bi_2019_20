@@ -88,6 +88,11 @@ class Bi_helper
                 'label_2' => 'Forwarded Time',
                 'value_2' => System_helper::display_date_time($result['date_forwarded'])
             );
+            $data[] = array
+            (
+                'label_1' => 'Remarks (Forward)',
+                'value_1' => $result['remarks_forward']
+            );
         }
         if($result['status_approve']==$CI->config->item('system_status_approved'))
         {
@@ -97,10 +102,6 @@ class Bi_helper
         {
             $label_approve='Reject';
         }
-        /*else if($result['status_approve']==$CI->config->item('system_status_rollback'))
-        {
-            $label_approve=$CI->config->item('system_status_approved');
-        }*/
         else
         {
             $label_approve=$CI->config->item('system_status_approved');
@@ -126,7 +127,7 @@ class Bi_helper
                 'value_1' => $result['remarks_approve']
             );
         }
-        /*if($result['revision_count_rollback']>0)
+        if($result['revision_count_rollback']>0)
         {
             if($result['status_approve']==$CI->config->item('system_status_pending'))
             {
@@ -147,7 +148,7 @@ class Bi_helper
                 );
             }
 
-        }*/
+        }
         return $data;
     }
     public static function get_market_size_info($item_id, $controller_url, $collapse='in')

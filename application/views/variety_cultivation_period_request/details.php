@@ -23,8 +23,103 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
         <div class="clearfix"></div>
     </div>
 
-    <?php echo Bi_helper::get_market_size_location($item_id); ?>
+    <?php
+    $data['accordion']['collapse']='in';
+    echo $CI->load->view("info_basic", $data, true);
+    ?>
 
-    <?php echo Bi_helper::get_market_size_info($item_id, $CI->common_view_location); ?>
+    <div class="row show-grid">
+        <div class="col-sm-12" id="items_container">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th colspan="6" style="text-align:center"><?php echo $title; ?></th>
+                </tr>
+                <tr class="table_head">
+                    <th rowspan="2"><?php echo $this->lang->line('LABEL_CROP_NAME'); ?></th>
+                    <th rowspan="2"><?php echo $this->lang->line('LABEL_CROP_TYPE_NAME'); ?></th>
+                    <th colspan="2" style="text-align:center">Before <?php echo $this->lang->line('LABEL_CULTIVATION_PERIOD'); ?></th>
+                    <th colspan="2" style="text-align:center"><?php echo $this->lang->line('LABEL_CULTIVATION_PERIOD'); ?></th>
+                </tr>
+                <tr>
+                    <th style="text-align:center">Date Start</th>
+                    <th style="text-align:center">Date End</th>
+                    <th style="text-align:center">Date Start</th>
+                    <th style="text-align:center">Date End</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+                if ($crops)
+                {
+                    $cultivation_period=json_decode($item['cultivation_period'],TRUE);
+                    $init_crop_id = -1;
+                    $rowspan=0;
+                    foreach ($crops as $crop)
+                    {
+                        $date_start_old="";
+                        $date_end_old="";
+                        if(isset($cultivation_period_old[$crop['crop_type_id']]))
+                        {
+                            $date_start_old=Bi_helper::cultivation_date_display($cultivation_period_old[$crop['crop_type_id']]['date_start']);
+                            $date_end_old=Bi_helper::cultivation_date_display($cultivation_period_old[$crop['crop_type_id']]['date_end']);
+                        }
+
+                        $date_start=Bi_helper::cultivation_date_display(0);
+                        $date_end=Bi_helper::cultivation_date_display(0);
+                        if(isset($cultivation_period[$crop['crop_type_id']]))
+                        {
+                            $date=explode('~',$cultivation_period[$crop['crop_type_id']]);
+                            $date_start=Bi_helper::cultivation_date_display($date[0]);
+                            $date_end=Bi_helper::cultivation_date_display($date[1]);
+                        }
+
+                        $rowspan = $crop_type_count[$crop['crop_id']];
+
+                        ?>
+                        <tr>
+                            <?php
+                            $rowspan = 1;
+                            if ($init_crop_id != $crop['crop_id'])
+                            {
+                                $rowspan = $crop_type_count[$crop['crop_id']];
+                                ?>
+                                <td rowspan="<?php echo $rowspan; ?>"><?php echo $crop['crop_name']; ?></td>
+                                <?php
+                                $init_crop_id = $crop['crop_id'];
+                            }
+                            ?>
+                            <td><?php echo $crop['crop_type_name']?></td>
+                            <td>
+                                <?php
+                                if($date_start_old)
+                                {
+                                    echo $date_start_old;
+                                }
+                                ?>
+                            </td>
+                            <td>
+                                <?php
+                                if($date_end_old)
+                                {
+                                    echo $date_end_old;
+                                }
+                                ?>
+                            </td>
+                            <td>
+                                <?php echo $date_start?$date_start:''; ?>
+                            </td>
+                            <td>
+                                <?php echo $date_end?$date_end:''; ?>
+                            </td>
+                        </tr>
+                    <?php
+                    }
+                }
+                ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
 </div>
