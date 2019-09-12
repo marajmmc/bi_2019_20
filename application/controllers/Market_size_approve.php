@@ -468,7 +468,23 @@ class Market_size_approve extends Root_Controller
             $market_sizes = json_decode($result['market_size'], TRUE);
             foreach ($market_sizes as $type_id => $market_size)
             {
-                Query_helper::update($this->config->item('table_bi_market_size_main'), array('market_size_kg' => $market_size), array("type_id =" . $type_id, "upazilla_id =" . $result['upazilla_id']), FALSE);
+                $updated_array = array(
+                    'market_size_kg' => $market_size,
+                    'date_updated' => $time,
+                    'user_updated' => $user->user_id
+                );
+                $this->db->set('revision_count', 'revision_count+1', FALSE);
+                $result_updated = Query_helper::update($this->config->item('table_bi_market_size_main'), $updated_array, array("type_id =" . $type_id, "upazilla_id =" . $result['upazilla_id']), FALSE);
+                if (!$result_updated)
+                {
+                    $insert_array = array(
+                        'type_id' => $type_id,
+                        'upazilla_id' => $result['upazilla_id'],
+                        'market_size_kg' => $market_size,
+                        'revision_count' => 1
+                    );
+                    Query_helper::add($this->config->item('table_bi_market_size_main'), $insert_array, FALSE);
+                }
             }
             $item['date_approved'] = $time;
             $item['user_approved'] = $user->user_id;

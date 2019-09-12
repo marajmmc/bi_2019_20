@@ -303,9 +303,9 @@ class Bi_helper
                 'value_1' => '<span style="color:'.Bi_helper::$warning_color.'">'.nl2br($result['remarks_rollback']).'</span>'
             );
             $item['data'][] = array(
-                'label_1' => Bi_helper::$warning_color.'">'.$CI->lang->line('LABEL_ROLLBACK_BY'),
+                'label_1' => $CI->lang->line('LABEL_ROLLBACK_BY'),
                 'value_1' => '<span style="color:'.Bi_helper::$warning_color.'">'.$user_info[$result['user_rollback']]['name'].'</span>',
-                'label_2' => Bi_helper::$warning_color.'">'.$CI->lang->line('LABEL_DATE_ROLLBACK_TIME'),
+                'label_2' => $CI->lang->line('LABEL_DATE_ROLLBACK_TIME'),
                 'value_2' => '<span style="color:'.Bi_helper::$warning_color.'">'.System_helper::display_date_time($result['date_rollback']).'</span>'
             );
         }

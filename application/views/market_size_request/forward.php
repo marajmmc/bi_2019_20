@@ -23,7 +23,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
 
         <?php echo Bi_helper::get_market_size_location($item['id']); ?>
 
-        <?php echo Bi_helper::get_market_size_info($item['id'], $CI->controller_url, 'out'); ?>
+        <?php echo Bi_helper::get_market_size_info($item['id'], $CI->controller_url); ?>
 
         <div class="row show-grid">
             <div class="col-xs-4">
