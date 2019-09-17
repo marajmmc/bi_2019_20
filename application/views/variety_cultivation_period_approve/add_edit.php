@@ -25,12 +25,6 @@ $action_buttons[] = array(
 );
 $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
 
-$results = Query_helper::get_info($this->config->item('table_login_setup_classification_varieties'), array('id value', 'name text', 'competitor_id'), array('whose ="Competitor"', 'status ="' . $this->config->item('system_status_active') . '"'), 0, 0, array('name'));
-foreach ($results as $result)
-{
-    $competitor_varieties[$result['competitor_id']][] = $result;
-}
-
 ?>
 
 <form class="form_valid" id="save_form" action="<?php echo site_url($CI->controller_url . '/index/save'); ?>" method="post">
@@ -477,27 +471,4 @@ foreach ($results as $result)
         });
 
     });
-
-    function get_market_size(upazilla_id, upazilla_name, market_size_edit='')
-    {
-        $.ajax({
-            url: "<?php echo site_url($CI->controller_url.'/index/get_market_size/') ?>",
-            type: 'POST',
-            datatype: "JSON",
-            data: {
-                html_container_id: '#item_container .display',
-                upazilla_id: upazilla_id,
-                upazilla_name: upazilla_name,
-                market_size_edit: market_size_edit
-            },
-            success: function (data, status) {
-                if (data.status) {
-                    $('#market_size_container').show();
-                }
-            },
-            error: function (xhr, desc, err) {
-                console.log("error");
-            }
-        });
-    }
 </script>

@@ -476,9 +476,9 @@ class Variety_cultivation_period_request extends Root_Controller
             $result=Query_helper::get_info($this->config->item('table_bi_variety_cultivation_period_request'),'*',array('id ='.$id),1);
             if(!$result)
             {
-                System_helper::invalid_try('Update Non Exists',$id);
+                System_helper::invalid_try(__FUNCTION__, $id, 'ID Not Exists');
                 $ajax['status']=false;
-                $ajax['system_message']='Invalid Notice.';
+                $ajax['system_message']='Invalid Try.';
                 $this->json_return($ajax);
             }
             if($result['status_forward']==$this->config->item('system_status_forwarded'))
@@ -811,9 +811,9 @@ class Variety_cultivation_period_request extends Root_Controller
             $result=Query_helper::get_info($this->config->item('table_bi_variety_cultivation_period_request'),'*',array('id ='.$id),1);
             if(!$result)
             {
-                System_helper::invalid_try('Forward Non Exists',$id);
+                System_helper::invalid_try(__FUNCTION__, $id, 'ID Not Exists');
                 $ajax['status']=false;
-                $ajax['system_message']='Invalid Notice.';
+                $ajax['system_message']='Invalid Try.';
                 $this->json_return($ajax);
             }
             if ($result['status']==$this->config->item('system_status_rejected'))
