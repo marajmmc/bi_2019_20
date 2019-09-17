@@ -538,7 +538,7 @@ class Variety_cultivation_period_request extends Root_Controller
                     $cultivation_period_array[$type_id]=Bi_helper::cultivation_date_sql($info['date_start']).'~'.Bi_helper::cultivation_date_sql($info['date_end']);
                 }
 
-                if(!(Bi_helper::cultivation_date_sql($info['date_start'])>Bi_helper::cultivation_date_sql($info['date_end'])))
+                if(Bi_helper::cultivation_date_sql($info['date_start'])>Bi_helper::cultivation_date_sql($info['date_end']))
                 {
                     $invalid_date=true;
                 }
@@ -548,12 +548,12 @@ class Variety_cultivation_period_request extends Root_Controller
         $item_head['cultivation_period']=json_encode($cultivation_period_array);
 
         //need to add date validation
-        /*if($invalid_date)
+        if($invalid_date)
         {
             $ajax['status'] = false;
             $ajax['system_message'] = "End date must greater than start date.";
             $this->json_return($ajax);
-        }*/
+        }
 
         $this->db->trans_start(); //DB Transaction Handle START
         if ($id > 0) // Revision Update if EDIT
