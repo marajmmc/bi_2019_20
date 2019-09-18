@@ -125,15 +125,9 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 columnsreorder: true,
                 columns: [
                     { text: '<?php echo $CI->lang->line('LABEL_ID'); ?>', pinned: true, dataField: 'id', width: '50', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['id']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_UPAZILLA_NAME'); ?>', pinned: true, dataField: 'upazilla_name', width: '150', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['upazilla_name']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_DISTRICT_NAME'); ?>', dataField: 'district_name', width: '120', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['district_name']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_TERRITORY_NAME'); ?>', dataField: 'territory_name', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['territory_name']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_ZONE_NAME'); ?>', dataField: 'zone_name', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['zone_name']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_DIVISION_NAME'); ?>', dataField: 'division_name', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['division_name']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_NUMBER_OF_EDIT'); ?>', dataField: 'number_of_edit', width: '120', filtertype: 'none', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['number_of_edit']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_STATUS'); ?>', dataField: 'status', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['status']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_STATUS_FORWARD'); ?>', dataField: 'status_forward', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['status_forward']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_STATUS_APPROVE'); ?>', dataField: 'status_approve', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['status_approve']?0:1;?>}
+                    { text: '<?php echo $CI->lang->line('LABEL_DATE_CREATED'); ?>', pinned: true, dataField: 'date_created', width: '180', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['date_created']?0:1;?>},
+                    { text: '<?php echo $CI->lang->line('LABEL_USER_CREATED'); ?>', dataField: 'user_created', width: '180', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['user_created']?0:1;?>},
+                    { text: '<?php echo $CI->lang->line('LABEL_REVISION'); ?>', dataField: 'revision', width: '180', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['revision']?0:1;?>}
                 ]
             });
     });

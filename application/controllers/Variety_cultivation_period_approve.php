@@ -602,12 +602,13 @@ class Variety_cultivation_period_approve extends Root_Controller
                     $data['upazilla_id'] = $upazilla_id;
                     $data['date_start'] = $date[0];
                     $data['date_end'] = $date[1];
+                    $data['status_change'] = 1;
                     $data['user_updated'] = $user->user_id;
                     $data['date_updated'] = $time;
                     if(isset($cultivation_period_old[$type['type_id']]))
                     {
                         $this->db->set('revision_count', 'revision_count+1', FALSE);
-                        Query_helper::update($this->config->item('table_bi_variety_cultivation_period'), $data, array("id =" . $id), FALSE);
+                        Query_helper::update($this->config->item('table_bi_variety_cultivation_period'), $data, array("type_id = " . $type['type_id'],"upazilla_id = ".$upazilla_id), FALSE);
                     }
                     else
                     {
