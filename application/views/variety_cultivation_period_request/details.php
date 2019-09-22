@@ -57,21 +57,30 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                     $rowspan=0;
                     foreach ($crops as $crop)
                     {
-                        $date_start_old="";
+                        /*$date_start_old="";
                         $date_end_old="";
                         if(isset($cultivation_period_old[$crop['crop_type_id']]))
                         {
                             $date_start_old=Bi_helper::cultivation_date_display($cultivation_period_old[$crop['crop_type_id']]['date_start']);
                             $date_end_old=Bi_helper::cultivation_date_display($cultivation_period_old[$crop['crop_type_id']]['date_end']);
+                        }*/
+
+                        $date_start_old="";
+                        $date_end_old="";
+                        if(isset($cultivation_period[$crop['crop_type_id']]['old']))
+                        {
+                            $date_old=explode('~',$cultivation_period[$crop['crop_type_id']]['old']);
+                            $date_start_old=isset($date_old[0])?Bi_helper::cultivation_date_display($date_old[0]):'';
+                            $date_end_old=isset($date_old[1])?Bi_helper::cultivation_date_display($date_old[1]):'';
                         }
 
                         $date_start=Bi_helper::cultivation_date_display(0);
                         $date_end=Bi_helper::cultivation_date_display(0);
-                        if(isset($cultivation_period[$crop['crop_type_id']]))
+                        if(isset($cultivation_period[$crop['crop_type_id']]['new']))
                         {
-                            $date=explode('~',$cultivation_period[$crop['crop_type_id']]);
-                            $date_start=Bi_helper::cultivation_date_display($date[0]);
-                            $date_end=Bi_helper::cultivation_date_display($date[1]);
+                            $date=explode('~',$cultivation_period[$crop['crop_type_id']]['new']);
+                            $date_start=isset($date[0])?Bi_helper::cultivation_date_display($date[0]):'';
+                            $date_end=isset($date[1])?Bi_helper::cultivation_date_display($date[1]):'';
                         }
 
                         $rowspan = $crop_type_count[$crop['crop_id']];

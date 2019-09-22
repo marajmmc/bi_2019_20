@@ -594,9 +594,9 @@ class Variety_cultivation_period_approve extends Root_Controller
         {
             foreach($crop_types as $type)
             {
-                if(isset($cultivation_period[$type['type_id']]))
+                if(isset($cultivation_period[$type['type_id']]['new']) && $cultivation_period[$type['type_id']]['new'])
                 {
-                    $date=explode('~',$cultivation_period[$type['type_id']]);
+                    $date=explode('~',$cultivation_period[$type['type_id']]['new']);
                     $data=array();
                     $data['type_id'] = $type['type_id'];
                     $data['upazilla_id'] = $upazilla_id;

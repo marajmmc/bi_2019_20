@@ -487,7 +487,7 @@ class Variety_cultivation_period_request extends Root_Controller
                 $ajax['system_message']='Already Forwarded.';
                 $this->json_return($ajax);
             }
-
+            $upazilla_id=$result['upazilla_id'];
         }
         else
         {
@@ -497,6 +497,7 @@ class Variety_cultivation_period_request extends Root_Controller
                 $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
                 $this->json_return($ajax);
             }
+            $upazilla_id=$item_head['upazilla_id'];
         }
 
         //Validation Checking
@@ -510,50 +511,71 @@ class Variety_cultivation_period_request extends Root_Controller
         // Old item
         $this->db->from($this->config->item('table_bi_variety_cultivation_period'));
         $this->db->select('*');
-        $this->db->where('upazilla_id', $item_head['upazilla_id']);
+        $this->db->where('upazilla_id', $upazilla_id);
         $results = $this->db->get()->result_array();
         $cultivation_period_old=array();
+        $cultivation_period_array=array();
         foreach ($results as $result)
         {
             $cultivation_period_old[$result['type_id']] = $result;
+            $cultivation_period_array[$result['type_id']]['old'] = $result['date_start'].'~'.$result['date_end'];
+            $cultivation_period_array[$result['type_id']]['new'] = "";
         }
 
-        $cultivation_period_array=array();
         $invalid_date=false;
         foreach($items as $type_id=>$info)
         {
             if($info['date_start'])
             {
-                $date_start=Bi_helper::cultivation_date_sql($info['date_start']);
-                $date_end=Bi_helper::cultivation_date_sql($info['date_end']);
+                if(!isset($cultivation_period_array[$type_id]['old']))
+                {
+                    $cultivation_period_array[$type_id]['old']="";
+                }
+                $date_start=System_helper::get_time($info['date_start'].'-1970');
+                $date_end=System_helper::get_time($info['date_end'].'-1970');
+                //echo "<br /> $date_end = ".$info['date_end'].'-1970';
+
+                if($date_end<$date_start)
+                {
+                    $date_end=System_helper::get_time($info['date_end'].'-1971');
+                    //echo "<br /> $date_end = ".$info['date_end'].'-1971';
+                }
+                if($date_end!=0)
+                {
+                    $date_end+=24*3600-1;
+                    //echo "<br /> ".$date_end;
+                }
+
+                /*$date_start=Bi_helper::cultivation_date_sql($info['date_start']);
+                $date_end=Bi_helper::cultivation_date_sql($info['date_end']);*/
                 if(isset($cultivation_period_old[$type_id]))
                 {
                     if(!(($cultivation_period_old[$type_id]['date_start']==$date_start) && ($cultivation_period_old[$type_id]['date_end']==$date_end)))
                     {
-                        $cultivation_period_array[$type_id]=Bi_helper::cultivation_date_sql($info['date_start']).'~'.Bi_helper::cultivation_date_sql($info['date_end']);
+                        $cultivation_period_array[$type_id]['new']=$date_start.'~'.$date_end;
                     }
                 }
                 else
                 {
-                    $cultivation_period_array[$type_id]=Bi_helper::cultivation_date_sql($info['date_start']).'~'.Bi_helper::cultivation_date_sql($info['date_end']);
+                    $cultivation_period_array[$type_id]['new']=$date_start.'~'.$date_end;
                 }
 
-                if(Bi_helper::cultivation_date_sql($info['date_start'])>Bi_helper::cultivation_date_sql($info['date_end']))
+                /*if(Bi_helper::cultivation_date_sql($info['date_start'])>Bi_helper::cultivation_date_sql($info['date_end']))
                 {
                     $invalid_date=true;
-                }
+                }*/
             }
         }
 
         $item_head['cultivation_period']=json_encode($cultivation_period_array);
 
         //need to add date validation
-        if($invalid_date)
+        /*if($invalid_date)
         {
             $ajax['status'] = false;
             $ajax['system_message'] = "End date must greater than start date.";
             $this->json_return($ajax);
-        }
+        }*/
 
         $this->db->trans_start(); //DB Transaction Handle START
         if ($id > 0) // Revision Update if EDIT
@@ -629,14 +651,14 @@ class Variety_cultivation_period_request extends Root_Controller
 
             $data['info_basic']=Bi_helper::get_basic_info($data['item']);
 
-            $this->db->from($this->config->item('table_bi_variety_cultivation_period'));
+            /*$this->db->from($this->config->item('table_bi_variety_cultivation_period'));
             $this->db->select('*');
             $this->db->where('upazilla_id', $data['item']['upazilla_id']);
             $results = $this->db->get()->result_array();
             foreach ($results as $result)
             {
                 $data['cultivation_period_old'][$result['type_id']] = $result;
-            }
+            }*/
 
             $this->db->from($this->config->item('table_login_setup_classification_crop_types') . ' type');
             $this->db->select('type.id crop_type_id, type.name crop_type_name');

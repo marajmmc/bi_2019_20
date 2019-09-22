@@ -64,11 +64,11 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
 
                             $date_start=Bi_helper::cultivation_date_display(0);
                             $date_end=Bi_helper::cultivation_date_display(0);
-                            if(isset($cultivation_period[$crop['crop_type_id']]))
+                            if(isset($cultivation_period[$crop['crop_type_id']]['new']))
                             {
-                                $date=explode('~',$cultivation_period[$crop['crop_type_id']]);
-                                $date_start=Bi_helper::cultivation_date_display($date[0]);
-                                $date_end=Bi_helper::cultivation_date_display($date[1]);
+                                $date=explode('~',$cultivation_period[$crop['crop_type_id']]['new']);
+                                $date_start=isset($date[0])?Bi_helper::cultivation_date_display($date[0]):'';
+                                $date_end=isset($date[1])?Bi_helper::cultivation_date_display($date[1]):'';
                             }
 
                             $rowspan = $crop_type_count[$crop['crop_id']];

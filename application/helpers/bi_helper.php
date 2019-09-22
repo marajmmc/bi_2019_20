@@ -580,7 +580,7 @@ class Bi_helper
         $return_value=0;
         if($date_int && strtotime(date('d-M-Y',$date_int)))
         {
-            $return_value=date('d-M',$date_int);
+            $return_value=date('d-F',$date_int);
         }
         return $return_value;
     }
