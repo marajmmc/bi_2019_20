@@ -11,9 +11,15 @@ if (isset($CI->permissions['action0']) && ($CI->permissions['action0'] == 1))
 }
 if (isset($CI->permissions['action1']) && ($CI->permissions['action1'] == 1))
 {
-    $action_buttons[] = array(
+    /*$action_buttons[] = array(
         'label' => $CI->lang->line("ACTION_NEW"),
         'href' => site_url($CI->controller_url . '/index/add')
+    );*/
+    $action_buttons[]=array(
+        'type'=>'button',
+        'label'=>$CI->lang->line('ACTION_NEW').' Setup',
+        'class'=>'button_jqx_action',
+        'data-action-link'=>site_url($CI->controller_url.'/index/edit')
     );
 }
 if (isset($CI->permissions['action0']) && ($CI->permissions['action0'] == 1))
@@ -132,7 +138,9 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 columnsreorder: true,
                 columns: [
                     { text: '<?php echo $CI->lang->line('LABEL_ID'); ?>', pinned: true, dataField: 'id', width: '50', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['id']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_DATE_CREATED'); ?>', pinned: true, dataField: 'date_created', width: '180', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['date_created']?0:1;?>},
+                    { text: '<?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>', dataField: 'crop_name',pinned:true,width:'200',filtertype: 'list'},
+                    { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name'},
+                    { text: '<?php echo $CI->lang->line('LABEL_DATE_CREATED'); ?>', dataField: 'date_created', width: '180', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['date_created']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_USER_CREATED'); ?>', dataField: 'user_created', width: '180', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['user_created']?0:1;?>}
                 ]
             });

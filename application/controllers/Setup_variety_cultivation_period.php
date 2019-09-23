@@ -51,9 +51,9 @@ class Setup_variety_cultivation_period extends Root_Controller
         {
             $this->system_get_items_all();
         }
-        elseif ($action == "add")
+        elseif ($action == "edit")
         {
-            $this->system_add();
+            $this->system_edit($id);
         }
         elseif ($action == "save")
         {
@@ -82,6 +82,8 @@ class Setup_variety_cultivation_period extends Root_Controller
         if($method == 'list')
         {
             $data['id'] = 1;
+            $data['crop_name'] = 1;
+            $data['crop_type_name'] = 1;
             $data['date_created'] = 1;
             $data['user_created'] = 1;
         }
@@ -141,12 +143,24 @@ class Setup_variety_cultivation_period extends Root_Controller
     }
     private function system_get_items()
     {
-        $this->db->from($this->config->item('table_bi_setup_variety_cultivation_period') . ' item');
+        /*$this->db->from($this->config->item('table_bi_setup_variety_cultivation_period') . ' item');
         $this->db->select('item.*');
         $this->db->where('item.status', $this->config->item('system_status_active'));
         $this->db->where('item.revision', 1);
         $this->db->order_by('item.id','DESC');
         $items = $this->db->get()->result_array();
+        $this->json_return($items);*/
+
+        $this->db->from($this->config->item('table_login_setup_classification_crop_types').' ct');
+        $this->db->select('ct.id,ct.name crop_type_name');
+        $this->db->join($this->config->item('table_login_setup_classification_crops').' crop','crop.id = ct.crop_id','INNER');
+        $this->db->select('crop.name crop_name');
+        $this->db->where('ct.status !=',$this->config->item('system_status_delete'));
+        $this->db->order_by('crop.ordering','ASC');
+        $this->db->order_by('crop.id','ASC');
+        $this->db->order_by('ct.ordering','ASC');
+        $this->db->order_by('ct.id','ASC');
+        $items=$this->db->get()->result_array();
         $this->json_return($items);
     }
     private function system_list_all()
@@ -183,47 +197,55 @@ class Setup_variety_cultivation_period extends Root_Controller
         $items = $this->db->get()->result_array();
         $this->json_return($items);
     }
-    private function system_add()
+    private function system_edit($id)
     {
         if (isset($this->permissions['action1']) && ($this->permissions['action1'] == 1))
         {
-            $data = array();
-
-            $data['item']=Query_helper::get_info($this->config->item('table_bi_setup_variety_cultivation_period'),'*',array('revision = 1'),1);
-
-            $this->db->from($this->config->item('table_login_setup_classification_crop_types') . ' type');
-            $this->db->select('type.id crop_type_id, type.name crop_type_name');
-
-            $this->db->join($this->config->item('table_login_setup_classification_crops') . ' crop', 'crop.id = type.crop_id', 'INNER');
-            $this->db->select('crop.id crop_id, crop.name crop_name');
-
-            $this->db->where('type.status', $this->config->item('system_status_active'));
-            $this->db->where('crop.status', $this->config->item('system_status_active'));
-
-            $this->db->order_by('crop.ordering','ASC');
-            $this->db->order_by('type.ordering','ASC');
-            $results = $this->db->get()->result_array();
-            $data['crops'] = $results;
-            foreach ($results as $result)
+            if(($this->input->post('id')))
             {
-                if (isset($data['crop_type_count'][$result['crop_id']]))
-                {
-                    $data['crop_type_count'][$result['crop_id']] += 1;
-                }
-                else
-                {
-                    $data['crop_type_count'][$result['crop_id']] = 1;
-                }
+                $item_id=$this->input->post('id');
             }
+            else
+            {
+                $item_id=$id;
+            }
+            $data = array();
+            $this->db->from($this->config->item('table_login_setup_classification_crop_types').' ct');
+            $this->db->select('ct.id,ct.name crop_type_name');
+            $this->db->join($this->config->item('table_login_setup_classification_crops').' crop','crop.id = ct.crop_id','INNER');
+            $this->db->select('crop.name crop_name');
+            $this->db->where('ct.status !=',$this->config->item('system_status_delete'));
+            $this->db->where('ct.id',$item_id);
+            $this->db->order_by('crop.ordering','ASC');
+            $this->db->order_by('crop.id','ASC');
+            $this->db->order_by('ct.ordering','ASC');
+            $this->db->order_by('ct.id','ASC');
+            $data['item_info']=$this->db->get()->row_array();
+
+            $data['item']=Query_helper::get_info($this->config->item('table_bi_setup_variety_cultivation_period'),'*',array('crop_type_id ='.$item_id,'revision = 1'),1);
+            $data['date_start_old']=Bi_helper::cultivation_date_display($data['item']['date_start']);
+            $data['date_end_old']=Bi_helper::cultivation_date_display($data['item']['date_end']);
+
+            $this->db->from($this->config->item('table_bi_setup_variety_cultivation_period').' cp');
+            $this->db->select('cp.*');
+            $this->db->join($this->config->item('table_login_setup_classification_crop_types').' type','type.id = cp.crop_type_id','INNER');
+            $this->db->select('type.name crop_type_name');
+            $this->db->join($this->config->item('table_login_setup_classification_crops').' crop','crop.id = type.crop_id','INNER');
+            $this->db->select('crop.name crop_name');
+            $this->db->where('cp.crop_type_id',$item_id);
+            $this->db->where('cp.revision > ',1);
+            $this->db->order_by('cp.revision','ASC');
+            $data['histories']=$this->db->get()->result_array();
+
 
             $data['title'] = "New Cultivation Period Setup ";
             $ajax['status'] = true;
-            $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/add", $data, true));
+            $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/edit", $data, true));
             if ($this->message)
             {
                 $ajax['system_message'] = $this->message;
             }
-            $ajax['system_page_url'] = site_url($this->controller_url . '/index/add');
+            $ajax['system_page_url'] = site_url($this->controller_url . '/index/edit/'.$item_id);
             $this->json_return($ajax);
         }
         else
@@ -239,17 +261,19 @@ class Setup_variety_cultivation_period extends Root_Controller
         $user = User_helper::get_user();
         $time = time();
         $item_head = $this->input->post('item');
-        $items = $this->input->post('items');
+        $type_id=$id;
+        $date_start_old='';
+        $date_end_old='';
 
+        if(!(isset($this->permissions['action1']) && ($this->permissions['action1']==1)))
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
         if ($id > 0) //EDIT
         {
-            if(!(isset($this->permissions['action2']) && ($this->permissions['action2']==1)))
-            {
-                $ajax['status']=false;
-                $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
-                $this->json_return($ajax);
-            }
-            $result=Query_helper::get_info($this->config->item('table_bi_setup_variety_cultivation_period'),'*',array('id ='.$id),1);
+            $result=Query_helper::get_info($this->config->item('table_login_setup_classification_crop_types'),'*',array('id ='.$id),1);
             if(!$result)
             {
                 System_helper::invalid_try(__FUNCTION__, $id, 'ID Not Exists');
@@ -257,21 +281,9 @@ class Setup_variety_cultivation_period extends Root_Controller
                 $ajax['system_message']='Invalid Try.';
                 $this->json_return($ajax);
             }
-            if($result['revision']!=1)
-            {
-                $ajax['status']=false;
-                $ajax['system_message']='Invalid Try. Revision not match.';
-                $this->json_return($ajax);
-            }
-        }
-        else
-        {
-            if (!(isset($this->permissions['action1']) && ($this->permissions['action1'] == 1)))
-            {
-                $ajax['status'] = false;
-                $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
-                $this->json_return($ajax);
-            }
+            $result=Query_helper::get_info($this->config->item('table_bi_setup_variety_cultivation_period'),'*',array('crop_type_id ='.$id,'revision = 1'),1);
+            $date_start_old=isset($result['date_start'])?$result['date_start']:'';
+            $date_end_old=isset($result['date_end'])?$result['date_end']:'';
         }
 
         //Validation Checking
@@ -292,69 +304,57 @@ class Setup_variety_cultivation_period extends Root_Controller
             $cultivation_period_old[$result['upazilla_id']][$result['type_id']] = $result;
         }
 
+        $date_start=System_helper::get_time($item_head['date_start'].'-1970');
+        $date_end=System_helper::get_time($item_head['date_end'].'-1970');
+        if($date_end<$date_start)
+        {
+            $date_end=System_helper::get_time($item_head['date_end'].'-1971');
+        }
+        if($date_end!=0)
+        {
+            $date_end+=24*3600-1;
+        }
+
         $upazillas=Query_helper::get_info($this->config->item('table_login_setup_location_upazillas'),array('id','name'),array('status ="'.$this->config->item('system_status_active').'"'));
         $cultivation_period_upazilla_insert=array();
         $cultivation_period_upazilla_update=array();
         foreach($upazillas as $upazilla)
         {
-            foreach($items as $type_id=>$info)
+            if(isset($cultivation_period_old[$upazilla['id']][$type_id]))
             {
-                if($info['date_start'])
+                if($cultivation_period_old[$upazilla['id']][$type_id]['status_change']==0)
                 {
-                    if(isset($cultivation_period_old[$upazilla['id']][$type_id]))
-                    {
-                        if($cultivation_period_old[$upazilla['id']][$type_id]['status_change']==0)
-                        {
-                            $cultivation_period_upazilla_update[$upazilla['id']][$type_id]['cultivation_period_start_date']=Bi_helper::cultivation_date_sql($info['date_start']);
-                            $cultivation_period_upazilla_update[$upazilla['id']][$type_id]['cultivation_period_end_date']=Bi_helper::cultivation_date_sql($info['date_end']);
-                        }
-                    }
-                    else
-                    {
-                        $cultivation_period_upazilla_insert[]=array(
-                            'type_id'=> $type_id,
-                            'upazilla_id'=> $upazilla['id'],
-                            'date_start'=> Bi_helper::cultivation_date_sql($info['date_start']),
-                            'date_end'=> Bi_helper::cultivation_date_sql($info['date_end']),
-                            'revision_count'=> 1,
-                            'date_updated'=> $time,
-                            'user_updated'=> $user->user_id
-                        );
-                    }
+                    $cultivation_period_upazilla_update[$upazilla['id']][$type_id]['cultivation_period_start_date']=$date_start;
+                    $cultivation_period_upazilla_update[$upazilla['id']][$type_id]['cultivation_period_end_date']=$date_end;
                 }
             }
-        }
-
-        $cultivation_period_array=array();
-        $invalid_date=false;
-        foreach($items as $type_id=>$info)
-        {
-            if($info['date_start'])
+            else
             {
-                $cultivation_period_array[$type_id]=Bi_helper::cultivation_date_sql($info['date_start']).'~'.Bi_helper::cultivation_date_sql($info['date_end']);
-                if(Bi_helper::cultivation_date_sql($info['date_start'])>Bi_helper::cultivation_date_sql($info['date_end']))
-                {
-                    $invalid_date=true;
-                }
+                $cultivation_period_upazilla_insert[]=array(
+                    'type_id'=> $type_id,
+                    'upazilla_id'=> $upazilla['id'],
+                    'date_start'=> $date_start,
+                    'date_end'=> $date_end,
+                    'revision_count'=> 1,
+                    'date_updated'=> $time,
+                    'user_updated'=> $user->user_id
+                );
             }
-        }
-
-        if($invalid_date)
-        {
-            $ajax['status'] = false;
-            $ajax['system_message'] = "End date must greater than start date.";
-            $this->json_return($ajax);
         }
 
         $this->db->trans_start(); //DB Transaction Handle START
 
         // revision increase
         $this->db->set('revision', 'revision+1', FALSE);
-        Query_helper::update($this->config->item('table_bi_setup_variety_cultivation_period'), $item_head, array(), FALSE);
+        Query_helper::update($this->config->item('table_bi_setup_variety_cultivation_period'), $item_head, array('crop_type_id='.$type_id), FALSE);
 
         //update setup table
         $item=array();
-        $item['cultivation_period']=json_encode($cultivation_period_array);
+        $item['crop_type_id']=$type_id;
+        $item['date_start_old']=$date_start_old;
+        $item['date_end_old']=$date_end_old;
+        $item['date_start']=$date_start;
+        $item['date_end']=$date_end;
         $item['date_created'] = $time;
         $item['user_created'] = $user->user_id;
         $item['revision'] = 1;
@@ -504,6 +504,12 @@ class Setup_variety_cultivation_period extends Root_Controller
             $this->message = $this->lang->line('LABEL_UPAZILLA_NAME') . ' field is required.';
             return false;
         }*/
+        $item = $this->input->post('item');
+        if(!($item['date_start'] || $item['date_end']))
+        {
+            $this->message = 'Start & End date field is required.';
+            return false;
+        }
         return true;
     }
 
