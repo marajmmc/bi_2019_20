@@ -10,8 +10,8 @@
             <tr class="table_head">
                 <th><?php echo $this->lang->line('LABEL_CROP_NAME'); ?></th>
                 <th><?php echo $this->lang->line('LABEL_CROP_TYPE_NAME'); ?></th>
-                <th>Old <?php echo $this->lang->line('LABEL_MARKET_SIZE'); ?></th>
-                <th>Requested <?php echo $this->lang->line('LABEL_MARKET_SIZE'); ?></th>
+                <th>Old Major Competitor Varieties</th>
+                <th>Requested Major Competitor Varieties</th>
             </tr>
             </thead>
             <tbody>
@@ -21,24 +21,8 @@
                 $init_crop_id = -1;
                 foreach ($crops as $crop)
                 {
-                    if (isset($market_size_history[$crop['crop_type_id']]) && ($market_size_history[$crop['crop_type_id']]['old'] != ''))
-                    {
-                        $size_old = $market_size_history[$crop['crop_type_id']]['old'];
-                    }
-                    else
-                    {
-                        $size_old = '-';
-                    }
-
-                    if (isset($market_size_history[$crop['crop_type_id']]) && ($market_size_history[$crop['crop_type_id']]['new'] != ''))
-                    {
-                        $size_new = $market_size_history[$crop['crop_type_id']]['new'];
-                    }
-                    else
-                    {
-                        $size_new = '-';
-                    }
-
+                    $size_old = (isset($market_size_old[$crop['crop_type_id']])) ? $market_size_old[$crop['crop_type_id']] : '-';
+                    $size_edit = (isset($market_size_edit[$crop['crop_type_id']])) ? $market_size_edit[$crop['crop_type_id']] : '-';
                     ?>
                     <tr>
                         <?php
@@ -54,7 +38,7 @@
                         ?>
                         <td><?php echo $crop['crop_type_name']; ?></td>
                         <td><?php echo $size_old; ?></td>
-                        <td><?php echo $size_new; ?></td>
+                        <td><?php echo $size_edit; ?></td>
                     </tr>
                 <?php
                 }

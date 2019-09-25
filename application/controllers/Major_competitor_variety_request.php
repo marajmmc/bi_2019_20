@@ -47,7 +47,7 @@ class Major_competitor_variety_request extends Root_Controller
         {
             $this->system_add();
         }
-        /*elseif ($action == "edit")
+        elseif ($action == "edit")
         {
             $this->system_edit($id);
         }
@@ -66,7 +66,7 @@ class Major_competitor_variety_request extends Root_Controller
         elseif ($action == "save_forward")
         {
             $this->system_save_forward();
-        }*/
+        }
         elseif ($action == "set_preference")
         {
             $this->system_set_preference('list');
@@ -99,6 +99,7 @@ class Major_competitor_variety_request extends Root_Controller
         $data['zone_name'] = 1;
         $data['division_name'] = 1;
         $data['number_of_edit'] = 1;
+        $data['requested_by'] = 1;
         if ($method == 'list_all')
         {
             $data['status'] = 1;
@@ -137,7 +138,7 @@ class Major_competitor_variety_request extends Root_Controller
             $method = 'list';
             $data = array();
             $data['system_preference_items'] = System_helper::get_preference($user->user_id, $this->controller_url, $method, $this->get_preference_headers($method));
-            $data['title'] = $this->lang->line('LABEL_UPAZILLA_NAME') . " Wise Cultivation Period List";
+            $data['title'] = $this->lang->line('LABEL_UPAZILLA_NAME') . " Major Competitor List";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/list", $data, true));
             if ($this->message)
@@ -157,7 +158,7 @@ class Major_competitor_variety_request extends Root_Controller
 
     private function system_get_items()
     {
-        $this->db->from($this->config->item('table_bi_variety_cultivation_period_request') . ' item');
+        $this->db->from($this->config->item('table_bi_major_competitor_variety_request') . ' item');
         $this->db->select('item.*, revision_count number_of_edit');
 
         $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazillas', 'upazillas.id = item.upazilla_id');
@@ -198,6 +199,16 @@ class Major_competitor_variety_request extends Root_Controller
                 }
             }
         }
+        $this->db->join($this->config->item('table_login_setup_user_info') . ' user_info', 'user_info.id = item.user_created');
+        $this->db->select('user_info.name requested_by');
+
+        $this->db->where('item.status', $this->config->item('system_status_active'));
+        $this->db->where('item.status_forward !=', $this->config->item('system_status_forwarded'));
+        $this->db->order_by('divisions.name');
+        $this->db->order_by('zones.name');
+        $this->db->order_by('territories.name');
+        $this->db->order_by('districts.name');
+        $this->db->order_by('item.id');
         $items = $this->db->get()->result_array();
         $this->json_return($items);
     }
@@ -210,7 +221,7 @@ class Major_competitor_variety_request extends Root_Controller
             $method = 'list_all';
             $data = array();
             $data['system_preference_items'] = System_helper::get_preference($user->user_id, $this->controller_url, $method, $this->get_preference_headers($method));
-            $data['title'] = $this->lang->line('LABEL_UPAZILLA_NAME') . " Wise Cultivation Period All List";
+            $data['title'] = $this->lang->line('LABEL_UPAZILLA_NAME') . " Wise Major Competitor All List";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/list_all", $data, true));
             if ($this->message)
@@ -230,7 +241,21 @@ class Major_competitor_variety_request extends Root_Controller
 
     private function system_get_items_all()
     {
-        $this->db->from($this->config->item('table_bi_variety_cultivation_period_request') . ' item');
+        $current_records = $this->input->post('total_records');
+        if (!$current_records)
+        {
+            $current_records = 0;
+        }
+        $pagesize = $this->input->post('pagesize');
+        if (!$pagesize)
+        {
+            $pagesize = 100;
+        }
+        else
+        {
+            $pagesize = $pagesize * 2;
+        }
+        $this->db->from($this->config->item('table_bi_major_competitor_variety_request') . ' item');
         $this->db->select('item.*, revision_count number_of_edit');
 
         $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazillas', 'upazillas.id = item.upazilla_id');
@@ -269,6 +294,16 @@ class Major_competitor_variety_request extends Root_Controller
                 }
             }
         }
+
+        $this->db->join($this->config->item('table_login_setup_user_info') . ' user_info', 'user_info.id = item.user_created');
+        $this->db->select('user_info.name requested_by');
+
+        $this->db->order_by('divisions.name');
+        $this->db->order_by('zones.name');
+        $this->db->order_by('territories.name');
+        $this->db->order_by('districts.name');
+        $this->db->order_by('item.id');
+        $this->db->limit($pagesize, $current_records);
         $items = $this->db->get()->result_array();
         $this->json_return($items);
     }
@@ -330,7 +365,7 @@ class Major_competitor_variety_request extends Root_Controller
                 $data['upazillas'][$result['district_id']][] = $result;
             }*/
 
-            $data['title'] = "Major Competitor Variety for  " . ($this->lang->line('LABEL_UPAZILLA_NAME')) . " Area";
+            $data['title'] = "Add Major Competitor Variety for  " . ($this->lang->line('LABEL_UPAZILLA_NAME')) . " Area";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/add_edit", $data, true));
             if ($this->message)
@@ -361,7 +396,7 @@ class Major_competitor_variety_request extends Root_Controller
                 $item_id = $this->input->post('id');
             }
             $data = array();
-            $this->db->from($this->config->item('table_bi_variety_cultivation_period_request') . ' item');
+            $this->db->from($this->config->item('table_bi_major_competitor_variety_request') . ' item');
             $this->db->select('item.*');
 
             $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = item.upazilla_id');
@@ -397,15 +432,6 @@ class Major_competitor_variety_request extends Root_Controller
             $data['districts'] = true;
             $data['upazillas'] = true;
 
-            $this->db->from($this->config->item('table_bi_variety_cultivation_period'));
-            $this->db->select('*');
-            $this->db->where('upazilla_id', $data['item']['upazilla_id']);
-            $results = $this->db->get()->result_array();
-            foreach ($results as $result)
-            {
-                $data['cultivation_period_old'][$result['type_id']] = $result;
-            }
-
             $this->db->from($this->config->item('table_login_setup_classification_crop_types') . ' type');
             $this->db->select('type.id crop_type_id, type.name crop_type_name');
 
@@ -432,7 +458,7 @@ class Major_competitor_variety_request extends Root_Controller
             }
 
 
-            $data['title'] = "Edit Variety Cultivation Period ( Upazilla Wise )";
+            $data['title'] = "Edit Major Competitor Variety ( " . $data['item']['upazilla_name'] . " )";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/add_edit", $data, true));
             if ($this->message)
@@ -452,6 +478,11 @@ class Major_competitor_variety_request extends Root_Controller
 
     private function system_save()
     {
+        /*echo '<pre>';
+        print_r($this->input->post());
+        echo '</pre>';
+        die('==================');*/
+
         $id = $this->input->post('id');
         $user = User_helper::get_user();
         $time = time();
@@ -466,7 +497,7 @@ class Major_competitor_variety_request extends Root_Controller
                 $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
                 $this->json_return($ajax);
             }
-            $result = Query_helper::get_info($this->config->item('table_bi_variety_cultivation_period_request'), '*', array('id =' . $id), 1);
+            $result = Query_helper::get_info($this->config->item('table_bi_major_competitor_variety_request'), '*', array('id =' . $id), 1);
             if (!$result)
             {
                 System_helper::invalid_try('Update Non Exists', $id);
@@ -500,53 +531,7 @@ class Major_competitor_variety_request extends Root_Controller
             $this->json_return($ajax);
         }
 
-        // Old item
-        $this->db->from($this->config->item('table_bi_variety_cultivation_period'));
-        $this->db->select('*');
-        $this->db->where('upazilla_id', $item_head['upazilla_id']);
-        $results = $this->db->get()->result_array();
-        $cultivation_period_old = array();
-        foreach ($results as $result)
-        {
-            $cultivation_period_old[$result['type_id']] = $result;
-        }
-
-        $cultivation_period_array = array();
-        $invalid_date = false;
-        foreach ($items as $type_id => $info)
-        {
-            if ($info['date_start'])
-            {
-                $date_start = Bi_helper::cultivation_date_sql($info['date_start']);
-                $date_end = Bi_helper::cultivation_date_sql($info['date_end']);
-                if (isset($cultivation_period_old[$type_id]))
-                {
-                    if (!(($cultivation_period_old[$type_id]['date_start'] == $date_start) && ($cultivation_period_old[$type_id]['date_end'] == $date_end)))
-                    {
-                        $cultivation_period_array[$type_id] = Bi_helper::cultivation_date_sql($info['date_start']) . '~' . Bi_helper::cultivation_date_sql($info['date_end']);
-                    }
-                }
-                else
-                {
-                    $cultivation_period_array[$type_id] = Bi_helper::cultivation_date_sql($info['date_start']) . '~' . Bi_helper::cultivation_date_sql($info['date_end']);
-                }
-
-                if (!(Bi_helper::cultivation_date_sql($info['date_start']) > Bi_helper::cultivation_date_sql($info['date_end'])))
-                {
-                    $invalid_date = true;
-                }
-            }
-        }
-
-        $item_head['cultivation_period'] = json_encode($cultivation_period_array);
-
-        //need to add date validation
-        /*if($invalid_date)
-        {
-            $ajax['status'] = false;
-            $ajax['system_message'] = "End date must greater than start date.";
-            $this->json_return($ajax);
-        }*/
+        $item_head['competitor_varieties'] = json_encode($items, TRUE);
 
         $this->db->trans_start(); //DB Transaction Handle START
         if ($id > 0) // Revision Update if EDIT
@@ -554,14 +539,14 @@ class Major_competitor_variety_request extends Root_Controller
             $item_head['date_updated'] = $time;
             $item_head['user_updated'] = $user->user_id;
             $this->db->set('revision_count', 'revision_count+1', FALSE);
-            Query_helper::update($this->config->item('table_bi_variety_cultivation_period_request'), $item_head, array("id =" . $id), FALSE);
+            Query_helper::update($this->config->item('table_bi_major_competitor_variety_request'), $item_head, array("id =" . $id), FALSE);
         }
         else
         {
-            $item_head['revision_count'] = 1;
             $item_head['date_created'] = $time;
             $item_head['user_created'] = $user->user_id;
-            Query_helper::add($this->config->item('table_bi_variety_cultivation_period_request'), $item_head, FALSE);
+            $item_head['revision_count'] = 1;
+            Query_helper::add($this->config->item('table_bi_major_competitor_variety_request'), $item_head, FALSE);
         }
         $this->db->trans_complete(); //DB Transaction Handle END
 
@@ -591,73 +576,10 @@ class Major_competitor_variety_request extends Root_Controller
             {
                 $item_id = $this->input->post('id');
             }
-
             $data = array();
-            $this->db->from($this->config->item('table_bi_variety_cultivation_period_request') . ' item');
-            $this->db->select('item.*');
+            $data['item_id'] = $item_id;
 
-            $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = item.upazilla_id');
-            $this->db->select('upazilla.name upazilla_name');
-
-            $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id', 'INNER');
-            $this->db->select('district.id district_id, district.name district_name');
-
-            $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
-            $this->db->select('territory.id territory_id, territory.name territory_name');
-
-            $this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
-            $this->db->select('zone.id zone_id, zone.name zone_name');
-
-            $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
-            $this->db->select('division.id division_id, division.name division_name');
-
-            $this->db->where('item.id', $item_id);
-            $data['item'] = $this->db->get()->row_array();
-            if (!$data['item'])
-            {
-                System_helper::invalid_try(__FUNCTION__, $item_id, 'ID Not Exists');
-                $ajax['status'] = false;
-                $ajax['system_message'] = 'Invalid Try.';
-                $this->json_return($ajax);
-            }
-
-            $data['info_basic'] = Bi_helper::get_basic_info($data['item']);
-
-            $this->db->from($this->config->item('table_bi_variety_cultivation_period'));
-            $this->db->select('*');
-            $this->db->where('upazilla_id', $data['item']['upazilla_id']);
-            $results = $this->db->get()->result_array();
-            foreach ($results as $result)
-            {
-                $data['cultivation_period_old'][$result['type_id']] = $result;
-            }
-
-            $this->db->from($this->config->item('table_login_setup_classification_crop_types') . ' type');
-            $this->db->select('type.id crop_type_id, type.name crop_type_name');
-
-            $this->db->join($this->config->item('table_login_setup_classification_crops') . ' crop', 'crop.id = type.crop_id', 'INNER');
-            $this->db->select('crop.id crop_id, crop.name crop_name');
-
-            $this->db->where('type.status', $this->config->item('system_status_active'));
-            $this->db->where('crop.status', $this->config->item('system_status_active'));
-
-            $this->db->order_by('crop.ordering', 'ASC');
-            $this->db->order_by('type.ordering', 'ASC');
-            $results = $this->db->get()->result_array();
-            $data['crops'] = $results;
-            foreach ($results as $result)
-            {
-                if (isset($data['crop_type_count'][$result['crop_id']]))
-                {
-                    $data['crop_type_count'][$result['crop_id']] += 1;
-                }
-                else
-                {
-                    $data['crop_type_count'][$result['crop_id']] = 1;
-                }
-            }
-
-            $data['title'] = "Cultivation Period Details ( Upazilla Wise )";
+            $data['title'] = "Market Size Details ( ID:" . $item_id . " )";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->common_view_location . "/details", $data, true));
             if ($this->message)
@@ -689,7 +611,7 @@ class Major_competitor_variety_request extends Root_Controller
             }
 
             $data = array();
-            $this->db->from($this->config->item('table_bi_variety_cultivation_period_request') . ' item');
+            $this->db->from($this->config->item('table_bi_major_competitor_variety_request') . ' item');
             $this->db->select('item.*');
 
             $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = item.upazilla_id');
@@ -731,15 +653,6 @@ class Major_competitor_variety_request extends Root_Controller
 
             $data['info_basic'] = Bi_helper::get_basic_info($data['item']);
 
-            $this->db->from($this->config->item('table_bi_variety_cultivation_period'));
-            $this->db->select('*');
-            $this->db->where('upazilla_id', $data['item']['upazilla_id']);
-            $results = $this->db->get()->result_array();
-            foreach ($results as $result)
-            {
-                $data['cultivation_period_old'][$result['type_id']] = $result;
-            }
-
             $this->db->from($this->config->item('table_login_setup_classification_crop_types') . ' type');
             $this->db->select('type.id crop_type_id, type.name crop_type_name');
 
@@ -765,7 +678,7 @@ class Major_competitor_variety_request extends Root_Controller
                 }
             }
 
-            $data['title'] = "Forward Cultivation Period (Upazilla Wise)";
+            $data['title'] = "Forward Major Competitor Varieties {$data['item']['upazilla_name']}";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/forward", $data, true));
             if ($this->message)
@@ -804,12 +717,12 @@ class Major_competitor_variety_request extends Root_Controller
                 $ajax['system_message'] = 'Forward Field is required.';
                 $this->json_return($ajax);
             }
-            $result = Query_helper::get_info($this->config->item('table_bi_variety_cultivation_period_request'), '*', array('id =' . $id), 1);
+            $result = Query_helper::get_info($this->config->item('table_bi_major_competitor_variety_request'), '*', array('id =' . $id), 1);
             if (!$result)
             {
-                System_helper::invalid_try('Forward Non Exists', $id);
+                System_helper::invalid_try(__FUNCTION__, 'Forward Not Exists', $id);
                 $ajax['status'] = false;
-                $ajax['system_message'] = 'Invalid Notice.';
+                $ajax['system_message'] = 'Invalid Try.';
                 $this->json_return($ajax);
             }
             if ($result['status'] == $this->config->item('system_status_rejected'))
@@ -840,7 +753,7 @@ class Major_competitor_variety_request extends Root_Controller
         $data['user_forwarded'] = $user->user_id;
         $data['remarks_forward'] = $item_head['remarks_forward'];
         $data['status_forward'] = $item_head['status_forward'];
-        Query_helper::update($this->config->item('table_bi_variety_cultivation_period_request'), $data, array('id=' . $id));
+        Query_helper::update($this->config->item('table_bi_major_competitor_variety_request'), $data, array('id=' . $id));
 
         $this->db->trans_complete(); //DB Transaction Handle END
 
@@ -857,84 +770,98 @@ class Major_competitor_variety_request extends Root_Controller
         }
     }
 
+    private function system_get_competitor_variety_info()
+    {
+        $post = $this->input->post();
+        $data = array();
+        $data['upazilla_id'] = $post['upazilla_id'];
+        if($post['competitor_variety_edit']){
+            $data['competitor_variety_edit'] = json_decode($post['competitor_variety_edit'], TRUE);
+        }else{
+            $data['competitor_variety_edit'] = array();
+        }
+
+        $this->db->from($this->config->item('table_bi_setup_competitor_variety') . ' variety');
+        $this->db->select('variety.id variety_id, variety.name variety_name, variety.crop_type_id');
+
+        $this->db->join($this->config->item('table_login_basic_setup_competitor') . ' competitor', 'competitor.id = variety.competitor_id', 'INNER');
+        $this->db->select('competitor.name competitor_name');
+
+        $this->db->join($this->config->item('table_login_setup_classification_crop_types') . ' type', 'type.id = variety.crop_type_id', 'INNER');
+        $this->db->select('type.name crop_type_name');
+
+        $this->db->join($this->config->item('table_login_setup_classification_crops') . ' crop', 'crop.id = type.crop_id', 'INNER');
+        $this->db->select('crop.id crop_id, crop.name crop_name');
+
+        $this->db->where('competitor.status', $this->config->item('system_status_active'));
+        $this->db->where('type.status', $this->config->item('system_status_active'));
+        $this->db->where('crop.status', $this->config->item('system_status_active'));
+
+        $this->db->order_by('crop.ordering', 'ASC');
+        $this->db->order_by('type.ordering', 'ASC');
+        $competitor_variety_results = $this->db->get()->result_array();
+        foreach ($competitor_variety_results as $variety_result)
+        {
+            $data['competitor_varieties'][$variety_result['crop_id']][$variety_result['variety_id']] = array(
+                'crop_name' => $variety_result['crop_name'],
+                'crop_type_id' => $variety_result['crop_type_id'],
+                'crop_type_name' => $variety_result['crop_type_name'],
+                'variety_name' => $variety_result['variety_name'],
+                'competitor_name' => $variety_result['competitor_name']
+            );
+        }
+
+        $this->db->from($this->config->item('table_login_setup_classification_crop_types') . ' type');
+        $this->db->select('type.id crop_type_id, type.name crop_type_name');
+
+        $this->db->join($this->config->item('table_login_setup_classification_crops') . ' crop', 'crop.id = type.crop_id', 'INNER');
+        $this->db->select('crop.id crop_id, crop.name crop_name');
+
+        $this->db->where('type.status', $this->config->item('system_status_active'));
+        $this->db->where('crop.status', $this->config->item('system_status_active'));
+
+        $this->db->order_by('crop.ordering', 'ASC');
+        $this->db->order_by('type.ordering', 'ASC');
+        $results = $this->db->get()->result_array();
+        $data['crops'] = $results;
+        foreach ($results as $result)
+        {
+            if (isset($data['crop_type_count'][$result['crop_id']]))
+            {
+                $data['crop_type_count'][$result['crop_id']] += 1;
+            }
+            else
+            {
+                $data['crop_type_count'][$result['crop_id']] = 1;
+            }
+        }
+
+        $data['title'] = "Major Competitors in {$post['upazilla_name']} Area";
+        $ajax['status'] = true;
+        $ajax['system_content'][] = array("id" => "#items_container", "html" => $this->load->view($this->controller_url . "/get_competitor_variety_info", $data, true));
+        if ($this->message)
+        {
+            $ajax['system_message'] = $this->message;
+        }
+        $this->json_return($ajax);
+    }
+
     private function check_validation()
     {
         $id = $this->input->post('id');
         $item = $this->input->post('item');
+        $items = $this->input->post('items');
         if (!($id > 0) && !($item['upazilla_id'] > 0))
         {
             $this->message = $this->lang->line('LABEL_UPAZILLA_NAME') . ' field is required.';
             return false;
         }
+        if (!$items)
+        {
+            $this->message = 'At least 1 Competitor Variety has to Save.';
+            return false;
+        }
+
         return true;
-    }
-
-    private function system_get_competitor_variety_info()
-    {
-        if (isset($this->permissions['action1']) && ($this->permissions['action1'] == 1))
-        {
-            $post = $this->input->post();
-            $data = array();
-            $data['upazilla_id'] = $post['upazilla_id'];
-
-            $item_old = Query_helper::get_info($this->config->item('table_bi_variety_cultivation_period_request'), array('*'), array('upazilla_id ="' . $data['upazilla_id'] . '"', 'status_approve ="' . $this->config->item('system_status_pending') . '"'));
-            if ($item_old)
-            {
-                $ajax['status'] = false;
-                $ajax['system_message'] = 'This upazilla cultivation period information exist. Not yet forwarded or approval';
-                $this->json_return($ajax);
-            }
-
-            $this->db->from($this->config->item('table_bi_variety_cultivation_period'));
-            $this->db->select('*');
-            $this->db->where('upazilla_id', $data['upazilla_id']);
-            $results = $this->db->get()->result_array();
-            foreach ($results as $result)
-            {
-                $data['cultivation_period_old'][$result['type_id']] = $result;
-            }
-
-
-            $this->db->from($this->config->item('table_login_setup_classification_crop_types') . ' type');
-            $this->db->select('type.id crop_type_id, type.name crop_type_name');
-
-            $this->db->join($this->config->item('table_login_setup_classification_crops') . ' crop', 'crop.id = type.crop_id', 'INNER');
-            $this->db->select('crop.id crop_id, crop.name crop_name');
-
-            $this->db->where('type.status', $this->config->item('system_status_active'));
-            $this->db->where('crop.status', $this->config->item('system_status_active'));
-
-            $this->db->order_by('crop.ordering', 'ASC');
-            $this->db->order_by('type.ordering', 'ASC');
-            $results = $this->db->get()->result_array();
-            $data['crops'] = $results;
-            foreach ($results as $result)
-            {
-                if (isset($data['crop_type_count'][$result['crop_id']]))
-                {
-                    $data['crop_type_count'][$result['crop_id']] += 1;
-                }
-                else
-                {
-                    $data['crop_type_count'][$result['crop_id']] = 1;
-                }
-            }
-
-            $data['title'] = "Cultivation Period";
-            $ajax['status'] = true;
-            $ajax['system_content'][] = array("id" => "#items_container", "html" => $this->load->view($this->controller_url . "/get_competitor_variety_info", $data, true));
-            if ($this->message)
-            {
-                $ajax['system_message'] = $this->message;
-            }
-            $ajax['system_page_url'] = site_url($this->controller_url . '/index/add');
-            $this->json_return($ajax);
-        }
-        else
-        {
-            $ajax['status'] = false;
-            $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
-            $this->json_return($ajax);
-        }
     }
 }

@@ -432,6 +432,7 @@ class Market_size_request extends Root_Controller
 
     private function system_save()
     {
+
         $item_id = $this->input->post('id');
         $item = $this->input->post('item');
         $crop_wise_market_size = $this->input->post('crop_wise_market_size');
@@ -504,6 +505,8 @@ class Market_size_request extends Root_Controller
             $this->json_return($ajax);
         }
 
+        $item['market_size_history'] = json_encode($crop_wise_market_size);
+
         $market_size_array = array();
         foreach ($crop_wise_market_size as $crop_type_id => $market_size)
         {
@@ -512,8 +515,15 @@ class Market_size_request extends Root_Controller
                 $market_size_array[$crop_type_id] = $market_size['new'];
             }
         }
-
         $item['market_size'] = json_encode($market_size_array);
+
+
+        /*echo '<pre>';
+        print_r($item['market_size']);
+        print_r($item['market_size_history']);
+        echo '</pre>';
+        die('777777777777777');*/
+
 
         $this->db->trans_start(); //DB Transaction Handle START
         if ($item_id > 0) // Revision Update if EDIT
@@ -754,7 +764,7 @@ class Market_size_request extends Root_Controller
         }
 
         // From Main table (Previously Approved Market Size for this Upazilla)
-        $this->db->from($this->config->item('table_bi_market_size_main'));
+        $this->db->from($this->config->item('table_bi_market_size'));
         $this->db->select('*');
         $this->db->where('upazilla_id', $data['upazilla_id']);
         $results = $this->db->get()->result_array();

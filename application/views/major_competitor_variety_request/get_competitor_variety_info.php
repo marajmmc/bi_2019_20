@@ -4,10 +4,10 @@
         <th colspan="4" style="text-align:center"><?php echo $title; ?></th>
     </tr>
     <tr class="table_head">
-        <th><?php echo $this->lang->line('LABEL_CROP_NAME'); ?></th>
-        <th><?php echo $this->lang->line('LABEL_CROP_TYPE_NAME'); ?></th>
-        <th style="text-align:center">Old Competitor Varieties</th>
-        <th style="text-align:center">New Competitor Varieties</th>
+        <th style="width:1%;white-space:nowrap;text-align:center"><?php echo $this->lang->line('LABEL_CROP_NAME'); ?></th>
+        <th style="width:1%;white-space:nowrap;text-align:center"><?php echo $this->lang->line('LABEL_CROP_TYPE_NAME'); ?></th>
+        <th style="width:1%;white-space:nowrap;text-align:center">Old competitor varieties</th>
+        <th style="white-space:nowrap;text-align:center">New competitor varieties</th>
     </tr>
     </thead>
     <tbody>
@@ -15,19 +15,9 @@
     if ($crops)
     {
         $init_crop_id = -1;
-        $rowspan=0;
+        $rowspan = 0;
         foreach ($crops as $crop)
         {
-            $date_start_old="";
-            $date_end_old="";
-            if(isset($cultivation_period_old[$crop['crop_type_id']]))
-            {
-                $date_start_old=Bi_helper::cultivation_date_display($cultivation_period_old[$crop['crop_type_id']]['date_start']);
-                $date_end_old=Bi_helper::cultivation_date_display($cultivation_period_old[$crop['crop_type_id']]['date_end']);
-            }
-
-            $date_start=Bi_helper::cultivation_date_display(0);
-            $date_end=Bi_helper::cultivation_date_display(0);
             $rowspan = $crop_type_count[$crop['crop_id']];
             ?>
             <tr>
@@ -42,27 +32,47 @@
                     $init_crop_id = $crop['crop_id'];
                 }
                 ?>
-                <td><?php echo $crop['crop_type_name']?></td>
+                <td><?php echo $crop['crop_type_name'] ?></td>
                 <td>
-                    <div class='input-group date' id='datetimepicker1'>
-                        <label>Old Competitor Variety 1</label><br/>
-                        <label>Old Competitor Variety 2</label>
-                        <?php /*<input type="text" name="items[<?php echo $crop['crop_type_id']; ?>][date_start]" class="form-control date_large" value="<?php echo $date_start?$date_start:''; ?>" readonly="true" />
-                        <span class="input-group-addon">
-                            <span class="glyphicon glyphicon-calendar"></span>
-                        </span>*/?>
-                    </div>
+                    -----
                 </td>
                 <td>
-                    <div class='input-group date' id='datetimepicker1'>
-                        <input type="checkbox" name="" value="" /> Competitor Variety 1 <br/>
-                        <input type="checkbox" name="" value="" /> Competitor Variety 2 <br/>
-                        <input type="checkbox" name="" value="" /> Competitor Variety 3
-                        <?php /* <input type="text" name="items[<?php echo $crop['crop_type_id']; ?>][date_end]" class="form-control date_large" value="<?php echo $date_end?$date_end:''; ?>" readonly="true" />
-                        <span class="input-group-addon">
-                            <span class="glyphicon glyphicon-calendar"></span>
-                        </span>*/ ?>
-                    </div>
+                    <table style="width:100%">
+                        <tr>
+                            <?php
+                            if (isset($competitor_varieties[$crop['crop_id']]))
+                            {
+                                $i = 1;
+                                foreach ($competitor_varieties[$crop['crop_id']] as $variety_id => $variety)
+                                {
+                                    echo '<td>';
+                                    ?>
+                                    <div class="checkbox" style="margin:0">
+                                        <label>
+                                            <?php
+                                            $checked = '';
+                                            if(isset($competitor_variety_edit[$crop['crop_id']][$crop['crop_type_id']]) && in_array($variety_id, $competitor_variety_edit[$crop['crop_id']][$crop['crop_type_id']]))
+                                            {
+                                                $checked = 'checked';
+                                            }
+                                            ?>
+                                            <input type="checkbox" name="items[<?php echo $crop['crop_id']; ?>][<?php echo $crop['crop_type_id']; ?>][]" value="<?php echo $variety_id; ?>" <?php echo $checked; ?> />
+                                            <?php echo $variety['variety_name'] . ' (' . $variety['crop_type_name'] . ', ' . $variety['competitor_name'] . ')' ?>
+                                        </label>
+                                    </div>
+                                    <?php
+                                    echo '</td>';
+                                    echo ($i % 2 == 0) ? '</tr><tr>' : '';
+                                    $i++;
+                                }
+                            }
+                            else
+                            {
+                                echo '<i>- No competitor available right now -<i>';
+                            }
+                            ?>
+                        </tr>
+                    </table>
                 </td>
             </tr>
         <?php
@@ -72,8 +82,7 @@
     </tbody>
 </table>
 <script>
-    jQuery(document).ready(function()
-    {
+    jQuery(document).ready(function () {
         //$(".date_large").datepicker({dateFormat : "dd-M",changeMonth: true,changeYear: true,yearRange: "c-2:c+2"});
     });
 </script>

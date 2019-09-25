@@ -9,19 +9,19 @@ class Bi_helper
     {
         $CI = & get_instance();
         //--------- System User Info ------------
-        $user_ids=array();
-        $user_ids[$result['user_created']]=$result['user_created'];
-        if($result['user_updated']>0)
+        $user_ids = array();
+        $user_ids[$result['user_created']] = $result['user_created'];
+        if ($result['user_updated'] > 0)
         {
-            $user_ids[$result['user_updated']]=$result['user_updated'];
+            $user_ids[$result['user_updated']] = $result['user_updated'];
         }
-        if($result['user_forwarded']>0)
+        if ($result['user_forwarded'] > 0)
         {
-            $user_ids[$result['user_forwarded']]=$result['user_forwarded'];
+            $user_ids[$result['user_forwarded']] = $result['user_forwarded'];
         }
-        if($result['user_approved']>0)
+        if ($result['user_approved'] > 0)
         {
-            $user_ids[$result['user_approved']]=$result['user_approved'];
+            $user_ids[$result['user_approved']] = $result['user_approved'];
         }
         $user_info = System_helper::get_users_info($user_ids);
 
@@ -56,14 +56,14 @@ class Bi_helper
             'label_2' => 'Created Time',
             'value_2' => System_helper::display_date_time($result['date_created'])
         );
-        if($result['user_updated']>0)
+        if ($result['user_updated'] > 0)
         {
-            $inactive_update_by='Updated By';
-            $inactive_update_time='Updated Time';
-            if($result['status']==$CI->config->item('system_status_inactive'))
+            $inactive_update_by = 'Updated By';
+            $inactive_update_time = 'Updated Time';
+            if ($result['status'] == $CI->config->item('system_status_inactive'))
             {
-                $inactive_update_by='In-Active By';
-                $inactive_update_time='In-Active Time';
+                $inactive_update_by = 'In-Active By';
+                $inactive_update_time = 'In-Active Time';
             }
             $data[] = array(
                 'label_1' => $inactive_update_by,
@@ -79,7 +79,7 @@ class Bi_helper
             'label_2' => 'Revision (Forward)',
             'value_2' => $result['revision_count'],
         );
-        if($result['status_forward']==$CI->config->item('system_status_forwarded'))
+        if ($result['status_forward'] == $CI->config->item('system_status_forwarded'))
         {
             $data[] = array
             (
@@ -94,42 +94,42 @@ class Bi_helper
                 'value_1' => $result['remarks_forward']
             );
         }
-        if($result['status_approve']==$CI->config->item('system_status_approved'))
+        if ($result['status_approve'] == $CI->config->item('system_status_approved'))
         {
-            $label_approve=$CI->config->item('system_status_approved');
+            $label_approve = $CI->config->item('system_status_approved');
         }
-        else if($result['status_approve']==$CI->config->item('system_status_rejected'))
+        else if ($result['status_approve'] == $CI->config->item('system_status_rejected'))
         {
-            $label_approve='Reject';
+            $label_approve = 'Reject';
         }
         else
         {
-            $label_approve=$CI->config->item('system_status_approved');
+            $label_approve = $CI->config->item('system_status_approved');
         }
         $data[] = array
         (
-            'label_1' => $label_approve.' Status',
+            'label_1' => $label_approve . ' Status',
             'value_1' => $result['status_approve'],
 
         );
-        if($result['status_approve']!=$CI->config->item('system_status_pending'))
+        if ($result['status_approve'] != $CI->config->item('system_status_pending'))
         {
             $data[] = array
             (
-                'label_1' => $label_approve.' By',
+                'label_1' => $label_approve . ' By',
                 'value_1' => $user_info[$result['user_approved']]['name'] . ' ( ' . $user_info[$result['user_approved']]['employee_id'] . ' )',
-                'label_2' => $label_approve.' Time',
+                'label_2' => $label_approve . ' Time',
                 'value_2' => System_helper::display_date_time($result['date_approved'])
             );
             $data[] = array
             (
-                'label_1' => $label_approve.' Remarks',
+                'label_1' => $label_approve . ' Remarks',
                 'value_1' => $result['remarks_approve']
             );
         }
-        if($result['revision_count_rollback']>0)
+        if ($result['revision_count_rollback'] > 0)
         {
-            if($result['status_approve']==$CI->config->item('system_status_pending'))
+            if ($result['status_approve'] == $CI->config->item('system_status_pending'))
             {
                 $data[] = array
                 (
@@ -151,7 +151,8 @@ class Bi_helper
         }
         return $data;
     }
-    public static function get_market_size_info($item_id, $controller_url, $collapse='in')
+
+    public static function get_market_size_info($item_id, $controller_url, $collapse = 'in')
     {
         $CI =& get_instance();
         $data = array();
@@ -159,23 +160,13 @@ class Bi_helper
 
         // From Request table (Current Requesting Market Size for this Upazilla)
         $CI->db->from($CI->config->item('table_bi_market_size_request') . ' ms');
-        $CI->db->select('upazilla_id, market_size');
+        $CI->db->select('upazilla_id, market_size, market_size_history');
         $CI->db->join($CI->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = ms.upazilla_id');
         $CI->db->select('upazilla.name upazilla_name');
         $CI->db->where('ms.id', $item_id);
-        $row_request = $CI->db->get()->row_array();
+        $result = $CI->db->get()->row_array();
 
-        $data['market_size_edit'] = json_decode($row_request['market_size'], TRUE);
-
-        // From Main table (Previously Approved Market Size for this Upazilla)
-        $CI->db->from($CI->config->item('table_bi_market_size_main'));
-        $CI->db->select('upazilla_id, type_id, market_size_kg');
-        $CI->db->where('upazilla_id', $row_request['upazilla_id']);
-        $results = $CI->db->get()->result_array();
-
-        foreach($results as $result){
-            $data['market_size_old'][$result['type_id']]=$result['market_size_kg'];
-        }
+        $data['market_size_history'] = json_decode($result['market_size_history'], TRUE);
 
         // -------------------- For crop count -------------------------------
         $CI->db->from($CI->config->item('table_login_setup_classification_crop_types') . ' crop_types');
@@ -190,23 +181,24 @@ class Bi_helper
         $CI->db->order_by('crops.id', 'ASC');
         $CI->db->order_by('crop_types.ordering', 'ASC');
         $data['crops'] = $CI->db->get()->result_array();
-        foreach ($data['crops'] as $result)
+        foreach ($data['crops'] as $crop)
         {
-            if (isset($data['crop_type_count'][$result['crop_id']]))
+            if (isset($data['crop_type_count'][$crop['crop_id']]))
             {
-                $data['crop_type_count'][$result['crop_id']] += 1;
+                $data['crop_type_count'][$crop['crop_id']] += 1;
             }
             else
             {
-                $data['crop_type_count'][$result['crop_id']] = 1;
+                $data['crop_type_count'][$crop['crop_id']] = 1;
             }
         }
         //-------------------------------------------------------------------
-        $data['table_title'] = 'Market Sizes ( ' . $row_request['upazilla_name'] . ' ' . $CI->lang->line('LABEL_UPAZILLA_NAME') . ' )';
+        $data['table_title'] = 'Market Sizes ( ' . $result['upazilla_name'] . ' ' . $CI->lang->line('LABEL_UPAZILLA_NAME') . ' )';
 
         return $CI->load->view($controller_url . "/get_market_size_details", $data, true);
     }
-    public static function get_market_size_location($item_id, $collapse='in')
+
+    public static function get_market_size_location($item_id, $collapse = 'in')
     {
         $CI =& get_instance();
 
@@ -299,27 +291,27 @@ class Bi_helper
         if ($result['user_rollback'] > 0)
         {
             $item['data'][] = array(
-                'label_1' => $CI->lang->line('LABEL_ROLLBACK').' '.$CI->lang->line('LABEL_REMARKS'),
-                'value_1' => '<span style="color:'.Bi_helper::$warning_color.'">'.nl2br($result['remarks_rollback']).'</span>'
+                'label_1' => $CI->lang->line('LABEL_ROLLBACK') . ' ' . $CI->lang->line('LABEL_REMARKS'),
+                'value_1' => '<span style="color:' . Bi_helper::$warning_color . '">' . nl2br($result['remarks_rollback']) . '</span>'
             );
             $item['data'][] = array(
                 'label_1' => $CI->lang->line('LABEL_ROLLBACK_BY'),
-                'value_1' => '<span style="color:'.Bi_helper::$warning_color.'">'.$user_info[$result['user_rollback']]['name'].'</span>',
+                'value_1' => '<span style="color:' . Bi_helper::$warning_color . '">' . $user_info[$result['user_rollback']]['name'] . '</span>',
                 'label_2' => $CI->lang->line('LABEL_DATE_ROLLBACK_TIME'),
-                'value_2' => '<span style="color:'.Bi_helper::$warning_color.'">'.System_helper::display_date_time($result['date_rollback']).'</span>'
+                'value_2' => '<span style="color:' . Bi_helper::$warning_color . '">' . System_helper::display_date_time($result['date_rollback']) . '</span>'
             );
         }
         if ($result['user_rejected'] > 0)
         {
             $item['data'][] = array(
-                'label_1' => $CI->lang->line('LABEL_REJECTED').' '.$CI->lang->line('LABEL_REMARKS'),
-                'value_1' => '<span style="color:'.Bi_helper::$warning_color.'">'.nl2br($result['remarks_rejected']).'</span>'
+                'label_1' => $CI->lang->line('LABEL_REJECTED') . ' ' . $CI->lang->line('LABEL_REMARKS'),
+                'value_1' => '<span style="color:' . Bi_helper::$warning_color . '">' . nl2br($result['remarks_rejected']) . '</span>'
             );
             $item['data'][] = array(
                 'label_1' => $CI->lang->line('LABEL_REJECTED_BY'),
-                'value_1' => '<span style="color:'.Bi_helper::$warning_color.'">'.$user_info[$result['user_rejected']]['name'].'</span>',
+                'value_1' => '<span style="color:' . Bi_helper::$warning_color . '">' . $user_info[$result['user_rejected']]['name'] . '</span>',
                 'label_2' => $CI->lang->line('LABEL_DATE_REJECTED_TIME'),
-                'value_2' => '<span style="color:'.Bi_helper::$warning_color.'">'.System_helper::display_date_time($result['date_rejected']).'</span>'
+                'value_2' => '<span style="color:' . Bi_helper::$warning_color . '">' . System_helper::display_date_time($result['date_rejected']) . '</span>'
             );
         }
         if ($result['user_approved'] > 0)
@@ -334,6 +326,7 @@ class Bi_helper
 
         return $CI->load->view("info_basic", array('accordion' => $item), true);
     }
+
     public static function get_variety_info($item_id, $whose = 'Competitor', $show_basic = true, $show_characteristics = false, $show_images = false, $show_videos = false)
     {
         $CI =& get_instance();
@@ -575,21 +568,23 @@ class Bi_helper
 
         return $items;
     }
+
     public static function cultivation_date_display($date_int)
     {
-        $return_value=0;
-        if($date_int && strtotime(date('d-M-Y',$date_int)))
+        $return_value = 0;
+        if ($date_int && strtotime(date('d-M-Y', $date_int)))
         {
-            $return_value=date('d-F',$date_int);
+            $return_value = date('d-F', $date_int);
         }
         return $return_value;
     }
+
     public static function cultivation_date_sql($date_string)
     {
-        $return_value=0;
-        if(strtotime($date_string))
+        $return_value = 0;
+        if (strtotime($date_string))
         {
-            $return_value=strtotime('1970-'.date('m-d',strtotime($date_string)));
+            $return_value = strtotime('1970-' . date('m-d', strtotime($date_string)));
         }
         return $return_value;
     }

@@ -1,6 +1,6 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
-class Market_size_approve extends Root_Controller
+class Major_competitor_variety_approve extends Root_Controller
 {
     public $message;
     public $permissions;
@@ -14,7 +14,7 @@ class Market_size_approve extends Root_Controller
         $this->message = "";
         $this->permissions = User_helper::get_permission(get_class($this));
         $this->controller_url = strtolower(get_class($this));
-        $this->common_view_location = 'market_size_request';
+        $this->common_view_location = 'major_competitor_variety_request';
         $this->locations = User_helper::get_locations();
         if (!($this->locations))
         {
@@ -86,7 +86,7 @@ class Market_size_approve extends Root_Controller
         $data['forwarded_by'] = 1;
         if ($method == 'list_all')
         {
-            $data['status_approved'] = 1;
+            $data['status_approve'] = 1;
         }
         return $data;
     }
@@ -140,10 +140,10 @@ class Market_size_approve extends Root_Controller
 
     private function system_get_items()
     {
-        $this->db->from($this->config->item('table_bi_market_size_request') . ' ms');
-        $this->db->select('ms.*, revision_count number_of_edit');
+        $this->db->from($this->config->item('table_bi_major_competitor_variety_request') . ' item');
+        $this->db->select('item.*, revision_count number_of_edit');
 
-        $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = ms.upazilla_id');
+        $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = item.upazilla_id');
         $this->db->select('upazilla.name upazilla_name');
 
         $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id');
@@ -174,17 +174,17 @@ class Market_size_approve extends Root_Controller
             }
         }
 
-        $this->db->join($this->config->item('table_login_setup_user_info') . ' user_info', 'user_info.id = ms.user_forwarded');
+        $this->db->join($this->config->item('table_login_setup_user_info') . ' user_info', 'user_info.id = item.user_forwarded');
         $this->db->select('user_info.name forwarded_by');
 
-        $this->db->where('ms.status', $this->config->item('system_status_active'));
-        $this->db->where('ms.status_forward', $this->config->item('system_status_forwarded'));
-        $this->db->where('ms.status_approved', $this->config->item('system_status_pending'));
+        $this->db->where('item.status', $this->config->item('system_status_active'));
+        $this->db->where('item.status_forward', $this->config->item('system_status_forwarded'));
+        $this->db->where('item.status_approve', $this->config->item('system_status_pending'));
         $this->db->order_by('division.name');
         $this->db->order_by('zone.name');
         $this->db->order_by('territory.name');
         $this->db->order_by('district.name');
-        $this->db->order_by('ms.id');
+        $this->db->order_by('item.id');
         $items = $this->db->get()->result_array();
         $this->json_return($items);
     }
@@ -231,10 +231,10 @@ class Market_size_approve extends Root_Controller
         {
             $pagesize = $pagesize * 2;
         }
-        $this->db->from($this->config->item('table_bi_market_size_request') . ' ms');
-        $this->db->select('ms.*, revision_count number_of_edit');
+        $this->db->from($this->config->item('table_bi_major_competitor_variety_request') . ' item');
+        $this->db->select('item.*, revision_count number_of_edit');
 
-        $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = ms.upazilla_id');
+        $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = item.upazilla_id');
         $this->db->select('upazilla.name upazilla_name');
 
         $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id');
@@ -265,16 +265,16 @@ class Market_size_approve extends Root_Controller
             }
         }
 
-        $this->db->join($this->config->item('table_login_setup_user_info') . ' user_info', 'user_info.id = ms.user_forwarded');
+        $this->db->join($this->config->item('table_login_setup_user_info') . ' user_info', 'user_info.id = item.user_forwarded');
         $this->db->select('user_info.name forwarded_by');
 
-        $this->db->where('ms.status', $this->config->item('system_status_active'));
-        $this->db->where('ms.status_forward', $this->config->item('system_status_forwarded'));
+        $this->db->where('item.status', $this->config->item('system_status_active'));
+        $this->db->where('item.status_forward', $this->config->item('system_status_forwarded'));
         $this->db->order_by('division.name');
         $this->db->order_by('zone.name');
         $this->db->order_by('territory.name');
         $this->db->order_by('district.name');
-        $this->db->order_by('ms.id');
+        $this->db->order_by('item.id');
         $this->db->limit($pagesize, $current_records);
         $items = $this->db->get()->result_array();
         $this->json_return($items);
@@ -327,10 +327,10 @@ class Market_size_approve extends Root_Controller
             }
 
             $data = array();
-            $this->db->from($this->config->item('table_bi_market_size_request') . ' ms');
-            $this->db->select('ms.*');
+            $this->db->from($this->config->item('table_bi_major_competitor_variety_request') . ' item');
+            $this->db->select('item.*');
 
-            $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = ms.upazilla_id');
+            $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = item.upazilla_id');
             $this->db->select('upazilla.name upazilla_name');
 
             $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id', 'INNER');
@@ -345,10 +345,10 @@ class Market_size_approve extends Root_Controller
             $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
             $this->db->select('division.id division_id, division.name division_name');
 
-            $this->db->where('ms.id', $item_id);
-            $this->db->where('ms.status', $this->config->item('system_status_active'));
-            $this->db->where('ms.status_forward', $this->config->item('system_status_forwarded'));
-            $this->db->where('ms.status_approved !=', $this->config->item('system_status_approved'));
+            $this->db->where('item.id', $item_id);
+            $this->db->where('item.status', $this->config->item('system_status_active'));
+            $this->db->where('item.status_forward', $this->config->item('system_status_forwarded'));
+            $this->db->where('item.status_approve !=', $this->config->item('system_status_approved'));
             $data['item'] = $this->db->get()->row_array();
             if (!$data['item'])
             {
@@ -365,7 +365,7 @@ class Market_size_approve extends Root_Controller
                 $this->json_return($ajax);
             }
 
-            if ($data['item']['status_approved'] == $this->config->item('system_status_approved'))
+            if ($data['item']['status_approve'] == $this->config->item('system_status_approved'))
             {
                 $ajax['status'] = false;
                 $ajax['system_message'] = 'This market size request is already approved.';
@@ -403,10 +403,10 @@ class Market_size_approve extends Root_Controller
             $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
             $this->json_return($ajax);
         }
-        $this->db->from($this->config->item('table_bi_market_size_request') . ' ms');
-        $this->db->select('ms.*');
+        $this->db->from($this->config->item('table_bi_major_competitor_variety_request') . ' item');
+        $this->db->select('item.*');
 
-        $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = ms.upazilla_id');
+        $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = item.upazilla_id');
         $this->db->select('upazilla.name upazilla_name');
 
         $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id', 'INNER');
@@ -421,8 +421,8 @@ class Market_size_approve extends Root_Controller
         $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
         $this->db->select('division.id division_id, division.name division_name');
 
-        $this->db->where('ms.id', $item_id);
-        $this->db->where('ms.status', $this->config->item('system_status_active'));
+        $this->db->where('item.id', $item_id);
+        $this->db->where('item.status', $this->config->item('system_status_active'));
         $result = $this->db->get()->row_array();
         if (!$result)
         {
@@ -433,9 +433,9 @@ class Market_size_approve extends Root_Controller
         }
         if (!$this->check_my_editable($result))
         {
-            System_helper::invalid_try(__FUNCTION__, $item_id, 'Trying to Approve Market Size of other Location');
+            System_helper::invalid_try(__FUNCTION__, $item_id, 'Trying to Approve Major Competitor Varieties of other Location');
             $ajax['status'] = false;
-            $ajax['system_message'] = 'Trying to Approve Market Size of other Location';
+            $ajax['system_message'] = 'Trying to Approve Major Competitor Varieties of other Location';
             $this->json_return($ajax);
         }
         if (!$this->check_validation())
@@ -447,54 +447,50 @@ class Market_size_approve extends Root_Controller
 
         $this->db->trans_start(); //DB Transaction Handle START
 
-        if ($item['status_approved'] == $this->config->item('system_status_rollback'))
+        if ($item['status_approve'] == $this->config->item('system_status_rollback'))
         {
             $item['status_forward'] = $this->config->item('system_status_pending');
-            $item['remarks_rollback'] = $item['remarks_approved'];
+            $item['remarks_rollback'] = $item['remarks_approve'];
             $item['date_rollback'] = $time;
             $item['user_rollback'] = $user->user_id;
-            unset($item['status_approved']);
-            unset($item['remarks_approved']);
+            unset($item['status_approve']);
+            unset($item['remarks_approve']);
         }
-        else if ($item['status_approved'] == $this->config->item('system_status_rejected'))
+        else if ($item['status_approve'] == $this->config->item('system_status_rejected'))
         {
-            $item['remarks_rejected'] = $item['remarks_approved'];
+            $item['remarks_rejected'] = $item['remarks_approve'];
             $item['date_rejected'] = $time;
             $item['user_rejected'] = $user->user_id;
-            unset($item['remarks_approved']);
+            unset($item['remarks_approve']);
         }
         else
         {
-            $market_sizes = json_decode($result['market_size'], TRUE);
-            foreach ($market_sizes as $type_id => $market_size)
+            $updated_array = array(
+                'competitor_varieties' => $result['competitor_varieties'],
+                'date_updated' => $time,
+                'user_updated' => $user->user_id
+            );
+            // Main Table UPDATE
+            $this->db->set('revision_count', 'revision_count+1', FALSE);
+            $query = Query_helper::update($this->config->item('table_bi_major_competitor_variety'), $updated_array, array("upazilla_id =" . $result['upazilla_id']), FALSE);
+            if (!$query)
             {
-                $updated_array = array(
-                    'market_size_kg' => $market_size,
-                    'date_updated' => $time,
-                    'user_updated' => $user->user_id
+                $insert_array = array(
+                    'upazilla_id' => $result['upazilla_id'],
+                    'competitor_varieties' => $result['competitor_varieties'],
+                    'revision_count' => 1,
+                    'date_created' => $time,
+                    'user_created' => $user->user_id
                 );
-                // Main Table UPDATE
-                $this->db->set('revision_count', 'revision_count+1', FALSE);
-                $result_updated = Query_helper::update($this->config->item('table_bi_market_size'), $updated_array, array("type_id =" . $type_id, "upazilla_id =" . $result['upazilla_id']), FALSE);
-                if (!$result_updated)
-                {
-                    $insert_array = array(
-                        'type_id' => $type_id,
-                        'upazilla_id' => $result['upazilla_id'],
-                        'market_size_kg' => $market_size,
-                        'revision_count' => 1
-                    );
-                    Query_helper::add($this->config->item('table_bi_market_size'), $insert_array, FALSE);
-                }
+                // Main Table INSERT
+                Query_helper::add($this->config->item('table_bi_major_competitor_variety'), $insert_array, FALSE);
             }
-            $item['date_approved'] = $time;
-            $item['user_approved'] = $user->user_id;
         }
-
         // Request Table UPDATE
-        Query_helper::update($this->config->item('table_bi_market_size_request'), $item, array("id =" . $item_id), FALSE);
+        Query_helper::update($this->config->item('table_bi_major_competitor_variety_request'), $item, array("id =" . $item_id), FALSE);
 
         $this->db->trans_complete(); //DB Transaction Handle END
+
         if ($this->db->trans_status() === TRUE)
         {
             $ajax['status'] = true;
@@ -514,11 +510,11 @@ class Market_size_approve extends Root_Controller
         $item = $this->input->post('item');
         $this->load->library('form_validation');
 
-        $this->form_validation->set_rules('item[status_approved]', $this->lang->line('LABEL_STATUS_APPROVE'), 'trim|required');
+        $this->form_validation->set_rules('item[status_approve]', $this->lang->line('LABEL_STATUS_APPROVE'), 'trim|required');
         // `Remarks` is mandatory for Rollback & Reject.
-        if (($item['status_approved'] == $this->config->item('system_status_rollback')) || ($item['status_approved'] == $this->config->item('system_status_rejected')))
+        if (($item['status_approve'] == $this->config->item('system_status_rollback')) || ($item['status_approve'] == $this->config->item('system_status_rejected')))
         {
-            $this->form_validation->set_rules('item[remarks_approved]', $this->lang->line('LABEL_REMARKS'), 'trim|required');
+            $this->form_validation->set_rules('item[remarks_approve]', $this->lang->line('LABEL_REMARKS'), 'trim|required');
         }
         if ($this->form_validation->run() == FALSE)
         {

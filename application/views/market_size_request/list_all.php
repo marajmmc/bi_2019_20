@@ -42,7 +42,7 @@ if (isset($CI->permissions['action6']) && ($CI->permissions['action6'] == 1))
     $action_buttons[] = array
     (
         'label' => 'Preference',
-        'href' => site_url($CI->controller_url . '/index/set_preference_all')
+        'href' => site_url($CI->controller_url . '/index/set_preference')
     );
 }
 $action_buttons[] = array(
@@ -131,10 +131,10 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                     { text: '<?php echo $CI->lang->line('LABEL_ZONE_NAME'); ?>', dataField: 'zone_name', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['zone_name']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_DIVISION_NAME'); ?>', dataField: 'division_name', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['division_name']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_NUMBER_OF_EDIT'); ?>', dataField: 'number_of_edit', width: '60', filtertype: 'none', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['number_of_edit']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_REQUESTED_BY'); ?>', dataField: 'requested_by', width: '180', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['requested_by']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_STATUS'); ?>', dataField: 'status', width: '80', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['status']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_STATUS_FORWARD'); ?>', dataField: 'status_forward', width: '80', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['status_forward']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_STATUS_APPROVE'); ?>', dataField: 'status_approved', width: '80', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['status_approved']?0:1;?>}
+                    { text: '<?php echo $CI->lang->line('LABEL_REQUESTED_BY'); ?>', dataField: 'requested_by', width: '120', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['requested_by']?0:1;?>},
+                    { text: '<?php echo $CI->lang->line('LABEL_STATUS'); ?>', dataField: 'status', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['status']?0:1;?>},
+                    { text: '<?php echo $CI->lang->line('LABEL_STATUS_FORWARD'); ?>', dataField: 'status_forward', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['status_forward']?0:1;?>},
+                    { text: '<?php echo $CI->lang->line('LABEL_STATUS_APPROVE'); ?>', dataField: 'status_approved', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['status_approved']?0:1;?>}
                 ]
             });
     });
