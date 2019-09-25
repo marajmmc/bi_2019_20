@@ -588,4 +588,200 @@ class Bi_helper
         }
         return $return_value;
     }
+
+    public static function get_major_competitor_variety_location($item_id, $collapse = 'in')
+    {
+        $CI =& get_instance();
+
+        $CI->db->from($CI->config->item('table_bi_major_competitor_variety_request') . ' item');
+        $CI->db->select('item.*');
+
+        $CI->db->join($CI->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = item.upazilla_id');
+        $CI->db->select('upazilla.name upazilla_name');
+
+        $CI->db->join($CI->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id');
+        $CI->db->select('district.name district_name');
+
+        $CI->db->join($CI->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
+        $CI->db->select('territory.name territory_name');
+
+        $CI->db->join($CI->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
+        $CI->db->select('zone.name zone_name');
+
+        $CI->db->join($CI->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
+        $CI->db->select('division.name division_name');
+
+        $CI->db->where('item.id', $item_id);
+        $CI->db->where('item.status', $CI->config->item('system_status_active'));
+        $result = $CI->db->get()->row_array();
+        if (!$result)
+        {
+            System_helper::invalid_try(__FUNCTION__, $item_id, 'ID Not Exists');
+            $ajax['status'] = false;
+            $ajax['system_message'] = 'Invalid Try.';
+            $CI->json_return($ajax);
+        }
+
+        $user_ids = array(
+            $result['user_created'] => $result['user_created'],
+            $result['user_updated'] => $result['user_updated'],
+            $result['user_forwarded'] => $result['user_forwarded'],
+            $result['user_rollback'] => $result['user_rollback'],
+            $result['user_rejected'] => $result['user_rejected'],
+            $result['user_approved'] => $result['user_approved']
+        );
+        $user_info = System_helper::get_users_info($user_ids);
+
+        $item = array(
+            'header' => 'Major Competitor Variety Information',
+            'div_id' => 'basic_info',
+            'collapse' => $collapse,
+            'data' => array(
+                array(
+                    'label_1' => $CI->lang->line('LABEL_UPAZILLA_NAME'),
+                    'value_1' => $result['upazilla_name']
+                ),
+                array(
+                    'label_1' => $CI->lang->line('LABEL_DISTRICT_NAME'),
+                    'value_1' => $result['district_name'],
+                    'label_2' => $CI->lang->line('LABEL_TERRITORY_NAME'),
+                    'value_2' => $result['territory_name']
+                ),
+                array(
+                    'label_1' => $CI->lang->line('LABEL_ZONE_NAME'),
+                    'value_1' => $result['zone_name'],
+                    'label_2' => $CI->lang->line('LABEL_DIVISION_NAME'),
+                    'value_2' => $result['division_name']
+                ),
+                array(
+                    'label_1' => $CI->lang->line('LABEL_CREATED_BY'),
+                    'value_1' => $user_info[$result['user_created']]['name'],
+                    'label_2' => $CI->lang->line('LABEL_DATE_CREATED_TIME'),
+                    'value_2' => System_helper::display_date_time($result['date_created'])
+                )
+            )
+        );
+        if ($result['user_updated'] > 0)
+        {
+            $item['data'][] = array(
+                'label_1' => $CI->lang->line('LABEL_UPDATED_BY'),
+                'value_1' => $user_info[$result['user_updated']]['name'],
+                'label_2' => $CI->lang->line('LABEL_DATE_UPDATED_TIME'),
+                'value_2' => System_helper::display_date_time($result['date_updated'])
+            );
+        }
+        if ($result['user_forwarded'] > 0)
+        {
+            $item['data'][] = array(
+                'label_1' => $CI->lang->line('LABEL_FORWARDED_BY'),
+                'value_1' => $user_info[$result['user_forwarded']]['name'],
+                'label_2' => $CI->lang->line('LABEL_DATE_FORWARDED_TIME'),
+                'value_2' => System_helper::display_date_time($result['date_forwarded'])
+            );
+        }
+        if ($result['user_rollback'] > 0)
+        {
+            $item['data'][] = array(
+                'label_1' => $CI->lang->line('LABEL_ROLLBACK') . ' ' . $CI->lang->line('LABEL_REMARKS'),
+                'value_1' => '<span style="color:' . Bi_helper::$warning_color . '">' . nl2br($result['remarks_rollback']) . '</span>'
+            );
+            $item['data'][] = array(
+                'label_1' => $CI->lang->line('LABEL_ROLLBACK_BY'),
+                'value_1' => '<span style="color:' . Bi_helper::$warning_color . '">' . $user_info[$result['user_rollback']]['name'] . '</span>',
+                'label_2' => $CI->lang->line('LABEL_DATE_ROLLBACK_TIME'),
+                'value_2' => '<span style="color:' . Bi_helper::$warning_color . '">' . System_helper::display_date_time($result['date_rollback']) . '</span>'
+            );
+        }
+        if ($result['user_rejected'] > 0)
+        {
+            $item['data'][] = array(
+                'label_1' => $CI->lang->line('LABEL_REJECTED') . ' ' . $CI->lang->line('LABEL_REMARKS'),
+                'value_1' => '<span style="color:' . Bi_helper::$warning_color . '">' . nl2br($result['remarks_rejected']) . '</span>'
+            );
+            $item['data'][] = array(
+                'label_1' => $CI->lang->line('LABEL_REJECTED_BY'),
+                'value_1' => '<span style="color:' . Bi_helper::$warning_color . '">' . $user_info[$result['user_rejected']]['name'] . '</span>',
+                'label_2' => $CI->lang->line('LABEL_DATE_REJECTED_TIME'),
+                'value_2' => '<span style="color:' . Bi_helper::$warning_color . '">' . System_helper::display_date_time($result['date_rejected']) . '</span>'
+            );
+        }
+        if ($result['user_approved'] > 0)
+        {
+            $item['data'][] = array(
+                'label_1' => $CI->lang->line('LABEL_APPROVED_BY'),
+                'value_1' => $user_info[$result['user_approved']]['name'],
+                'label_2' => $CI->lang->line('LABEL_DATE_APPROVED_TIME'),
+                'value_2' => System_helper::display_date_time($result['date_approved'])
+            );
+        }
+
+        return $CI->load->view("info_basic", array('accordion' => $item), true);
+    }
+
+    public static function get_major_competitor_variety_info($item_id, $controller_url, $collapse = 'in')
+    {
+        $CI =& get_instance();
+        $data = array();
+        $data['collapse'] = $collapse;
+
+        // From Request table (Current Requesting Market Size for this Upazilla)
+        $CI->db->from($CI->config->item('table_bi_market_size_request') . ' item');
+        $CI->db->select('upazilla_id, market_size');
+        $CI->db->join($CI->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = item.upazilla_id');
+        $CI->db->select('upazilla.name upazilla_name');
+        $CI->db->where('item.id', $item_id);
+        $row_request = $CI->db->get()->row_array();
+
+        $data['market_size_edit'] = json_decode($row_request['market_size'], TRUE);
+
+        // From Main table (Previously Approved Market Size for this Upazilla)
+        $CI->db->from($CI->config->item('table_bi_market_size'));
+        $CI->db->select('upazilla_id, type_id, market_size_kg');
+        $CI->db->where('upazilla_id', $row_request['upazilla_id']);
+        $results = $CI->db->get()->result_array();
+
+        foreach ($results as $result)
+        {
+            $data['market_size_old'][$result['type_id']] = $result['market_size_kg'];
+        }
+
+        // From Request table (Current Requesting Major Competitor Variety for this Upazilla)
+        $CI->db->from($CI->config->item('table_bi_major_competitor_variety_request') . ' item');
+        $CI->db->select('*');
+        $CI->db->join($CI->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = item.upazilla_id');
+        $CI->db->select('upazilla.name upazilla_name');
+        $CI->db->where('item.id', $item_id);
+        $row_request = $CI->db->get()->row_array();
+
+        $data['competitor_varieties'] = json_decode($row_request['competitor_varieties'], TRUE);
+
+        // -------------------- For crop count -------------------------------
+        $CI->db->from($CI->config->item('table_login_setup_classification_crop_types') . ' crop_types');
+        $CI->db->select('crop_types.id crop_type_id, crop_types.name crop_type_name');
+
+        $CI->db->join($CI->config->item('table_login_setup_classification_crops') . ' crops', 'crops.id = crop_types.crop_id', 'INNER');
+        $CI->db->select('crops.id crop_id, crops.name crop_name');
+
+        $CI->db->where('crop_types.status', $CI->config->item('system_status_active'));
+        $CI->db->where('crops.status', $CI->config->item('system_status_active'));
+
+        $CI->db->order_by('crops.id', 'ASC');
+        $CI->db->order_by('crop_types.ordering', 'ASC');
+        $data['crops'] = $results = $CI->db->get()->result_array();
+        foreach ($results as $result)
+        {
+            if (isset($data['crop_type_count'][$result['crop_id']]))
+            {
+                $data['crop_type_count'][$result['crop_id']] += 1;
+            }
+            else
+            {
+                $data['crop_type_count'][$result['crop_id']] = 1;
+            }
+        }
+        //-------------------------------------------------------------------
+        $data['table_title'] = 'Major Competitor Varieties ( ' . $row_request['upazilla_name'] . ' ' . $CI->lang->line('LABEL_UPAZILLA_NAME') . ' )';
+
+        return $CI->load->view($controller_url . "/get_major_competitor_variety_details", $data, true);
+    }
 }
