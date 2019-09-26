@@ -2,13 +2,6 @@
 $CI = & get_instance();
 
 $action_buttons = array();
-if (isset($CI->permissions['action0']) && ($CI->permissions['action0'] == 1))
-{
-    $action_buttons[] = array(
-        'label' => 'All List',
-        'href' => site_url($CI->controller_url . '/index/list_all')
-    );
-}
 if (isset($CI->permissions['action1']) && ($CI->permissions['action1'] == 1))
 {
     /*$action_buttons[] = array(

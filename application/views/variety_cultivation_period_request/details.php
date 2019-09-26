@@ -38,8 +38,8 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 <tr class="table_head">
                     <th rowspan="2"><?php echo $this->lang->line('LABEL_CROP_NAME'); ?></th>
                     <th rowspan="2"><?php echo $this->lang->line('LABEL_CROP_TYPE_NAME'); ?></th>
-                    <th colspan="2" style="text-align:center">Before <?php echo $this->lang->line('LABEL_CULTIVATION_PERIOD'); ?></th>
-                    <th colspan="2" style="text-align:center"><?php echo $this->lang->line('LABEL_CULTIVATION_PERIOD'); ?></th>
+                    <th colspan="2" style="text-align:center">Existing <?php echo $this->lang->line('LABEL_CULTIVATION_PERIOD'); ?></th>
+                    <th colspan="2" style="text-align:center">Edited <?php echo $this->lang->line('LABEL_CULTIVATION_PERIOD'); ?></th>
                 </tr>
                 <tr>
                     <th style="text-align:center">Date Start</th>
