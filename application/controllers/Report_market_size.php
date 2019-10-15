@@ -219,47 +219,61 @@ class Report_market_size extends Root_Controller
         $district_id=$this->input->post('district_id');
         $upazilla_id=$this->input->post('upazilla_id');
 
-        /*// get type wise acre in kg
-        $results=Query_helper::get_info($this->config->item('table_login_setup_classification_crop_types'),array('*'),array('status ="'.$this->config->item('system_status_active').'"'));
-        $type_acre=array();
-        foreach($results as $result)
-        {
-            $type_acre[$result['id']] = $result['quantity_kg_acre'];
-        }
-        // get calculate total market size
-        $results=Query_helper::get_info($this->config->item('table_login_setup_classification_type_acres'),array('*'),array('revision = 1'));
-        $market_size_kg_total=array();
-        foreach($results as $result)
-        {
-            if(isset($type_acre[$result['type_id']]))
-            {
-                if(isset($market_size_kg_total[$result['type_id']]))
-                {
-                    $market_size_kg_total[$result['type_id']]+=($result['quantity_acres'] * $type_acre[$result['type_id']]);
-                }
-                else
-                {
-                    $market_size_kg_total[$result['type_id']]=($result['quantity_acres'] * $type_acre[$result['type_id']]);
-                }
-            }
-            else
-            {
-                $market_size_kg_total[$result['type_id']] = 0;
-            }
-        }*/
         // get total market size
-        $results=Query_helper::get_info($this->config->item('table_bi_market_size'),array('*'),array());
+        //$results=Query_helper::get_info($this->config->item('table_bi_market_size'),array('*'),array());
+        $this->db->from($this->config->item('table_bi_market_size') . ' market_size');
+        $this->db->select('market_size.type_id, SUM(market_size.market_size_kg) AS market_size_kg');
+
+        $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = market_size.type_id','INNER');
+
+        $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = market_size.upazilla_id');
+        //$this->db->select('upazilla.id upazilla_id, upazilla.name upazilla_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id');
+        //$this->db->select('district.id district_id, district.name district_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
+        //$this->db->select('territory.id territory_id, territory.name territory_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
+        //$this->db->select('zone.id zone_id, zone.name zone_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
+        //$this->db->select('division.id division_id, division.name division_name');
+        if($crop_id>0)
+        {
+            $this->db->where('crop_type.crop_id',$crop_id);
+            if($crop_type_id>0)
+            {
+                $this->db->where('crop_type.id',$crop_type_id);
+            }
+        }
+        if ($division_id > 0)
+        {
+            $this->db->where('division.id', $division_id);
+            if ($zone_id > 0)
+            {
+                $this->db->where('zone.id', $zone_id);
+                if ($territory_id > 0)
+                {
+                    $this->db->where('territory.id', $territory_id);
+                    if ($district_id > 0)
+                    {
+                        $this->db->where('district.id', $district_id);
+                        if ($upazilla_id > 0)
+                        {
+                            $this->db->where('upazilla.id', $upazilla_id);
+                        }
+                    }
+                }
+            }
+        }
+        $this->db->group_by('market_size.type_id');
+        $results = $this->db->get()->result_array();
         $market_size_kg_total=array();
         foreach($results as $result)
         {
-            if(isset($market_size_kg_total[$result['type_id']]))
-            {
-                $market_size_kg_total[$result['type_id']]+=$result['market_size_kg'];
-            }
-            else
-            {
-                $market_size_kg_total[$result['type_id']]=$result['market_size_kg'];
-            }
+            $market_size_kg_total[$result['type_id']]=$result['market_size_kg'];
         }
 
         // get fiscal year
@@ -310,7 +324,6 @@ class Report_market_size extends Root_Controller
         $this->db->join($this->config->item('table_login_setup_classification_varieties').' v','v.id=details.variety_id', 'INNER');
         $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = v.crop_type_id','INNER');
 
-
         $this->db->where('sale.date_sale >=',$fiscal_year['date_start']);
         $this->db->where('sale.date_sale <=',$fiscal_year['date_end']);
         $this->db->where('sale.status',$this->config->item('system_status_active'));
@@ -335,7 +348,41 @@ class Report_market_size extends Root_Controller
         // get type wise cultivation period :: minimum start date
         $this->db->from($this->config->item('table_bi_variety_cultivation_period').' cultivation_period');
         $this->db->select('cultivation_period.type_id, MIN(cultivation_period.date_start) as date_start_min');
+        $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = cultivation_period.type_id','INNER');
+        $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = cultivation_period.upazilla_id');
+        $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id');
+        $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
+        $this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
+        $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
         $this->db->where('cultivation_period.status',$this->config->item('system_status_active'));
+        if($crop_id>0)
+        {
+            $this->db->where('crop_type.crop_id',$crop_id);
+            if($crop_type_id>0)
+            {
+                $this->db->where('crop_type.id',$crop_type_id);
+            }
+        }
+        if ($division_id > 0)
+        {
+            $this->db->where('division.id', $division_id);
+            if ($zone_id > 0)
+            {
+                $this->db->where('zone.id', $zone_id);
+                if ($territory_id > 0)
+                {
+                    $this->db->where('territory.id', $territory_id);
+                    if ($district_id > 0)
+                    {
+                        $this->db->where('district.id', $district_id);
+                        if ($upazilla_id > 0)
+                        {
+                            $this->db->where('upazilla.id', $upazilla_id);
+                        }
+                    }
+                }
+            }
+        }
         $this->db->group_by('cultivation_period.type_id');
         $results=$this->db->get()->result_array();
         $date_start_min=array();
@@ -346,7 +393,41 @@ class Report_market_size extends Root_Controller
         // get type wise cultivation period :: maximum end date
         $this->db->from($this->config->item('table_bi_variety_cultivation_period').' cultivation_period');
         $this->db->select('cultivation_period.type_id,MAX(cultivation_period.date_end) as date_end_max');
+        $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = cultivation_period.type_id','INNER');
+        $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = cultivation_period.upazilla_id');
+        $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id');
+        $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
+        $this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
+        $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
         $this->db->where('cultivation_period.status',$this->config->item('system_status_active'));
+        if($crop_id>0)
+        {
+            $this->db->where('crop_type.crop_id',$crop_id);
+            if($crop_type_id>0)
+            {
+                $this->db->where('crop_type.id',$crop_type_id);
+            }
+        }
+        if ($division_id > 0)
+        {
+            $this->db->where('division.id', $division_id);
+            if ($zone_id > 0)
+            {
+                $this->db->where('zone.id', $zone_id);
+                if ($territory_id > 0)
+                {
+                    $this->db->where('territory.id', $territory_id);
+                    if ($district_id > 0)
+                    {
+                        $this->db->where('district.id', $district_id);
+                        if ($upazilla_id > 0)
+                        {
+                            $this->db->where('upazilla.id', $upazilla_id);
+                        }
+                    }
+                }
+            }
+        }
         $this->db->group_by('cultivation_period.type_id');
         $results=$this->db->get()->result_array();
         $date_end_max=array();
@@ -441,7 +522,7 @@ class Report_market_size extends Root_Controller
                 {
                     foreach($varieties as $variety_id)
                     {
-                        $variety_name=isset($variety_info[$variety_id])?$variety_info[$variety_id]['name']:'';
+                        /*$variety_name=isset($variety_info[$variety_id])?$variety_info[$variety_id]['name']:'';
                         if(!isset($competitor_major_varieties[$type_id][$variety_id]))
                         {
                             if(isset($varieties_competitor[$type_id]))
@@ -453,7 +534,23 @@ class Report_market_size extends Root_Controller
                                 $varieties_competitor[$type_id]=$variety_name;
                             }
                         }
-                        $competitor_major_varieties[$type_id][$variety_id]=isset($variety_info[$variety_id])?$variety_info[$variety_id]['name']:'';
+                        $competitor_major_varieties[$type_id][$variety_id]=isset($variety_info[$variety_id])?$variety_info[$variety_id]['name']:'';*/
+                        if(isset($variety_info[$variety_id]))
+                        {
+                            $variety_name=$variety_info[$variety_id]['name'];
+                            if(!isset($competitor_major_varieties[$type_id][$variety_id]))
+                            {
+                                if(isset($varieties_competitor[$type_id]))
+                                {
+                                    $varieties_competitor[$type_id]=$varieties_competitor[$type_id]."<br />".$variety_name;
+                                }
+                                else
+                                {
+                                    $varieties_competitor[$type_id]=$variety_name;
+                                }
+                            }
+                            $competitor_major_varieties[$type_id][$variety_id]=isset($variety_info[$variety_id])?$variety_info[$variety_id]['name']:'';
+                        }
                     }
                 }
             }

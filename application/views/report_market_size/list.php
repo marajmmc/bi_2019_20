@@ -167,8 +167,8 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 showaggregates: true,
                 showstatusbar: true,
                 altrows: true,
-                rowsheight: 180,
-                //rowsheight: 40,
+                //rowsheight: 180,
+                rowsheight: 40,
                 columnsheight: 40,
                 columns: [
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>', dataField: 'crop_name',pinned:true,width:'200',filtertype: 'list',cellsrenderer: cellsrenderer,hidden: <?php echo $system_preference_items['crop_name']?0:1;?>,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer},
