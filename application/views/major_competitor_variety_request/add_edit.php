@@ -88,10 +88,7 @@ foreach ($results as $result)
         ?>
     </div>
 </div>
-<div style="<?php if (!(sizeof($zones) > 0))
-{
-    echo 'display:none';
-} ?>" class="row show-grid" id="zone_id_container">
+<div style="<?php echo (!(sizeof($zones) > 0)) ? 'display:none' : ''; ?>" class="row show-grid" id="zone_id_container">
     <div class="col-xs-4">
         <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_ZONE_NAME'); ?>
             <span style="color:#FF0000">*</span></label>
@@ -121,10 +118,7 @@ foreach ($results as $result)
                     foreach ($zones as $zone)
                     {
                         ?>
-                        <option value="<?php echo $zone['value'] ?>" <?php if ($zone['value'] == $item['zone_id'])
-                        {
-                            echo "selected";
-                        } ?>><?php echo $zone['text']; ?></option>
+                        <option value="<?php echo $zone['value'] ?>" <?php echo ($zone['value'] == $item['zone_id']) ? "selected" : ""; ?>><?php echo $zone['text']; ?></option>
                     <?php
                     }
                     ?>
@@ -135,10 +129,7 @@ foreach ($results as $result)
         ?>
     </div>
 </div>
-<div style="<?php if (!(sizeof($territories) > 0))
-{
-    echo 'display:none';
-} ?>" class="row show-grid" id="territory_id_container">
+<div style="<?php echo (!(sizeof($territories) > 0)) ? 'display:none' : ''; ?>" class="row show-grid" id="territory_id_container">
     <div class="col-xs-4">
         <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_TERRITORY_NAME'); ?>
             <span style="color:#FF0000">*</span></label>
@@ -168,10 +159,7 @@ foreach ($results as $result)
                     foreach ($territories as $territory)
                     {
                         ?>
-                        <option value="<?php echo $territory['value'] ?>" <?php if ($territory['value'] == $item['territory_id'])
-                        {
-                            echo "selected";
-                        } ?>><?php echo $territory['text']; ?></option>
+                        <option value="<?php echo $territory['value'] ?>" <?php echo ($territory['value'] == $item['territory_id']) ? "selected" : ""; ?>><?php echo $territory['text']; ?></option>
                     <?php
                     }
                     ?>
@@ -182,10 +170,7 @@ foreach ($results as $result)
         ?>
     </div>
 </div>
-<div style="<?php if (!(sizeof($districts) > 0))
-{
-    echo 'display:none';
-} ?>" class="row show-grid" id="district_id_container">
+<div style="<?php echo (!(sizeof($districts) > 0)) ? 'display:none' : ''; ?>" class="row show-grid" id="district_id_container">
     <div class="col-xs-4">
         <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_DISTRICT_NAME'); ?>
             <span style="color:#FF0000">*</span></label>
@@ -215,10 +200,7 @@ foreach ($results as $result)
                     foreach ($districts as $district)
                     {
                         ?>
-                        <option value="<?php echo $district['value'] ?>" <?php if ($district['value'] == $item['district_id'])
-                        {
-                            echo "selected";
-                        } ?>><?php echo $district['text']; ?></option>
+                        <option value="<?php echo $district['value'] ?>" <?php echo ($district['value'] == $item['district_id']) ? "selected" : ""; ?>><?php echo $district['text']; ?></option>
                     <?php
                     }
                     ?>
@@ -229,10 +211,7 @@ foreach ($results as $result)
         ?>
     </div>
 </div>
-<div style="<?php if (!(sizeof($upazillas) > 0))
-{
-    echo 'display:none';
-} ?>" class="row show-grid" id="upazilla_id_container">
+<div style="<?php echo (!(sizeof($upazillas) > 0)) ? 'display:none' : ''; ?>" class="row show-grid" id="upazilla_id_container">
     <div class="col-xs-4">
         <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_UPAZILLA_NAME'); ?>
             <span style="color:#FF0000">*</span></label>
@@ -262,10 +241,7 @@ foreach ($results as $result)
                     foreach ($upazillas[$item['district_id']] as $upazilla)
                     {
                         ?>
-                        <option value="<?php echo $upazilla['value'] ?>" <?php if ($upazilla['value'] == $item['upazilla_id'])
-                        {
-                            echo "selected";
-                        } ?>><?php echo $upazilla['text']; ?></option>
+                        <option value="<?php echo $upazilla['value'] ?>" <?php echo ($upazilla['value'] == $item['upazilla_id']) ? "selected" : ""; ?>><?php echo $upazilla['text']; ?></option>
                     <?php
                     }
                     ?>
@@ -295,7 +271,7 @@ foreach ($results as $result)
         if(isset($item['upazilla_id']) && ($item['upazilla_id']>0))
         {
         ?>
-            get_competitor_variety_info(<?php echo $item['upazilla_id']; ?>, '<?php echo $item['upazilla_name']; ?>', '<?php echo $item['competitor_varieties']; ?>');
+        get_competitor_variety_info('EDIT', <?php echo $item['upazilla_id']; ?>, '<?php echo $item['upazilla_name']; ?>', '<?php echo $item['competitor_varieties']; ?>');
         <?php
         }
         ?>
@@ -374,19 +350,21 @@ foreach ($results as $result)
         $(document).on('change', '#upazilla_id', function () {
             $("#items_container").html('');
             var upazilla_id = $('#upazilla_id').val();
+            var upazilla_name = $('#upazilla_id option:selected').text();
             if (upazilla_id > 0) {
-                get_competitor_variety_info(upazilla_id);
+                get_competitor_variety_info('ADD', upazilla_id, upazilla_name);
             }
         });
 
     });
 
-    function get_competitor_variety_info(upazilla_id, upazilla_name='', competitor_variety_edit='') {
+    function get_competitor_variety_info(mode='ADD', upazilla_id, upazilla_name='', competitor_variety_edit='') {
         $.ajax({
             url: "<?php echo site_url($CI->controller_url.'/index/get_competitor_variety_info/') ?>",
             type: 'POST',
             datatype: "JSON",
             data: {
+                mode: mode,
                 upazilla_id: upazilla_id,
                 upazilla_name: upazilla_name,
                 competitor_variety_edit: competitor_variety_edit

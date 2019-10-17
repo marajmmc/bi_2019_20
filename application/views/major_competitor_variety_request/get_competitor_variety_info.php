@@ -34,7 +34,30 @@
                 ?>
                 <td><?php echo $crop['crop_type_name'] ?></td>
                 <td>
-                    -----
+                    <?php
+                    if (isset($competitor_variety_edit[$crop['crop_id']][$crop['crop_type_id']]['old']))
+                    {
+                        echo '<ol>';
+                        foreach ($competitor_variety_edit[$crop['crop_id']][$crop['crop_type_id']]['old'] as $competitor_variety_id)
+                        {
+                            if (isset($competitor_varieties[$crop['crop_id']][$competitor_variety_id]))
+                            {
+                                $variety = $competitor_varieties[$crop['crop_id']][$competitor_variety_id];
+                                ?>
+                                <li style="white-space:nowrap">
+                                    <?php echo $variety['variety_name'] . ' (' . $variety['crop_type_name'] . ', ' . $variety['competitor_name'] . ')' ?>
+                                    <input type="hidden" name="items[<?php echo $crop['crop_id']; ?>][<?php echo $crop['crop_type_id']; ?>][old][]" value="<?php echo $competitor_variety_id; ?>"/>
+                                </li>
+                            <?php
+                            }
+                        }
+                        echo '</ol>';
+                    }
+                    else
+                    {
+                        echo '-';
+                    }
+                    ?>
                 </td>
                 <td>
                     <table style="width:100%">
@@ -51,12 +74,12 @@
                                         <label>
                                             <?php
                                             $checked = '';
-                                            if(isset($competitor_variety_edit[$crop['crop_id']][$crop['crop_type_id']]) && in_array($variety_id, $competitor_variety_edit[$crop['crop_id']][$crop['crop_type_id']]))
+                                            if (isset($competitor_variety_edit[$crop['crop_id']][$crop['crop_type_id']]['new']) && in_array($variety_id, $competitor_variety_edit[$crop['crop_id']][$crop['crop_type_id']]['new']))
                                             {
                                                 $checked = 'checked';
                                             }
                                             ?>
-                                            <input type="checkbox" name="items[<?php echo $crop['crop_id']; ?>][<?php echo $crop['crop_type_id']; ?>][]" value="<?php echo $variety_id; ?>" <?php echo $checked; ?> />
+                                            <input type="checkbox" name="items[<?php echo $crop['crop_id']; ?>][<?php echo $crop['crop_type_id']; ?>][new][]" value="<?php echo $variety_id; ?>" <?php echo $checked; ?> />
                                             <?php echo $variety['variety_name'] . ' (' . $variety['crop_type_name'] . ', ' . $variety['competitor_name'] . ')' ?>
                                         </label>
                                     </div>

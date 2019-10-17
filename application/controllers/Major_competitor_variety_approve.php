@@ -465,24 +465,37 @@ class Major_competitor_variety_approve extends Root_Controller
         }
         else
         {
+            $competitor_varieties = json_decode($result['competitor_varieties'], TRUE);
+            $varieties_approved = array();
+            foreach ($competitor_varieties as $crop_id => $crop_types)
+            {
+                foreach ($crop_types as $crop_type_id => $varieties)
+                {
+                    foreach ($varieties['new'] as $competitor_variety_ids)
+                    {
+                        $varieties_approved[$crop_id][$crop_type_id][] = $competitor_variety_ids;
+                    }
+                }
+            }
             $updated_array = array(
-                'competitor_varieties' => $result['competitor_varieties'],
+                'competitor_varieties' => json_encode($varieties_approved),
                 'date_updated' => $time,
                 'user_updated' => $user->user_id
             );
+
             // Main Table UPDATE
             $this->db->set('revision_count', 'revision_count+1', FALSE);
             $query = Query_helper::update($this->config->item('table_bi_major_competitor_variety'), $updated_array, array("upazilla_id =" . $result['upazilla_id']), FALSE);
             if (!$query)
             {
+                // Main Table INSERT
                 $insert_array = array(
                     'upazilla_id' => $result['upazilla_id'],
-                    'competitor_varieties' => $result['competitor_varieties'],
+                    'competitor_varieties' => json_encode($varieties_approved),
                     'revision_count' => 1,
                     'date_created' => $time,
                     'user_created' => $user->user_id
                 );
-                // Main Table INSERT
                 Query_helper::add($this->config->item('table_bi_major_competitor_variety'), $insert_array, FALSE);
             }
         }

@@ -160,13 +160,24 @@ class Bi_helper
 
         // From Request table (Current Requesting Market Size for this Upazilla)
         $CI->db->from($CI->config->item('table_bi_market_size_request') . ' ms');
-        $CI->db->select('upazilla_id, market_size, market_size_history');
+        $CI->db->select('upazilla_id, market_size');
         $CI->db->join($CI->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = ms.upazilla_id');
         $CI->db->select('upazilla.name upazilla_name');
         $CI->db->where('ms.id', $item_id);
-        $result = $CI->db->get()->row_array();
+        $row_request = $CI->db->get()->row_array();
 
-        $data['market_size_history'] = json_decode($result['market_size_history'], TRUE);
+        $data['market_size_edit'] = json_decode($row_request['market_size'], TRUE);
+
+        // From Main table (Previously Approved Market Size for this Upazilla)
+        $CI->db->from($CI->config->item('table_bi_market_size_main'));
+        $CI->db->select('upazilla_id, type_id, market_size_kg');
+        $CI->db->where('upazilla_id', $row_request['upazilla_id']);
+        $results = $CI->db->get()->result_array();
+
+        foreach ($results as $result)
+        {
+            $data['market_size_old'][$result['type_id']] = $result['market_size_kg'];
+        }
 
         // -------------------- For crop count -------------------------------
         $CI->db->from($CI->config->item('table_login_setup_classification_crop_types') . ' crop_types');
@@ -181,19 +192,19 @@ class Bi_helper
         $CI->db->order_by('crops.id', 'ASC');
         $CI->db->order_by('crop_types.ordering', 'ASC');
         $data['crops'] = $CI->db->get()->result_array();
-        foreach ($data['crops'] as $crop)
+        foreach ($data['crops'] as $result)
         {
-            if (isset($data['crop_type_count'][$crop['crop_id']]))
+            if (isset($data['crop_type_count'][$result['crop_id']]))
             {
-                $data['crop_type_count'][$crop['crop_id']] += 1;
+                $data['crop_type_count'][$result['crop_id']] += 1;
             }
             else
             {
-                $data['crop_type_count'][$crop['crop_id']] = 1;
+                $data['crop_type_count'][$result['crop_id']] = 1;
             }
         }
         //-------------------------------------------------------------------
-        $data['table_title'] = 'Market Sizes ( ' . $result['upazilla_name'] . ' ' . $CI->lang->line('LABEL_UPAZILLA_NAME') . ' )';
+        $data['table_title'] = 'Market Sizes ( ' . $row_request['upazilla_name'] . ' ' . $CI->lang->line('LABEL_UPAZILLA_NAME') . ' )';
 
         return $CI->load->view($controller_url . "/get_market_size_details", $data, true);
     }
@@ -724,7 +735,7 @@ class Bi_helper
         $data = array();
         $data['collapse'] = $collapse;
 
-        // From Request table (Current Requesting Market Size for this Upazilla)
+        /*// From Request table (Current Requesting Market Size for this Upazilla)
         $CI->db->from($CI->config->item('table_bi_market_size_request') . ' item');
         $CI->db->select('upazilla_id, market_size');
         $CI->db->join($CI->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = item.upazilla_id');
@@ -743,7 +754,7 @@ class Bi_helper
         foreach ($results as $result)
         {
             $data['market_size_old'][$result['type_id']] = $result['market_size_kg'];
-        }
+        }*/
 
         // From Request table (Current Requesting Major Competitor Variety for this Upazilla)
         $CI->db->from($CI->config->item('table_bi_major_competitor_variety_request') . ' item');
@@ -753,7 +764,38 @@ class Bi_helper
         $CI->db->where('item.id', $item_id);
         $row_request = $CI->db->get()->row_array();
 
-        $data['competitor_varieties'] = json_decode($row_request['competitor_varieties'], TRUE);
+        $data['major_competitor_varieties'] = json_decode($row_request['competitor_varieties'], TRUE);
+
+
+        $CI->db->from($CI->config->item('table_bi_setup_competitor_variety') . ' variety');
+        $CI->db->select('variety.id variety_id, variety.name variety_name, variety.crop_type_id');
+
+        $CI->db->join($CI->config->item('table_login_basic_setup_competitor') . ' competitor', 'competitor.id = variety.competitor_id', 'INNER');
+        $CI->db->select('competitor.name competitor_name');
+
+        $CI->db->join($CI->config->item('table_login_setup_classification_crop_types') . ' type', 'type.id = variety.crop_type_id', 'INNER');
+        $CI->db->select('type.name crop_type_name');
+
+        $CI->db->join($CI->config->item('table_login_setup_classification_crops') . ' crop', 'crop.id = type.crop_id', 'INNER');
+        $CI->db->select('crop.id crop_id, crop.name crop_name');
+
+        $CI->db->where('competitor.status', $CI->config->item('system_status_active'));
+        $CI->db->where('type.status', $CI->config->item('system_status_active'));
+        $CI->db->where('crop.status', $CI->config->item('system_status_active'));
+
+        $CI->db->order_by('crop.ordering', 'ASC');
+        $CI->db->order_by('type.ordering', 'ASC');
+        $competitor_variety_results = $CI->db->get()->result_array();
+        foreach ($competitor_variety_results as $variety_result)
+        {
+            $data['competitor_varieties'][$variety_result['crop_id']][$variety_result['variety_id']] = array(
+                'crop_name' => $variety_result['crop_name'],
+                'crop_type_id' => $variety_result['crop_type_id'],
+                'crop_type_name' => $variety_result['crop_type_name'],
+                'variety_name' => $variety_result['variety_name'],
+                'competitor_name' => $variety_result['competitor_name']
+            );
+        }
 
         // -------------------- For crop count -------------------------------
         $CI->db->from($CI->config->item('table_login_setup_classification_crop_types') . ' crop_types');
@@ -781,6 +823,11 @@ class Bi_helper
         }
         //-------------------------------------------------------------------
         $data['table_title'] = 'Major Competitor Varieties ( ' . $row_request['upazilla_name'] . ' ' . $CI->lang->line('LABEL_UPAZILLA_NAME') . ' )';
+
+        /*echo '<pre>';
+        print_r($data);
+        echo '</pre>';
+        die('555555555');*/
 
         return $CI->load->view($controller_url . "/get_major_competitor_variety_details", $data, true);
     }

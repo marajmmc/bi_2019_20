@@ -21,8 +21,26 @@
                 $init_crop_id = -1;
                 foreach ($crops as $crop)
                 {
-                    $size_old = (isset($market_size_old[$crop['crop_type_id']])) ? $market_size_old[$crop['crop_type_id']] : '-';
-                    $size_edit = (isset($market_size_edit[$crop['crop_type_id']])) ? $market_size_edit[$crop['crop_type_id']] : '-';
+                    $size_old = $size_edit = '';
+
+                    if(isset($major_competitor_varieties[$crop['crop_id']][$crop['crop_type_id']]['old']))
+                    {
+                        $size_old='<ol>';
+                        foreach($major_competitor_varieties[$crop['crop_id']][$crop['crop_type_id']]['old'] as $variety_id){
+                            $size_old.='<li>'.($competitor_varieties[$crop['crop_id']][$variety_id]['variety_name']).
+                                ' ('.($competitor_varieties[$crop['crop_id']][$variety_id]['competitor_name']).')'.'</li>';
+                        }
+                        $size_old.='</ol>';
+                    }
+                    if(isset($major_competitor_varieties[$crop['crop_id']][$crop['crop_type_id']]['new']))
+                    {
+                        $size_edit='<ol>';
+                        foreach($major_competitor_varieties[$crop['crop_id']][$crop['crop_type_id']]['new'] as $variety_id){
+                            $size_edit.='<li>'.($competitor_varieties[$crop['crop_id']][$variety_id]['variety_name']).
+                                ' ('.($competitor_varieties[$crop['crop_id']][$variety_id]['competitor_name']).')'.'</li>';
+                        }
+                        $size_edit.='</ol>';
+                    }
                     ?>
                     <tr>
                         <?php
@@ -46,9 +64,6 @@
             ?>
             </tbody>
         </table>
-        <style>.table_head th {
-                white-space: nowrap;
-                text-align: center
-            }</style>
+        <style>.table_head th {white-space: nowrap;text-align: center}</style>
     </div>
 </div>

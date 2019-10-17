@@ -67,6 +67,10 @@ class Major_competitor_variety_request extends Root_Controller
         {
             $this->system_save_forward();
         }
+        elseif ($action == "get_competitor_variety_info")
+        {
+            $this->system_get_competitor_variety_info();
+        }
         elseif ($action == "set_preference")
         {
             $this->system_set_preference('list');
@@ -78,10 +82,6 @@ class Major_competitor_variety_request extends Root_Controller
         elseif ($action == "save_preference")
         {
             System_helper::save_preference();
-        }
-        elseif ($action == "get_competitor_variety_info")
-        {
-            $this->system_get_competitor_variety_info();
         }
         else
         {
@@ -457,7 +457,6 @@ class Major_competitor_variety_request extends Root_Controller
                 }
             }
 
-
             $data['title'] = "Edit Major Competitor Variety ( " . $data['item']['upazilla_name'] . " )";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/add_edit", $data, true));
@@ -478,11 +477,6 @@ class Major_competitor_variety_request extends Root_Controller
 
     private function system_save()
     {
-        /*echo '<pre>';
-        print_r($this->input->post());
-        echo '</pre>';
-        die('==================');*/
-
         $id = $this->input->post('id');
         $user = User_helper::get_user();
         $time = time();
@@ -531,7 +525,31 @@ class Major_competitor_variety_request extends Root_Controller
             $this->json_return($ajax);
         }
 
+
+        $result_main = Query_helper::get_info($this->config->item('table_bi_major_competitor_variety'), '*', array('upazilla_id =' . $item_head['upazilla_id']), 1);
+        if ($result_main)
+        {
+
+        }
+        /*else
+        {
+            foreach ($items as &$item_crop)
+            {
+                foreach ($item_crop as &$item_variety)
+                {
+                    $item_variety['old'] = array();
+                }
+            }
+        }*/
+
         $item_head['competitor_varieties'] = json_encode($items, TRUE);
+
+        /*echo '<pre>';
+        print_r($this->input->post());
+        print_r($items);
+        print_r($item_head);
+        echo '</pre>';
+        die('77777777777777');*/
 
         $this->db->trans_start(); //DB Transaction Handle START
         if ($id > 0) // Revision Update if EDIT
@@ -775,10 +793,40 @@ class Major_competitor_variety_request extends Root_Controller
         $post = $this->input->post();
         $data = array();
         $data['upazilla_id'] = $post['upazilla_id'];
-        if($post['competitor_variety_edit']){
+        if ($post['competitor_variety_edit'])
+        {
             $data['competitor_variety_edit'] = json_decode($post['competitor_variety_edit'], TRUE);
-        }else{
+        }
+        else
+        {
             $data['competitor_variety_edit'] = array();
+
+            $result_request = Query_helper::get_info($this->config->item('table_bi_major_competitor_variety_request'), array('*'), array('upazilla_id =' . $data['upazilla_id']), 1, 0, array('id DESC'));
+            if ($result_request)
+            {
+                if ($result_request['status_approve'] == $this->config->item('system_status_pending'))
+                {
+                    $ajax['status'] = false;
+                    $ajax['system_message'] = 'A request for ' . $post['upazilla_name'] . ' upazilla is already pending.';
+                    $this->json_return($ajax);
+                }
+            }
+        }
+
+        if ($post['mode'] == 'ADD')
+        {
+            $result_main = Query_helper::get_info($this->config->item('table_bi_major_competitor_variety'), array('*'), array('upazilla_id =' . $data['upazilla_id']), 1);
+            if ($result_main)
+            {
+                $competitor_varieties = json_decode($result_main['competitor_varieties'], TRUE);
+                foreach ($competitor_varieties as $crop_id => $crop_types)
+                {
+                    foreach ($crop_types as $type_id => $comp_varieties)
+                    {
+                        $data['competitor_variety_edit'][$crop_id][$type_id]['old'] = $comp_varieties;
+                    }
+                }
+            }
         }
 
         $this->db->from($this->config->item('table_bi_setup_competitor_variety') . ' variety');
@@ -856,12 +904,25 @@ class Major_competitor_variety_request extends Root_Controller
             $this->message = $this->lang->line('LABEL_UPAZILLA_NAME') . ' field is required.';
             return false;
         }
-        if (!$items)
+        if ($items)
         {
-            $this->message = 'At least 1 Competitor Variety has to Save.';
-            return false;
+            $ENTRY_NOT_FOUND = TRUE;
+            foreach ($items as $each_items)
+            {
+                foreach ($each_items as $each)
+                {
+                    if (isset($each['new']) && $each['new'])
+                    {
+                        $ENTRY_NOT_FOUND = FALSE;
+                    }
+                }
+            }
+            if ($ENTRY_NOT_FOUND)
+            {
+                $this->message = 'At least 1 Competitor Variety has to Save.';
+                return false;
+            }
         }
-
         return true;
     }
 }

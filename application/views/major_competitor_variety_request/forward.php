@@ -23,7 +23,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
 
         <?php echo Bi_helper::get_major_competitor_variety_location($item['id']); ?>
 
-        <?php //echo Bi_helper::get_major_competitor_variety_info($item['id'], $CI->controller_url); ?>
+        <?php echo Bi_helper::get_major_competitor_variety_info($item['id'], $CI->controller_url); ?>
 
         <div class="row show-grid">
             <div class="col-xs-4">

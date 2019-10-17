@@ -517,14 +517,6 @@ class Market_size_request extends Root_Controller
         }
         $item['market_size'] = json_encode($market_size_array);
 
-
-        /*echo '<pre>';
-        print_r($item['market_size']);
-        print_r($item['market_size_history']);
-        echo '</pre>';
-        die('777777777777777');*/
-
-
         $this->db->trans_start(); //DB Transaction Handle START
         if ($item_id > 0) // Revision Update if EDIT
         { //Update
