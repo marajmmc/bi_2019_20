@@ -436,7 +436,9 @@ class Report_market_size extends Root_Controller
             $date_end_max[$result['type_id']] = $result['date_end_max'];
         }
 
-        // get arm variety type wise
+
+
+        // get arm variety
         $this->db->from($this->config->item('table_login_setup_classification_varieties').' v');
         $this->db->select('v.id,v.name,v.whose,v.crop_type_id');
         $this->db->join($this->config->item('table_login_setup_classification_crop_types').' type','type.id = v.crop_type_id','INNER');
@@ -458,18 +460,85 @@ class Report_market_size extends Root_Controller
         $variety_info=array();
         foreach($results as $result)
         {
-            if($result['whose']=='ARM')
+            /*if($result['whose']=='ARM')
             {
                 if(isset($varieties_arm[$result['crop_type_id']]))
                 {
-                    $varieties_arm[$result['crop_type_id']] = $varieties_arm[$result['crop_type_id']]."<br />".$result['name'];
+                    $varieties_arm[$result['crop_type_id']] = $varieties_arm[$result['crop_type_id']].", ".$result['name'];
                 }
                 else
                 {
                     $varieties_arm[$result['crop_type_id']] = $result['name'];
                 }
-            }
+            }*/
             $variety_info[$result['id']]=$result;
+        }
+
+        // get arm variety type & upazilla wise
+        $this->db->from($this->config->item('table_bi_variety_arm_upazilla') . ' arm_variety');
+        $this->db->select('arm_variety.*');
+
+        $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = arm_variety.upazilla_id');
+        $this->db->select('upazilla.id upazilla_id, upazilla.name upazilla_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id');
+        $this->db->select('district.id district_id, district.name district_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
+        $this->db->select('territory.id territory_id, territory.name territory_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
+        $this->db->select('zone.id zone_id, zone.name zone_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
+        $this->db->select('division.id division_id, division.name division_name');
+
+        $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = arm_variety.type_id','INNER');
+        if($crop_id>0)
+        {
+            $this->db->where('crop_type.crop_id',$crop_id);
+            if($crop_type_id>0)
+            {
+                $this->db->where('crop_type.id',$crop_type_id);
+            }
+        }
+        if ($division_id > 0)
+        {
+            $this->db->where('division.id', $division_id);
+            if ($zone_id > 0)
+            {
+                $this->db->where('zone.id', $zone_id);
+                if ($territory_id > 0)
+                {
+                    $this->db->where('territory.id', $territory_id);
+                    if ($district_id > 0)
+                    {
+                        $this->db->where('district.id', $district_id);
+                        if ($upazilla_id > 0)
+                        {
+                            $this->db->where('upazilla.id', $upazilla_id);
+                        }
+                    }
+                }
+            }
+        }
+        $results = $this->db->get()->result_array();
+        $varieties_arm=array();
+        foreach($results as $result)
+        {
+            $item_varieties=json_decode($result['variety_ids'],true);
+            foreach($item_varieties as $variety_id)
+            {
+                $variety_name=isset($variety_info[$variety_id])?$variety_info[$variety_id]['name']:'';
+                if(isset($varieties_arm[$result['type_id']]))
+                {
+                    $varieties_arm[$result['type_id']] = $varieties_arm[$result['type_id']].", ".$variety_name;
+                }
+                else
+                {
+                    $varieties_arm[$result['type_id']] = $variety_name;
+                }
+            }
         }
 
         // get major variety type wise
@@ -522,19 +591,6 @@ class Report_market_size extends Root_Controller
                 {
                     foreach($varieties as $variety_id)
                     {
-                        /*$variety_name=isset($variety_info[$variety_id])?$variety_info[$variety_id]['name']:'';
-                        if(!isset($competitor_major_varieties[$type_id][$variety_id]))
-                        {
-                            if(isset($varieties_competitor[$type_id]))
-                            {
-                                $varieties_competitor[$type_id]=$varieties_competitor[$type_id]."<br />".$variety_name;
-                            }
-                            else
-                            {
-                                $varieties_competitor[$type_id]=$variety_name;
-                            }
-                        }
-                        $competitor_major_varieties[$type_id][$variety_id]=isset($variety_info[$variety_id])?$variety_info[$variety_id]['name']:'';*/
                         if(isset($variety_info[$variety_id]))
                         {
                             $variety_name=$variety_info[$variety_id]['name'];
@@ -542,7 +598,7 @@ class Report_market_size extends Root_Controller
                             {
                                 if(isset($varieties_competitor[$type_id]))
                                 {
-                                    $varieties_competitor[$type_id]=$varieties_competitor[$type_id]."<br />".$variety_name;
+                                    $varieties_competitor[$type_id]=$varieties_competitor[$type_id].", ".$variety_name;
                                 }
                                 else
                                 {
