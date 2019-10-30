@@ -30,7 +30,7 @@
                     {
                         foreach($item_varieties[$type['crop_type_id']] as $variety_id)
                         {
-                            echo isset($variety_info[$variety_id])?$variety_info[$variety_id]['variety_name'].'<br />':'---';
+                            echo isset($variety_info[$variety_id])?$variety_info[$variety_id]['variety_name'].'<br />':'';
                             ?>
                             <input type="hidden" name="items[<?php echo $type['crop_type_id']; ?>][old][]" value="<?php echo $variety_id?>"/>
                         <?php
@@ -38,7 +38,7 @@
                     }
                     else
                     {
-                        echo '---';
+                        echo '';
                     }
                     ?>
                 </td>
