@@ -169,7 +169,7 @@ class Bi_helper
         $data['market_size_edit'] = json_decode($row_request['market_size'], TRUE);
 
         // From Main table (Previously Approved Market Size for this Upazilla)
-        $CI->db->from($CI->config->item('table_bi_market_size_main'));
+        $CI->db->from($CI->config->item('table_bi_market_size'));
         $CI->db->select('upazilla_id, type_id, market_size_kg');
         $CI->db->where('upazilla_id', $row_request['upazilla_id']);
         $results = $CI->db->get()->result_array();
@@ -735,27 +735,6 @@ class Bi_helper
         $data = array();
         $data['collapse'] = $collapse;
 
-        /*// From Request table (Current Requesting Market Size for this Upazilla)
-        $CI->db->from($CI->config->item('table_bi_market_size_request') . ' item');
-        $CI->db->select('upazilla_id, market_size');
-        $CI->db->join($CI->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = item.upazilla_id');
-        $CI->db->select('upazilla.name upazilla_name');
-        $CI->db->where('item.id', $item_id);
-        $row_request = $CI->db->get()->row_array();
-
-        $data['market_size_edit'] = json_decode($row_request['market_size'], TRUE);
-
-        // From Main table (Previously Approved Market Size for this Upazilla)
-        $CI->db->from($CI->config->item('table_bi_market_size'));
-        $CI->db->select('upazilla_id, type_id, market_size_kg');
-        $CI->db->where('upazilla_id', $row_request['upazilla_id']);
-        $results = $CI->db->get()->result_array();
-
-        foreach ($results as $result)
-        {
-            $data['market_size_old'][$result['type_id']] = $result['market_size_kg'];
-        }*/
-
         // From Request table (Current Requesting Major Competitor Variety for this Upazilla)
         $CI->db->from($CI->config->item('table_bi_major_competitor_variety_request') . ' item');
         $CI->db->select('*');
@@ -823,11 +802,6 @@ class Bi_helper
         }
         //-------------------------------------------------------------------
         $data['table_title'] = 'Major Competitor Varieties ( ' . $row_request['upazilla_name'] . ' ' . $CI->lang->line('LABEL_UPAZILLA_NAME') . ' )';
-
-        /*echo '<pre>';
-        print_r($data);
-        echo '</pre>';
-        die('555555555');*/
 
         return $CI->load->view($controller_url . "/get_major_competitor_variety_details", $data, true);
     }
