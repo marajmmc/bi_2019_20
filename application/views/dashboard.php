@@ -44,8 +44,6 @@ $CI = & get_instance();
             <img style="max-width: 250px;" src="<?php echo $CI->config->item('system_base_url_profile_picture') . $user->image_location; ?>" alt="<?php echo $user->name; ?>">
         </div>
 
-        <?php //$CI->load->view('dashboard_items'); ?>
-
     </div>
 </div>
 <div class="clearfix"></div>
