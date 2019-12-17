@@ -5,10 +5,10 @@ class Transfer extends CI_Controller
 {
     public function index()
     {
-        $this->produce_data();
+        //$this->produce_data();
     }
 
-    public function produce_data()
+    /*public function produce_data()
     {
         $this->db->from('arm_login_2018_19.login_setup_location_upazillas');
         $this->db->select('*');
@@ -75,6 +75,6 @@ class Transfer extends CI_Controller
         print_r($upazillas_remaining);
 
         echo '</pre>';
-    }
+    }*/
 
 }

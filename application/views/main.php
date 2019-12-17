@@ -93,6 +93,7 @@ if($result)
 
         <link rel="stylesheet" href="<?php echo str_replace('bi_2019_20','login_2018_19',base_url('css/jqx/jqx.base.css')); ?>">
         <link rel="stylesheet" href="<?php echo str_replace('bi_2019_20','login_2018_19',base_url('css/print.css')); ?>">
+        <link rel="stylesheet" href="<?php echo base_url('css/app.css'); ?>">
         <style>
             .navbar-nav > li {
                 background-color: <?php echo $menu_odd_color ?>;
@@ -168,7 +169,10 @@ if($result)
         </script>
         <header class="hidden-print">
             <img alt="Logo" height="40" class="site_logo pull-left" src="<?php echo str_replace('bi_2019_20','login_2018_19',base_url('images/logo.png'));?>">
-            <div class="site_title pull-left">Business Intelligence (BI)</div>
+            <div class="site_title pull-left">
+                Business Intelligence (BI)
+                <span  id="header_site_title_date_time"></span>
+            </div>
             <!--<div class="site_title pull-left">A. R. MALIK SEEDS (PVT) LTD.</div>-->
 
             <div id="system_user_info" class="pull-right" style="color:#fff">
@@ -201,4 +205,39 @@ if($result)
         <script type="text/javascript" src="<?php echo str_replace('bi_2019_20','login_2018_19',base_url('js/system_common.js?version='.time())); ?>"></script>
         <script type="text/javascript" src="<?php echo str_replace('bi_2019_20','login_2018_19',base_url('js/system_triggers.js?version='.time())); ?>"></script>
     </body>
+    <script>
+        function header_site_title_date_time(id)
+        {
+            date = new Date;
+            year = date.getFullYear();
+            month = date.getMonth();
+            //months = new Array('January', 'February', 'March', 'April', 'May', 'June', 'Jully', 'August', 'September', 'October', 'November', 'December');
+            months = new Array('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
+            d = date.getDate();
+            day = date.getDay();
+            days = new Array('Sun', 'Mon', 'Tues', 'Wed', 'Thu', 'Fri', 'Sat');
+            h = date.getHours();
+            if(h<10)
+            {
+                h = "0"+h;
+            }
+            m = date.getMinutes();
+            if(m<10)
+            {
+                m = "0"+m;
+            }
+            s = date.getSeconds();
+            if(s<10)
+            {
+                s = "0"+s;
+            }
+            //result = ''+days[day]+' '+months[month]+' '+d+' '+year+' '+h+':'+m+':'+s;
+            result = '('+days[day]+') '+d+', '+months[month]+' '+year+' [ Time: '+h+':'+m+':'+s+' ]';
+            document.getElementById(id).innerHTML = result;
+            setTimeout('header_site_title_date_time("'+id+'");','1000');
+            return true;
+        }
+        window.onload = header_site_title_date_time('header_site_title_date_time');
+    </script>
+    <script type="text/javascript" src="<?php echo str_replace('bi_2019_20', 'login_2018_19', base_url('js/jqx/jqxchart.js')); ?>"></script>
 </html>

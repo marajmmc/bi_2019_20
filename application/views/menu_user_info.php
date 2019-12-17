@@ -15,7 +15,7 @@ if (!empty($user->designation))
 if ($user)
 {
     ?>
-    <div class="collapse navbar-collapse user-dropdown" style="padding:0">
+    <div class="collapse navbar-collapse user-dropdown" style="padding:7px 0">
         <ul class="nav navbar-nav">
             <li class="dropdown" style="border-radius:0; border:none; background:none">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" style="padding:12px; color:#fff; font-size:1.2em">
@@ -41,7 +41,8 @@ if ($user)
         </ul>
     </div>
     <style>
-        .user-dropdown-menus > li {
+        .user-dropdown-menus > li
+        {
             font-weight: normal;
             display: block;
             padding: 3px 20px;
