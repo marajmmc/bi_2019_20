@@ -338,6 +338,59 @@ class Bi_helper
         return $CI->load->view("info_basic", array('accordion' => $item), true);
     }
 
+    public static function get_all_varieties($status = '', $variety_id = 0, $crop_type_id = 0, $crop_id = 0, $whose = 'ARM')
+    {
+        $CI =& get_instance();
+        if ($whose == 'ARM') {
+            $CI->db->from($CI->config->item('table_login_setup_classification_varieties') . ' v');
+            $CI->db->select('v.id variety_id, v.name variety_name, v.whose, v.status');
+        } else {
+            $CI->db->from($CI->config->item('table_bi_setup_competitor_variety') . ' v');
+            $CI->db->select('v.id variety_id, v.name variety_name, v.whose, v.status');
+
+            $CI->db->join($CI->config->item('table_login_basic_setup_competitor') . ' competitor', 'competitor.id = v.competitor_id');
+            $CI->db->select('competitor.id competitor_id, competitor.name competitor_name');
+        }
+
+        $CI->db->join($CI->config->item('table_login_setup_classification_crop_types') . ' type', 'type.id = v.crop_type_id', 'INNER');
+        $CI->db->select('type.id crop_type_id, type.name crop_type_name');
+
+        $CI->db->join($CI->config->item('table_login_setup_classification_crops') . ' crop', 'crop.id = type.crop_id', 'INNER');
+        $CI->db->select('crop.id crop_id, crop.name crop_name');
+
+        $CI->db->join($CI->config->item('table_login_setup_classification_hybrid') . ' hybrid', 'hybrid.id = v.hybrid');
+        $CI->db->select('hybrid.name hybrid');
+
+        if ($variety_id > 0) {
+            $CI->db->where('v.id', $variety_id);
+        }
+        if ($crop_type_id > 0) {
+            $CI->db->where('type.id', $crop_type_id);
+        }
+        if ($crop_id > 0) {
+            $CI->db->where('crop.id', $crop_id);
+        }
+
+        if ($status != '') {
+            $CI->db->where('v.status', $status);
+        } else {
+            $CI->db->where('v.status', $CI->config->item('system_status_active'));
+        }
+        $CI->db->where('v.whose', $whose);
+
+        if ($whose == 'Competitor') {
+            $CI->db->order_by('competitor.id');
+        }
+        $CI->db->order_by('crop.id');
+        $CI->db->order_by('type.id');
+
+        if ($variety_id > 0) {
+            return $CI->db->get()->row_array(); // Result
+        } else {
+            return $CI->db->get()->result_array(); // Results
+        }
+    }
+
     public static function get_variety_info($item_id, $whose = 'Competitor', $show_basic = true, $show_characteristics = false, $show_images = false, $show_videos = false)
     {
         $CI =& get_instance();
