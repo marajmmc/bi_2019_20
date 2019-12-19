@@ -1,7 +1,16 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
-$user = User_helper::get_user();
 $CI = & get_instance();
+$user = User_helper::get_user();
+
+$current_time = System_helper::get_time(date("Y-m-d"));
+$where = array(
+    "date_start <=". $current_time,
+    "date_end >=". $current_time,
+    "status ='". $this->config->item('system_status_active')."'"
+);
+$season = Query_helper::get_info($this->config->item('table_bi_setup_season'), array('*'), $where, 1); System_helper::display_date($current_time);
 ?>
+
 <div class="row widget">
     <div class="col-lg-3 col-xs-12" style="padding: 5px;">
         <a href="#" class="btn btn-success btn-lg" role="button" style="border-left: 5px #297D29 solid; width: 100%; text-align: right">
@@ -26,7 +35,7 @@ $CI = & get_instance();
     </div>
     <div class="col-lg-3 col-xs-12" style="padding: 5px;">
         <div style="width: 100%; border-bottom: 1px green solid; margin-bottom: 2px;">
-            <small> <strong>Focused Crops [Season: 1st Jan - 31 Mar]</strong> </small>
+            <small> <strong>Focused Crops [ Season: <?php echo $season['name'].' ('.date('M, d',$season['date_start']).' - '.date('M, d',$season['date_end']).')'; ?> ]</strong> </small>
         </div>
         <span class="app-label-bg-none">White Love</span>
         <span class="app-label-bg-none">White Love</span>
