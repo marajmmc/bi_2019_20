@@ -6,32 +6,65 @@ $current_time = System_helper::get_time(date("Y-m-d"));
 $where = array(
     "date_start <=". $current_time,
     "date_end >=". $current_time,
-    "status ='". $this->config->item('system_status_active')."'"
+    "status ='". $CI->config->item('system_status_active')."'"
 );
-$season = Query_helper::get_info($this->config->item('table_bi_setup_season'), array('*'), $where, 1); System_helper::display_date($current_time);
+$season = Query_helper::get_info($CI->config->item('table_bi_setup_season'), array('*'), $where, 1); System_helper::display_date($current_time);
 ?>
 
 <div class="row widget">
-    <div class="col-lg-3 col-xs-12" style="padding: 5px;">
-        <a href="#" class="btn btn-success btn-lg" role="button" style="border-left: 5px #297D29 solid; width: 100%; text-align: right">
-            BDT. <span style="font-size: 35px; font-weight: bold;" id="invoice_amount_total"> 125441.05 </span>
-            <br/>
-            <span style="font-size: 12px;">Total Amount From Invoice's</span>
-        </a>
-    </div>
-    <div class="col-lg-3 col-xs-12" style="padding: 5px;">
-        <a href="#" class="btn btn-primary btn-lg" role="button" style="border-left: 5px #336795 solid; width: 100%; text-align: right">
-            BDT. <span style="font-size: 35px; font-weight: bold;" id="invoice_amount_cash"> 125441.05 </span>
-            <br/>
-            <span style="font-size: 12px;">Total Cash Amount From Invoice's</span>
-        </a>
-    </div>
-    <div class="col-lg-3 col-xs-12" style="padding: 5px;">
-        <a href="#" class="btn btn-warning btn-lg" role="button" style="border-left: 5px #AC7A3D solid; width: 100%; text-align: right">
-            BDT. <span style="font-size: 35px; font-weight: bold;" id="invoice_amount_credit"> 125441.05 </span>
-            <br/>
-            <span style="font-size: 12px;">Total Credit Amount From Invoice's</span>
-        </a>
+    <div class="col-lg-9">
+        <div class="panel with-nav-tabs panel-default">
+            <div class="panel-heading">
+                <ul class="nav nav-tabs">
+                    <li class="active"><a href="#tab_sales_amount" data-toggle="tab" class="dropdown tab_id_sales_amount" id="tab_id_sales_today" data-type="today" data-value="<?php echo date('d', time())?>">Today</a></li>
+                    <li class="dropdown">
+                        <a href="#" data-toggle="dropdown" class="dropdown">Month <span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <?php
+                            for ($i = 1; $i <= 12; $i++)
+                            {
+                                $month=date("m", strtotime( date( 'Y-'.$i.'-01' )));
+                                $month_name=date("M", strtotime( date( 'Y-'.$i.'-01' )));
+                                ?>
+                                <li>
+                                    <a href="#tab_sales_amount" class="dropdown tab_id_sales_amount" data-toggle="tab" data-type="month" data-value="<?php echo $month?>"><?php echo $month_name?></a>
+                                </li>
+                            <?php
+                            }
+                            ?>
+                        </ul>
+                    </li>
+                    <li><a href="#tab_sales_amount" data-toggle="tab" class="dropdown tab_id_sales_amount" id="tab_id_sales_amount" data-type="year" data-value="2">Current Years</a></li>
+                </ul>
+            </div>
+            <div class="panel-body">
+                <div class="tab-content">
+                    <div class=" fade in active" id="tab_sales_amount">
+                        <div class="col-lg-4 col-xs-12" style="padding: 5px;">
+                            <a href="#" class="btn btn-success btn-lg" role="button" style="border-left: 5px #297D29 solid; width: 100%; text-align: right">
+                                BDT. <span style="font-size: 35px; font-weight: bold;" id="invoice_amount_total"> 125441.05 </span>
+                                <br/>
+                                <span style="font-size: 12px;">Total Amount From Invoice's</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-4 col-xs-12" style="padding: 5px;">
+                            <a href="#" class="btn btn-primary btn-lg" role="button" style="border-left: 5px #336795 solid; width: 100%; text-align: right">
+                                BDT. <span style="font-size: 35px; font-weight: bold;" id="invoice_amount_cash"> 125441.05 </span>
+                                <br/>
+                                <span style="font-size: 12px;">Total Cash Amount From Invoice's</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-4 col-xs-12" style="padding: 5px;">
+                            <a href="#" class="btn btn-warning btn-lg" role="button" style="border-left: 5px #AC7A3D solid; width: 100%; text-align: right">
+                                BDT. <span style="font-size: 35px; font-weight: bold;" id="invoice_amount_credit"> 125441.05 </span>
+                                <br/>
+                                <span style="font-size: 12px;">Total Credit Amount From Invoice's</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="col-lg-3 col-xs-12" style="padding: 5px;">
         <div style="width: 100%; border-bottom: 1px green solid; margin-bottom: 2px;">
@@ -48,7 +81,7 @@ $season = Query_helper::get_info($this->config->item('table_bi_setup_season'), a
 </div>
 <div class="row widget">
     <!-- crop wise sales  -->
-    <div class="col-md-9">
+    <div class="col-md-6">
         <div class="panel with-nav-tabs panel-default">
             <div class="panel-heading">
                 <ul class="nav nav-tabs">
@@ -87,6 +120,90 @@ $season = Query_helper::get_info($this->config->item('table_bi_setup_season'), a
             </div>
         </div>
     </div>
+    <div class="col-md-3">
+        <?php
+        if($user->user_group>1)
+        {
+            $user_group=','.$user->user_group.',';
+            $CI->db->where("item.user_group_ids LIKE '%$user_group%'");
+        }
+        $CI->db->from($CI->config->item('table_pos_setup_notice_request').' item');
+        $CI->db->select('item.*');
+        $CI->db->join($CI->config->item('table_pos_setup_notice_types').' type','type.id=item.type_id','INNER');
+        $CI->db->select('type.name notice_type');
+        //$CI->db->where('item.type_id',$id);
+        /*$CI->db->where('item.status',$CI->config->item('system_status_active'));
+        $CI->db->where('item.status_approve',$CI->config->item('system_status_approved'));
+        $CI->db->where('item.expire_time >=',time());*/
+        //$CI->db->order_by('item.ordering','ASC');
+        $CI->db->order_by('item.id','DESC');
+        $results=$CI->db->get()->result_array();
+        //echo $CI->db->last_query();
+        $notice_type_count=array();
+        $notice_type_names=array();
+        $notices=array();
+        foreach($results as $result)
+        {
+            if(isset($notice_type_count[$result['type_id']]))
+            {
+                $notice_type_count[$result['type_id']]+=1;
+            }
+            else
+            {
+                $notice_type_count[$result['type_id']]=1;
+            }
+            $notice_type_names[$result['type_id']]=$result['notice_type'];
+            $notices[$result['type_id']][]=$result;
+        }
+        ?>
+        <div class="panel with-nav-tabs panel-default">
+            <div class="panel-heading">
+                <ul class="nav nav-tabs">
+                    <?php
+                    $div_active=1;
+                    ksort($notice_type_names);
+                    foreach($notice_type_names as $key=>$notice_type_name)
+                    {
+                        ?>
+                        <li class="<?php if($div_active==1){echo 'active';}?>">
+                            <a href="#tab_notice_<?php echo $key?>" data-toggle="tab" class="dropdown tab_id_notice" id="" >
+                                <?php echo $notice_type_name?> (<?php echo isset($notice_type_count[$key])?$notice_type_count[$key]:'';?>)
+                            </a>
+                        </li>
+                    <?php
+                        ++$div_active;
+                    }
+                    ?>
+                </ul>
+            </div>
+            <div class="panel-body">
+                <div class="tab-content">
+                    <?php
+                    $div_active=1;
+                    ksort($notice_type_names);
+                    foreach($notice_type_names as $key=>$notice_type_name)
+                    {
+                    ?>
+                        <div class="tab-pane fade in <?php if($div_active==1){echo 'active';}?>" id="tab_notice_<?php echo $key?>">
+                            <?php echo $key?>
+                        </div>
+                    <?php
+                        ++$div_active;
+                    }
+                    ?>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        .tab_id_notice
+        {
+            padding: 5px !important;
+            font-size: 10px;
+            font-weight: bold;
+        }
+    </style>
     <!-- Invoice wise sales -->
     <div class="col-md-3">
         <div class="panel with-nav-tabs panel-default">
@@ -144,13 +261,19 @@ $season = Query_helper::get_info($this->config->item('table_bi_setup_season'), a
         $("#invoice_amount_total").html('')
         $("#invoice_amount_cash").html('')
         $("#invoice_amount_credit").html('')
+        var report_type = 'month'
         var url = "<?php echo site_url('Dashboard/index/invoice_amount');?>";
-
+        var data_post =
+        {
+            //html_id:$(elm_id).attr('href'),
+            type:'month',
+            value:'<?php echo date('m', time())?>'
+        }
         $.ajax({
             url: url,
             type: 'post',
             dataType: "JSON",
-            //data: data_post,
+            data: data_post,
             success: function (data, status)
             {
                 $("#invoice_amount_total").html(data.invoice_amount_total)
@@ -197,6 +320,36 @@ $season = Query_helper::get_info($this->config->item('table_bi_setup_season'), a
         load_invoice_amount();
         //load_chart();
 
+        $('.tab_id_sales_amount').on('click',function()
+        {
+            $("#invoice_amount_total").html('')
+            $("#invoice_amount_cash").html('')
+            $("#invoice_amount_credit").html('')
+            var report_type = 'month'
+            var url = "<?php echo site_url('Dashboard/index/invoice_amount');?>";
+            var data_post =
+            {
+                type:$(this).attr('data-type'),
+                value:$(this).attr('data-value')
+            }
+            $.ajax({
+                url: url,
+                type: 'post',
+                dataType: "JSON",
+                data: data_post,
+                success: function (data, status)
+                {
+                    $("#invoice_amount_total").html(data.invoice_amount_total)
+                    $("#invoice_amount_cash").html(data.invoice_amount_cash)
+                    $("#invoice_amount_credit").html(data.invoice_amount_credit)
+                },
+                error: function (xhr, desc, err)
+                {
+
+
+                }
+            });
+        })
         $('.tab_id_sales_years').on('click',function()
         {
             $($(this).attr('href')).html('')
@@ -254,63 +407,6 @@ $season = Query_helper::get_info($this->config->item('table_bi_setup_season'), a
 
         })
 
-        /*$('#tab_id_invoice_years').on('click',function()
-        {
-            var url = "<?php //echo site_url('Dashboard/system_get_items_invoice_payment');?>";
-            var source =
-            {
-                datatype: "json",
-                datafields:
-                [
-                    { name: 'Browser' },
-                    { name: 'Share' }
-                ],
-                url:url
-            };
-
-            var dataAdapter = new $.jqx.dataAdapter(source, { async: false, autoBind: true, loadError: function (xhr, status, error) { alert('Error loading "' + source.url + '" : ' + error); } });
-
-            // prepare jqxChart settings
-            var settings = {
-                title: "Primary Consumer Analysis",
-                description: "(Cash & Credit Payment (%) Summary )",
-                enableAnimations: true,
-                showLegend: true,
-                showBorderLine: false,
-                *//*legendLayout: { left: 50, top: 310, width: 0, height: 350, flow: 'horizontal' },*//*
-                padding: { left: 5, top: 0, right: 5, bottom: 5 },
-                titlePadding: { left: 0, top: 0, right: 0, bottom: 0 },
-                source: dataAdapter,
-                colorScheme: 'scheme08',
-                seriesGroups:
-                    [
-                        {
-                            type: 'pie',
-                            showLabels: true,
-                            series:
-                                [
-                                    {
-                                        dataField: 'Share',
-                                        displayText: 'Browser',
-                                        labelRadius: 120,
-                                        initialAngle: 15,
-                                        radius: 95,
-                                        centerOffset: 0,
-                                        formatFunction: function (value)
-                                        {
-                                            if (isNaN(value))
-                                                return value;
-                                            return parseFloat(value) + '%';
-                                        },
-                                    }
-                                ]
-                        }
-                    ]
-            };
-
-            // setup the chart
-            $('#jqxChartInvoiceYear').jqxChart(settings);
-        })*/
     });
 
 </script>

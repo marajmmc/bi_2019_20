@@ -337,10 +337,33 @@ class Dashboard extends Root_controller
     }
     private function system_invoice_amount()
     {
+        $type=$this->input->post('type');
+        $value=$this->input->post('value');
+        if($type=='today')
+        {
+            $fiscal_year_number=0;
+            $month=0;
+            $date=$value;
+        }
+        elseif($type=='month')
+        {
+            $fiscal_year_number=0;
+            $month=$value;
+            $date=0;
+        }
+        elseif($type=='year')
+        {
+            $fiscal_year_number=0;
+            $month=0;
+            $date=0;
+        }
+        else
+        {
+            $fiscal_year_number=0;
+            $month=0;
+            $date=0;
+        }
         $data=array();
-        $fiscal_year_number=0;
-        $month=0;//date('m', time());
-        $date=0;
         $fiscal_years=$this->get_fiscal_years($fiscal_year_number, $month, $date);
         foreach($fiscal_years as $fy)
         {
@@ -476,4 +499,5 @@ class Dashboard extends Root_controller
         }
         return $fiscal_years;
     }
+
 }
