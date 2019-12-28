@@ -12,8 +12,8 @@ $season = Query_helper::get_info($CI->config->item('table_bi_setup_season'), arr
 ?>
 
 <div class="row widget">
-    <div class="col-lg-9">
-        <div class="panel with-nav-tabs panel-default">
+    <div class="col-lg-8" style="padding-right: 0px !important; min-height: 200px">
+        <div class="panel with-nav-tabs panel-default" style=" min-height: 200px">
             <div class="panel-heading">
                 <ul class="nav nav-tabs">
                     <li class="active"><a href="#tab_sales_amount" data-toggle="tab" class="dropdown tab_id_sales_amount" id="tab_id_sales_today" data-type="today" data-value="<?php echo date('d', time())?>">Today</a></li>
@@ -37,28 +37,28 @@ $season = Query_helper::get_info($CI->config->item('table_bi_setup_season'), arr
                     <li><a href="#tab_sales_amount" data-toggle="tab" class="dropdown tab_id_sales_amount" id="tab_id_sales_amount" data-type="year" data-value="2">Current Years</a></li>
                 </ul>
             </div>
-            <div class="panel-body">
+            <div class="panel-body  bg-warning">
                 <div class="tab-content">
                     <div class=" fade in active" id="tab_sales_amount">
-                        <div class="col-lg-4 col-xs-12" style="padding: 5px;">
-                            <a href="#" class="btn btn-success btn-lg" role="button" style="border-left: 5px #297D29 solid; width: 100%; text-align: right">
-                                BDT. <span style="font-size: 35px; font-weight: bold;" id="invoice_amount_total"> 125441.05 </span>
+                        <div class="col-lg-4 col-xs-12 dashboard_div_invoice_amount">
+                            <a href="#" class="btn btn-success btn-lg" role="button">
+                                BDT. <span id="invoice_amount_total"> 125441.05 </span>
                                 <br/>
-                                <span style="font-size: 12px;">Total Amount From Invoice's</span>
+                                <p>Total Amount From Invoice's</p>
                             </a>
                         </div>
-                        <div class="col-lg-4 col-xs-12" style="padding: 5px;">
-                            <a href="#" class="btn btn-primary btn-lg" role="button" style="border-left: 5px #336795 solid; width: 100%; text-align: right">
-                                BDT. <span style="font-size: 35px; font-weight: bold;" id="invoice_amount_cash"> 125441.05 </span>
+                        <div class="col-lg-4 col-xs-12 dashboard_div_invoice_amount">
+                            <a href="#" class="btn btn-primary btn-lg" role="button">
+                                BDT. <span id="invoice_amount_cash"> 125441.05 </span>
                                 <br/>
-                                <span style="font-size: 12px;">Total Cash Amount From Invoice's</span>
+                                <p>Total Cash Amount From Invoice's</p>
                             </a>
                         </div>
-                        <div class="col-lg-4 col-xs-12" style="padding: 5px;">
-                            <a href="#" class="btn btn-warning btn-lg" role="button" style="border-left: 5px #AC7A3D solid; width: 100%; text-align: right">
-                                BDT. <span style="font-size: 35px; font-weight: bold;" id="invoice_amount_credit"> 125441.05 </span>
+                        <div class="col-lg-4 col-xs-12 dashboard_div_invoice_amount">
+                            <a href="#" class="btn btn-warning btn-lg" role="button">
+                                BDT. <span id="invoice_amount_credit"> 125441.05 </span>
                                 <br/>
-                                <span style="font-size: 12px;">Total Credit Amount From Invoice's</span>
+                                <p>Total Credit Amount From Invoice's</p>
                             </a>
                         </div>
                     </div>
@@ -66,7 +66,19 @@ $season = Query_helper::get_info($CI->config->item('table_bi_setup_season'), arr
             </div>
         </div>
     </div>
-    <div class="col-lg-3 col-xs-12" style="padding: 5px;">
+    <div class="col-lg-1 bg-success" style="padding: 0px !important; ">
+        <div style="text-align: center; background-color: #449d44; color:#fff; border: 1px solid green; border-top: 5px solid green; margin-bottom: 20px; min-height: 90px">
+            <small>No of Due Invoice.</small>
+            <hr style="margin: 5px !important;"/>
+            <strong style="font-size: 25px; padding: 5px">3055</strong>
+        </div>
+        <div style="text-align: center; background-color: #449d44; color:#fff; border: 1px solid green; border-top: 5px solid green; min-height: 90px">
+            <small>No of Due Invoice.</small>
+            <hr style="margin: 5px !important;"/>
+            <strong style="font-size: 25px; padding: 5px">3055</strong>
+        </div>
+    </div>
+    <div class="col-lg-3 col-xs-12 bg-info" style="padding: 5px; min-height: 200px">
         <div style="width: 100%; border-bottom: 1px green solid; margin-bottom: 2px;">
             <small> <strong>Focused Crops [ Season: <?php echo $season['name'].' ('.date('M, d',$season['date_start']).' - '.date('M, d',$season['date_end']).')'; ?> ]</strong> </small>
         </div>
@@ -159,8 +171,13 @@ $season = Query_helper::get_info($CI->config->item('table_bi_setup_season'), arr
         <div class="panel with-nav-tabs panel-default">
             <div class="panel-heading">
                 <ul class="nav nav-tabs">
+                    <li class="active">
+                        <a href="#tab_notice_0" data-toggle="tab" class="dropdown tab_id_notice" id="" >
+                            Event (1)
+                        </a>
+                    </li>
                     <?php
-                    $div_active=1;
+                    $div_active=2;
                     ksort($notice_type_names);
                     foreach($notice_type_names as $key=>$notice_type_name)
                     {
@@ -178,8 +195,14 @@ $season = Query_helper::get_info($CI->config->item('table_bi_setup_season'), arr
             </div>
             <div class="panel-body">
                 <div class="tab-content">
+                    <div class="tab-pane fade in active" id="tab_notice_0">
+                        <strong>Best of Sale On This Month (ESME)</strong>
+                        <hr/>
+                        <img alt="Logo" height="200" class="site_logo pull-left" src="http://localhost/login_2018_19/images/logo.png">
+                        &nbsp; Md. Xyz Abcd
+                    </div>
                     <?php
-                    $div_active=1;
+                    $div_active=2;
                     ksort($notice_type_names);
                     foreach($notice_type_names as $key=>$notice_type_name)
                     {
