@@ -12,6 +12,7 @@ class Setup_season extends Root_Controller
         $this->message = "";
         $this->permissions = User_helper::get_permission(get_class($this));
         $this->controller_url = strtolower(get_class($this));
+        $this->load->helper('bi');
     }
 
     public function index($action = "list", $id = 0)
@@ -53,8 +54,8 @@ class Setup_season extends Root_Controller
     {
         $items = Query_helper::get_info($this->config->item('table_bi_setup_season'), array('id', 'name', 'description', 'date_start', 'date_end'), array('status !="' . $this->config->item('system_status_delete') . '"'));
         foreach ($items as &$item) {
-            $item['date_start'] = System_helper::display_date($item['date_start']);
-            $item['date_end'] = System_helper::display_date($item['date_end']);
+            $item['date_start'] = Bi_helper::cultivation_date_display($item['date_start']);
+            $item['date_end'] = Bi_helper::cultivation_date_display($item['date_end']);
         }
         $this->json_return($items);
     }
@@ -92,19 +93,20 @@ class Setup_season extends Root_Controller
     {
         if (isset($this->permissions['action2']) && ($this->permissions['action2'] == 1)) {
             if (($this->input->post('id'))) {
-                $fiscal_id = $this->input->post('id');
+                $season_id = $this->input->post('id');
             } else {
-                $fiscal_id = $id;
+                $season_id = $id;
             }
 
-            $data['season'] = Query_helper::get_info($this->config->item('table_bi_setup_season'), '*', array('id =' . $fiscal_id), 1);
+            $data['season'] = Query_helper::get_info($this->config->item('table_bi_setup_season'), '*', array('id =' . $season_id), 1);
+
             $data['title'] = "Edit Season (" . $data['season']['name'] . ')';
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/add_edit", $data, true));
             if ($this->message) {
                 $ajax['system_message'] = $this->message;
             }
-            $ajax['system_page_url'] = site_url($this->controller_url . '/index/edit/' . $fiscal_id);
+            $ajax['system_page_url'] = site_url($this->controller_url . '/index/edit/' . $season_id);
             $this->json_return($ajax);
         } else {
             $ajax['status'] = false;
@@ -116,6 +118,7 @@ class Setup_season extends Root_Controller
     private function system_save()
     {
         $id = $this->input->post("id");
+        $item_head = $this->input->post('season');
         $user = User_helper::get_user();
         if ($id > 0) {
             if (!(isset($this->permissions['action2']) && ($this->permissions['action2'] == 1))) {
@@ -138,18 +141,23 @@ class Setup_season extends Root_Controller
             $ajax['system_message'] = $this->message;
             $this->json_return($ajax);
         } else {
-            $data = $this->input->post('season');
-            $data['date_start'] = System_helper::get_time($data['date_start']);
-            $data['date_end'] = System_helper::get_time($data['date_end']) + 24 * 60 * 60 - 1;
+            $date_start = System_helper::get_time($item_head['date_start'] . '-1970');
+            $date_end = System_helper::get_time($item_head['date_end'] . '-1970');
+            if ($date_end < $date_start) {
+                $date_end = System_helper::get_time($item_head['date_end'] . '-1971');
+            }
+            if ($date_end != 0) {
+                $date_end += 24 * 3600 - 1;
+            }
+            $data['date_start'] = $date_start;
+            $data['date_end'] = $date_end;
+
             $this->db->trans_start(); //DB Transaction Handle START
             if ($id > 0) {
                 $data['user_updated'] = $user->user_id;
                 $data['date_updated'] = time();
-
                 Query_helper::update($this->config->item('table_bi_setup_season'), $data, array("id = " . $id));
-
             } else {
-
                 $data['user_created'] = $user->user_id;
                 $data['date_created'] = time();
                 Query_helper::add($this->config->item('table_bi_setup_season'), $data);

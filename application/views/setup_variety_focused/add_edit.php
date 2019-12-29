@@ -23,24 +23,6 @@ $action_buttons[] = array(
     'data-form' => '#save_form'
 );
 $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
-
-$zone_display = $territory_display = $district_display = $outlet_display = $crop_display = 'display:none';
-
-if ($item['division_id'] > 0 || $CI->locations['division_id'] > 0) {
-    $zone_display = '';
-}
-if ($item['zone_id'] > 0 || $CI->locations['zone_id'] > 0) {
-    $territory_display = '';
-}
-if ($item['territory_id'] > 0 || $CI->locations['territory_id'] > 0) {
-    $district_display = '';
-}
-if ($item['district_id'] > 0 || $CI->locations['district_id'] > 0) {
-    $outlet_display = '';
-}
-if (!($item['id'] > 0)) {
-    $crop_display = '';
-}
 ?>
 
 <form class="form_valid" id="save_form" action="<?php echo site_url($CI->controller_url . '/index/save'); ?>"
@@ -70,18 +52,12 @@ if (!($item['id'] > 0)) {
                     ?>
                     <label class="control-label"><?php echo $CI->locations['division_name']; ?></label>
                 <?php
-                } else {
-                    ?>
-                    <select id="division_id" class="form-control">
-                        <option value=""><?php echo $CI->lang->line('SELECT'); ?></option>
-                    </select>
-                <?php
                 }
                 ?>
             </div>
         </div>
 
-        <div style="<?php echo $zone_display; ?>" class="row show-grid" id="zone_id_container">
+        <div class="row show-grid" id="zone_id_container">
             <div class="col-xs-4">
                 <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_ZONE_NAME'); ?>
                     <span style="color:#FF0000">*</span></label>
@@ -96,18 +72,12 @@ if (!($item['id'] > 0)) {
                     ?>
                     <label class="control-label"><?php echo $CI->locations['zone_name']; ?></label>
                 <?php
-                } else {
-                    ?>
-                    <select id="zone_id" class="form-control">
-                        <option value=""><?php echo $CI->lang->line('SELECT'); ?></option>
-                    </select>
-                <?php
                 }
                 ?>
             </div>
         </div>
 
-        <div style="<?php echo $territory_display; ?>" class="row show-grid" id="territory_id_container">
+        <div class="row show-grid" id="territory_id_container">
             <div class="col-xs-4">
                 <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_TERRITORY_NAME'); ?>
                     <span style="color:#FF0000">*</span></label>
@@ -122,18 +92,12 @@ if (!($item['id'] > 0)) {
                     ?>
                     <label class="control-label"><?php echo $CI->locations['territory_name']; ?></label>
                 <?php
-                } else {
-                    ?>
-                    <select id="territory_id" class="form-control">
-                        <option value=""><?php echo $CI->lang->line('SELECT'); ?></option>
-                    </select>
-                <?php
                 }
                 ?>
             </div>
         </div>
 
-        <div style="<?php echo $district_display; ?>" class="row show-grid" id="district_id_container">
+        <div class="row show-grid" id="district_id_container">
             <div class="col-xs-4">
                 <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_DISTRICT_NAME'); ?>
                     <span style="color:#FF0000">*</span></label>
@@ -148,202 +112,40 @@ if (!($item['id'] > 0)) {
                     ?>
                     <label class="control-label"><?php echo $CI->locations['district_name']; ?></label>
                 <?php
-                } else {
-                    ?>
-                    <select id="district_id" class="form-control">
-                        <option value=""><?php echo $CI->lang->line('SELECT'); ?></option>
-                    </select>
-                <?php
                 }
                 ?>
             </div>
         </div>
 
-        <div style="<?php echo $outlet_display; ?>" class="row show-grid" id="outlet_id_container">
+        <div class="row show-grid" id="outlet_id_container">
             <div class="col-xs-4">
                 <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_OUTLET_NAME'); ?>
                     <span style="color:#FF0000">*</span></label>
             </div>
             <div class="col-sm-4 col-xs-8">
-                <?php
-                if ($item['outlet_id'] > 0) {
-                    ?>
-                    <label class="control-label"><?php echo $item['outlet_name']; ?></label>
-                    <input type="hidden" name="item[outlet_id]" value="<?php echo $item['outlet_id']; ?>"/>
-                <?php
-                } else {
-                    ?>
-                    <select id="outlet_id" name="item[outlet_id]" class="form-control">
-                        <option value=""><?php echo $CI->lang->line('SELECT'); ?></option>
-                    </select>
-                <?php
-                }
-                ?>
+                <label class="control-label"><?php echo $item['outlet_name']; ?></label>
+                <input type="hidden" name="item[outlet_id]" value="<?php echo $item['outlet_id']; ?>"/>
             </div>
         </div>
 
-        <div style="<?php echo $crop_display; ?>" class="row show-grid" id="crop_id_container">
-            <div class="col-xs-4">
-                <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>
-                    <span style="color:#FF0000">*</span></label>
-            </div>
-            <div class="col-sm-4 col-xs-8">
-                <select id="crop_id" class="form-control">
-                    <option value=""><?php echo $this->lang->line('SELECT'); ?></option>
-                </select>
-            </div>
-        </div>
-
-        <div style="display:none; margin-bottom:20px" class="row show-grid" id="variety_container">
+        <div style="margin-bottom:20px" class="row show-grid" id="variety_container">
             <div class="col-xs-4">
                 <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_FOCUSED_VARIETY'); ?>
                     <span style="color:#FF0000">*</span></label>
             </div>
             <div class="col-lg-5 col-md-6 col-sm-8 col-xs-8" style="padding:0">
-                <div id="variety_list">
-
-                </div>
+                <?php echo $variety_list; ?>
             </div>
         </div>
 
     </div>
 </form>
 
-<style type="text/css">label {
-        margin-top: 5px;
-    }</style>
+<style type="text/css">label{ margin-top:5px; }</style>
 
 <script type="text/javascript">
-
-    function populate_varieties(mod ='add') {
-        $('#arm_variety_container').hide();
-        $('#variety_list').text('');
-        $.ajax({
-            url: "<?php echo site_url($CI->controller_url.'/index/get_variety_info/') ?>",
-            type: 'POST',
-            datatype: "JSON",
-            data: {
-                id: <?php echo $item['id']; ?>,
-                crop_id: $('#crop_id').val(),
-                mod: mod
-            },
-            success: function (data, status) {
-                if (data.status) {
-                    $('#variety_container').show();
-                } else {
-                    $('#variety_container').hide();
-                    $('#variety_list').text('');
-                }
-            },
-            error: function (xhr, desc, err) {
-                console.log("error");
-            }
-        });
-    }
-
     jQuery(document).ready(function ($) {
         system_preset({controller: '<?php echo $CI->router->class; ?>'});
         system_off_events(); // Triggers
-
-        $('#division_id').html(get_dropdown_with_select(system_divisions));
-        $('#crop_id').html(get_dropdown_with_select(system_crops));
-
-        <?php
-        if($CI->locations['division_id'] > 0)
-        {
-            ?>
-        $('#zone_id').html(get_dropdown_with_select(system_zones[<?php echo $CI->locations['division_id']; ?>]));
-        <?php
-               }
-               if($CI->locations['zone_id'] > 0)
-               {
-                   ?>
-        $('#territory_id').html(get_dropdown_with_select(system_territories[<?php echo $CI->locations['zone_id']; ?>]));
-        <?php
-               }
-               if($CI->locations['territory_id'] > 0)
-               {
-                   ?>
-        $('#district_id').html(get_dropdown_with_select(system_districts[<?php echo $CI->locations['territory_id']; ?>]));
-        <?php
-               }
-               if($CI->locations['district_id'] > 0)
-               {
-                   ?>
-        $('#upazilla_id').html(get_dropdown_with_select($system_outlets[<?php echo $CI->locations['district_id']; ?>]));
-        <?php
-               }
-               ?>
-
-        <?php if($item['id'] > 0) { ?>
-            populate_varieties('edit');
-        <?php } ?>
-
-        $(document).on('change', '#crop_id', function () {
-            var crop_id = $('#crop_id').val();
-            populate_varieties();
-        });
-        $(document).on('change', '#division_id', function () {
-            $('#zone_id').val('');
-            $('#territory_id').val('');
-            $('#district_id').val('');
-            $('#upazilla_id').val('');
-            var division_id = $('#division_id').val();
-            $('#zone_id_container').hide();
-            $('#territory_id_container').hide();
-            $('#district_id_container').hide();
-            $('#upazilla_id_container').hide();
-            if (division_id > 0) {
-                if (system_zones[division_id] !== undefined) {
-                    $('#zone_id_container').show();
-                    $('#zone_id').html(get_dropdown_with_select(system_zones[division_id]));
-                }
-            }
-        });
-        $(document).on('change', '#zone_id', function () {
-            $('#territory_id').val('');
-            $('#district_id').val('');
-            $('#upazilla_id').val('');
-            var zone_id = $('#zone_id').val();
-            $('#territory_id_container').hide();
-            $('#district_id_container').hide();
-            $('#upazilla_id_container').hide();
-            if (zone_id > 0) {
-                if (system_territories[zone_id] !== undefined) {
-                    $('#territory_id_container').show();
-                    $('#territory_id').html(get_dropdown_with_select(system_territories[zone_id]));
-                }
-            }
-        });
-        $(document).on('change', '#territory_id', function () {
-            $('#district_id').val('');
-            $('#upazilla_id').val('');
-            $('#upazilla_id_container').hide();
-            $('#district_id_container').hide();
-            var territory_id = $('#territory_id').val();
-            if (territory_id > 0) {
-                if (system_districts[territory_id] !== undefined) {
-                    $('#district_id_container').show();
-                    $('#district_id').html(get_dropdown_with_select(system_districts[territory_id]));
-                }
-            }
-        });
-        $(document).on('change', '#district_id', function () {
-            $('#outlet_id').val('');
-            var district_id = $('#district_id').val();
-            $('#outlet_id_container').hide();
-            if (district_id > 0) {
-                if (system_outlets[district_id] !== undefined) {
-                    $('#outlet_id_container').show();
-                    $('#outlet_id').html(get_dropdown_with_select(system_outlets[district_id]));
-                }
-            }
-        });
-        $(document).on('change', '#outlet_id', function () {
-            var outlet_id = $('#outlet_id').val();
-            if (outlet_id > 0) {
-                populate_varieties();
-            }
-        });
     });
 </script>

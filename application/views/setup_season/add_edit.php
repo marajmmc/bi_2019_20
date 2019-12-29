@@ -52,7 +52,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <label class="control-label pull-right"><?php echo $this->lang->line('LABEL_DATE_START');?> <span style="color:#FF0000">*</span></label>
             </div>
             <div class="col-sm-4 col-xs-8">
-                <input type="text" name="season[date_start]" id="date_start" class="form-control" value="<?php echo System_helper::display_date($season['date_start']);?>"/>
+                <input type="text" name="season[date_start]" id="date_start" class="form-control datepicker" value="<?php echo Bi_helper::cultivation_date_display($season['date_start']);?>"/>
             </div>
         </div>
         <div class="row show-grid">
@@ -60,7 +60,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <label class="control-label pull-right"><?php echo $this->lang->line('LABEL_DATE_END');?> <span style="color:#FF0000">*</span></label>
             </div>
             <div class="col-sm-4 col-xs-8">
-                <input type="text" name="season[date_end]" id="date_end" class="form-control" value="<?php echo System_helper::display_date($season['date_end']);?>"/>
+                <input type="text" name="season[date_end]" id="date_end" class="form-control datepicker" value="<?php echo Bi_helper::cultivation_date_display($season['date_end']);?>"/>
             </div>
         </div>
         <div class="row show-grid">
@@ -80,7 +80,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
     {
         system_preset({controller:'<?php echo $CI->router->class; ?>'});
         $( "#date_start" ).datepicker({
-            dateFormat : display_date_format,
+            dateFormat : 'dd-MM',
             changeMonth: true,
             changeYear: true,
             yearRange: "c-2:c+2",
@@ -89,13 +89,13 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             }
         });
         $( "#date_end" ).datepicker({
+            dateFormat : 'dd-MM',
             changeMonth: true,
             changeYear: true,
-            yearRange: "c-2:c+2",
-            dateFormat : display_date_format,
+            yearRange: "c-2:c+2" /*,
             onClose: function( selectedDate ) {
                 $( "#date_start" ).datepicker( "option", "maxDate", selectedDate );
-            }
+            }*/
         });
     });
 </script>

@@ -2,18 +2,18 @@
 $CI = & get_instance();
 
 $action_buttons = array();
-if (isset($CI->permissions['action1']) && ($CI->permissions['action1'] == 1))
+/*if (isset($CI->permissions['action1']) && ($CI->permissions['action1'] == 1))
 {
     $action_buttons[] = array(
         'label' => $CI->lang->line("ACTION_NEW"),
         'href' => site_url($CI->controller_url . '/index/add')
     );
-}
+}*/
 if (isset($CI->permissions['action2']) && ($CI->permissions['action2'] == 1))
 {
     $action_buttons[] = array(
         'type' => 'button',
-        'label' => $CI->lang->line("ACTION_EDIT"),
+        'label' => 'Add / Edit',
         'class' => 'button_jqx_action',
         'data-action-link' => site_url($CI->controller_url . '/index/edit')
     );
@@ -134,13 +134,12 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 columnsreorder: true,
                 columns: [
                     { text: '<?php echo $CI->lang->line('LABEL_ID'); ?>', pinned: true, dataField: 'id', width: '50', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['id']?0:1;?>},
+                    { text: '<?php echo $CI->lang->line('LABEL_VARIETY_FOCUSED_COUNT'); ?>', pinned: true, dataField: 'variety_focused_count', width: '120', filtertype: 'none', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['variety_focused_count']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_OUTLET_NAME'); ?>', pinned: true, dataField: 'outlet_name', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['outlet_name']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_DISTRICT_NAME'); ?>', dataField: 'district_name', width: '120', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['district_name']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_TERRITORY_NAME'); ?>', dataField: 'territory_name', width: '120', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['territory_name']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_ZONE_NAME'); ?>', dataField: 'zone_name', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['zone_name']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_DIVISION_NAME'); ?>', dataField: 'division_name', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['division_name']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_VARIETY_FOCUSED_COUNT'); ?>', dataField: 'variety_focused_count', width: '50', filtertype: 'none', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['variety_focused_count']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_STATUS'); ?>', dataField: 'status', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['status']?0:1;?>}
+                    { text: '<?php echo $CI->lang->line('LABEL_DIVISION_NAME'); ?>', dataField: 'division_name', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['division_name']?0:1;?>}
                 ]
             });
     });

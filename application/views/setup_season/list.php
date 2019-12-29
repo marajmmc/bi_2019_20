@@ -95,6 +95,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 altrows: true,
                 autoheight: true,
                 columns: [
+                    { text: '<?php echo $CI->lang->line('LABEL_ID'); ?>', dataField: 'id', pinned: true, width: '50'},
                     { text: '<?php echo $CI->lang->line('LABEL_NAME'); ?>', dataField: 'name', pinned: true, width: '220'},
                     { text: '<?php echo $CI->lang->line('LABEL_DATE_START'); ?>', dataField: 'date_start', width: '120'},
                     { text: '<?php echo $CI->lang->line('LABEL_DATE_END'); ?>', dataField: 'date_end', width: '120'},
