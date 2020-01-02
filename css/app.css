@@ -133,3 +133,11 @@ header .site_title #header_site_title_date_time
 {
     font-size: 12px;
 }
+.panel-tab .panel-heading
+{
+    padding: 0px !important;
+}
+.panel-tab .panel-body
+{
+    padding: 0px !important;
+}
