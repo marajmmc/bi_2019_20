@@ -208,7 +208,7 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
                 if ($item['id'] > 0)
                 {
                     ?>
-                    <label class="control-label"><?php echo $item_info['outlet_name']; ?></label>
+                    <label class="control-label"><?php echo $item['outlet_name']; ?></label>
                 <?php
                 }
                 else
@@ -434,7 +434,7 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
                 if(system_upazillas[district_id]!==undefined)
                 {
                     $('#outlet_id_container').show();
-                    $('#outlet_id').html(get_dropdown_with_select(system_upazillas[district_id]));
+                    $('#outlet_id').html(get_dropdown_with_select(system_outlets[district_id]));
                 }
             }
         });

@@ -277,7 +277,7 @@ class Setup_variety_cultivation_period extends Root_Controller
         $cultivation_period_old=array();
         foreach ($results as $result)
         {
-            $cultivation_period_old[$result['upazilla_id']][$result['type_id']] = $result;
+            $cultivation_period_old[$result['outlet_id']][$result['type_id']] = $result;
         }
 
         $date_start=System_helper::get_time($item_head['date_start'].'-1970');
@@ -291,24 +291,31 @@ class Setup_variety_cultivation_period extends Root_Controller
             $date_end+=24*3600-1;
         }
 
-        $upazillas=Query_helper::get_info($this->config->item('table_login_setup_location_upazillas'),array('id','name'),array('status ="'.$this->config->item('system_status_active').'"'));
-        $cultivation_period_upazilla_insert=array();
-        $cultivation_period_upazilla_update=array();
-        foreach($upazillas as $upazilla)
+
+        $this->db->from($this->config->item('table_login_csetup_cus_info') . ' cus_info');
+        $this->db->select('cus_info.*');
+        $this->db->join($this->config->item('table_login_csetup_customer') . ' cus', 'cus.id = cus_info.customer_id', 'INNER');
+        $this->db->where('cus_info.revision', 1);
+        $this->db->where('cus_info.type', $this->config->item('system_customer_type_outlet_id'));
+        $this->db->where('cus.status', $this->config->item('system_status_active'));
+        $outlets = $this->db->get()->result_array();
+        $cultivation_period_outlet_insert=array();
+        $cultivation_period_outlet_update=array();
+        foreach($outlets as $outlet)
         {
-            if(isset($cultivation_period_old[$upazilla['id']][$type_id]))
+            if(isset($cultivation_period_old[$outlet['id']][$type_id]))
             {
-                if($cultivation_period_old[$upazilla['id']][$type_id]['status_change']==0)
+                if($cultivation_period_old[$outlet['id']][$type_id]['status_change']==0)
                 {
-                    $cultivation_period_upazilla_update[$upazilla['id']][$type_id]['cultivation_period_start_date']=$date_start;
-                    $cultivation_period_upazilla_update[$upazilla['id']][$type_id]['cultivation_period_end_date']=$date_end;
+                    $cultivation_period_outlet_update[$outlet['id']][$type_id]['cultivation_period_start_date']=$date_start;
+                    $cultivation_period_outlet_update[$outlet['id']][$type_id]['cultivation_period_end_date']=$date_end;
                 }
             }
             else
             {
-                $cultivation_period_upazilla_insert[]=array(
+                $cultivation_period_outlet_insert[]=array(
                     'type_id'=> $type_id,
-                    'upazilla_id'=> $upazilla['id'],
+                    'outlet_id'=> $outlet['customer_id'],
                     'date_start'=> $date_start,
                     'date_end'=> $date_end,
                     'revision_count'=> 1,
@@ -337,29 +344,29 @@ class Setup_variety_cultivation_period extends Root_Controller
         $item['revision'] = 1;
         Query_helper::add($this->config->item('table_bi_setup_variety_cultivation_period'), $item, FALSE);
 
-        // update upazilla wise cultivation period
-        if($cultivation_period_upazilla_update)
+        // update outlet wise cultivation period
+        if($cultivation_period_outlet_update)
         {
-            foreach($cultivation_period_upazilla_update as $upazilla_id=>$type_info)
+            foreach($cultivation_period_outlet_update as $outlet_id=>$type_info)
             {
                 foreach($type_info as $type_id=>$info)
                 {
                     $data=array();
                     $data['type_id'] = $type_id;
-                    $data['upazilla_id'] = $upazilla_id;
+                    $data['outlet_id'] = $outlet_id;
                     $data['date_start'] = $info['cultivation_period_start_date'];
                     $data['date_end'] = $info['cultivation_period_end_date'];
                     $data['date_updated'] = $time;
                     $data['user_updated'] = $user->user_id;
                     $this->db->set('revision_count', 'revision_count+1', FALSE);
-                    Query_helper::update($this->config->item('table_bi_variety_cultivation_period'), $data, array('type_id='.$type_id,'upazilla_id='.$upazilla_id), FALSE);
+                    Query_helper::update($this->config->item('table_bi_variety_cultivation_period'), $data, array('type_id='.$type_id,'outlet_id='.$outlet_id), FALSE);
                 }
             }
         }
         // batch insert cultivation period table
-        if(sizeof($cultivation_period_upazilla_insert)>0)
+        if(sizeof($cultivation_period_outlet_insert)>0)
         {
-            $this->db->insert_batch($this->config->item('table_bi_variety_cultivation_period'), $cultivation_period_upazilla_insert);
+            $this->db->insert_batch($this->config->item('table_bi_variety_cultivation_period'), $cultivation_period_outlet_insert);
         }
 
         $this->db->trans_complete(); //DB Transaction Handle END
@@ -434,13 +441,6 @@ class Setup_variety_cultivation_period extends Root_Controller
     }
     private function check_validation()
     {
-        /*$id=$this->input->post('id');
-        $item = $this->input->post('item');
-        if (!($id > 0) && !($item['upazilla_id'] > 0))
-        {
-            $this->message = $this->lang->line('LABEL_UPAZILLA_NAME') . ' field is required.';
-            return false;
-        }*/
         $item = $this->input->post('item');
         if(!($item['date_start'] || $item['date_end']))
         {

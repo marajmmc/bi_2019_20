@@ -172,8 +172,6 @@ class Variety_cultivation_period_request extends Root_Controller
         $this->db->from($this->config->item('table_bi_variety_cultivation_period_request') . ' item');
         $this->db->select('item.*, revision_count number_of_edit');
 
-        /*$this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazillas', 'upazillas.id = item.upazilla_id');
-        $this->db->select('upazillas.name upazilla_name');*/
         $this->db->join($this->config->item('table_login_csetup_cus_info') . ' cus_info', 'cus_info.customer_id = item.outlet_id AND cus_info.revision=1', 'INNER');
         $this->db->select('cus_info.name outlet_name');
 
@@ -204,16 +202,12 @@ class Variety_cultivation_period_request extends Root_Controller
                     if($this->locations['district_id']>0)
                     {
                         $this->db->where('districts.id',$this->locations['district_id']);
-                        /*if($this->locations['upazilla_id']>0)
-                        {
-                            $this->db->where('upazillas.id',$this->locations['upazilla_id']);
-                        }*/
                     }
                 }
             }
         }
         $items = $this->db->get()->result_array();
-        echo $this->db->last_query();
+        //echo $this->db->last_query();
         $this->json_return($items);
     }
     private function system_list_all()
@@ -246,8 +240,6 @@ class Variety_cultivation_period_request extends Root_Controller
         $this->db->from($this->config->item('table_bi_variety_cultivation_period_request') . ' item');
         $this->db->select('item.*, revision_count number_of_edit');
 
-        /*$this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazillas', 'upazillas.id = item.upazilla_id');
-        $this->db->select('upazillas.name upazilla_name');*/
         $this->db->join($this->config->item('table_login_csetup_cus_info') . ' cus_info', 'cus_info.customer_id = item.outlet_id AND cus_info.revision=1', 'INNER');
         $this->db->select('cus_info.name outlet_name');
 
@@ -276,10 +268,6 @@ class Variety_cultivation_period_request extends Root_Controller
                     if($this->locations['district_id']>0)
                     {
                         $this->db->where('districts.id',$this->locations['district_id']);
-                        /*if($this->locations['upazilla_id']>0)
-                        {
-                            $this->db->where('upazillas.id',$this->locations['upazilla_id']);
-                        }*/
                     }
                 }
             }
@@ -327,12 +315,6 @@ class Variety_cultivation_period_request extends Root_Controller
                     }
                 }
             }
-            /*$data['upazillas'] = array();
-            $results = Query_helper::get_info($this->config->item('table_login_setup_location_upazillas'), array('id value', 'name text', 'district_id'), array('status ="' . $this->config->item('system_status_active') . '"'), 0, 0, array('ordering ASC'));
-            foreach ($results as $result)
-            {
-                $data['upazillas'][$result['district_id']][] = $result;
-            }*/
 
             $data['title'] = "New Cultivation Period For  " . ($this->lang->line('LABEL_OUTLET_NAME')) . " Area ";
             $ajax['status'] = true;
@@ -367,13 +349,13 @@ class Variety_cultivation_period_request extends Root_Controller
             $this->db->from($this->config->item('table_bi_variety_cultivation_period_request') . ' item');
             $this->db->select('item.*');
 
-            $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = item.upazilla_id');
-            $this->db->select('upazilla.id upazilla_id, upazilla.name upazilla_name');
+            $this->db->join($this->config->item('table_login_csetup_cus_info') . ' cus_info', 'cus_info.customer_id = item.outlet_id AND cus_info.revision=1', 'INNER');
+            $this->db->select('cus_info.name outlet_name');
 
-            $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id', 'INNER');
-            $this->db->select('district.id district_id, district.name district_name');
+            $this->db->join($this->config->item('table_login_setup_location_districts') . ' districts', 'districts.id = cus_info.district_id', 'INNER');
+            $this->db->select('districts.id district_id, districts.name district_name');
 
-            $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
+            $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = districts.territory_id', 'INNER');
             $this->db->select('territory.id territory_id, territory.name territory_name');
 
             $this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
@@ -384,8 +366,6 @@ class Variety_cultivation_period_request extends Root_Controller
 
             $this->db->where('item.id', $item_id);
             $this->db->where('item.status', $this->config->item('system_status_active'));
-            $this->db->order_by('district.name');
-            $this->db->order_by('upazilla.name');
             $data['item'] = $this->db->get()->row_array();
             if (!$data['item'])
             {
@@ -398,7 +378,7 @@ class Variety_cultivation_period_request extends Root_Controller
             $data['zones']=true;
             $data['territories']=true;
             $data['districts']=true;
-            $data['upazillas'] = true;
+            $data['outlets'] = true;
 
             $this->db->from($this->config->item('table_bi_variety_cultivation_period'));
             $this->db->select('*');
@@ -435,7 +415,7 @@ class Variety_cultivation_period_request extends Root_Controller
             }
 
 
-            $data['title'] = "Edit Variety Cultivation Period ( Upazilla Wise )";
+            $data['title'] = "Edit Variety Cultivation Period ( Outlet Wise )";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/add_edit", $data, true));
             if ($this->message)
@@ -493,7 +473,6 @@ class Variety_cultivation_period_request extends Root_Controller
                 $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
                 $this->json_return($ajax);
             }
-            //$outlet_id=$item_head['outlet_id'];
         }
 
         //Validation Checking
@@ -529,21 +508,16 @@ class Variety_cultivation_period_request extends Root_Controller
                 }
                 $date_start=System_helper::get_time($info['date_start'].'-1970');
                 $date_end=System_helper::get_time($info['date_end'].'-1970');
-                //echo "<br /> $date_end = ".$info['date_end'].'-1970';
 
                 if($date_end<$date_start)
                 {
                     $date_end=System_helper::get_time($info['date_end'].'-1971');
-                    //echo "<br /> $date_end = ".$info['date_end'].'-1971';
                 }
                 if($date_end!=0)
                 {
                     $date_end+=24*3600-1;
-                    //echo "<br /> ".$date_end;
                 }
 
-                /*$date_start=Bi_helper::cultivation_date_sql($info['date_start']);
-                $date_end=Bi_helper::cultivation_date_sql($info['date_end']);*/
                 if(isset($cultivation_period_old[$type_id]))
                 {
                     if(!(($cultivation_period_old[$type_id]['date_start']==$date_start) && ($cultivation_period_old[$type_id]['date_end']==$date_end)))
@@ -555,28 +529,14 @@ class Variety_cultivation_period_request extends Root_Controller
                 {
                     $cultivation_period_array[$type_id]['new']=$date_start.'~'.$date_end;
                 }
-
-                /*if(Bi_helper::cultivation_date_sql($info['date_start'])>Bi_helper::cultivation_date_sql($info['date_end']))
-                {
-                    $invalid_date=true;
-                }*/
             }
         }
 
         $item_head['cultivation_period']=json_encode($cultivation_period_array);
 
-        //need to add date validation
-        /*if($invalid_date)
-        {
-            $ajax['status'] = false;
-            $ajax['system_message'] = "End date must greater than start date.";
-            $this->json_return($ajax);
-        }*/
-
         $this->db->trans_start(); //DB Transaction Handle START
         if ($id > 0) // Revision Update if EDIT
         {
-            $item_head['outlet_id'] = $outlet_id;
             $item_head['date_updated'] = $time;
             $item_head['user_updated'] = $user->user_id;
             $this->db->set('revision_count', 'revision_count+1', FALSE);
@@ -622,13 +582,13 @@ class Variety_cultivation_period_request extends Root_Controller
             $this->db->from($this->config->item('table_bi_variety_cultivation_period_request') . ' item');
             $this->db->select('item.*');
 
-            $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = item.upazilla_id');
-            $this->db->select('upazilla.name upazilla_name');
+            $this->db->join($this->config->item('table_login_csetup_cus_info') . ' cus_info', 'cus_info.customer_id = item.outlet_id AND cus_info.revision=1', 'INNER');
+            $this->db->select('cus_info.name outlet_name');
 
-            $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id', 'INNER');
-            $this->db->select('district.id district_id, district.name district_name');
+            $this->db->join($this->config->item('table_login_setup_location_districts') . ' districts', 'districts.id = cus_info.district_id', 'INNER');
+            $this->db->select('districts.id district_id, districts.name district_name');
 
-            $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
+            $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = districts.territory_id', 'INNER');
             $this->db->select('territory.id territory_id, territory.name territory_name');
 
             $this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
@@ -648,15 +608,6 @@ class Variety_cultivation_period_request extends Root_Controller
             }
 
             $data['info_basic']=Bi_helper::get_basic_info($data['item']);
-
-            /*$this->db->from($this->config->item('table_bi_variety_cultivation_period'));
-            $this->db->select('*');
-            $this->db->where('upazilla_id', $data['item']['upazilla_id']);
-            $results = $this->db->get()->result_array();
-            foreach ($results as $result)
-            {
-                $data['cultivation_period_old'][$result['type_id']] = $result;
-            }*/
 
             $this->db->from($this->config->item('table_login_setup_classification_crop_types') . ' type');
             $this->db->select('type.id crop_type_id, type.name crop_type_name');
@@ -683,7 +634,7 @@ class Variety_cultivation_period_request extends Root_Controller
                 }
             }
 
-            $data['title'] = "Cultivation Period Details ( Upazilla Wise )";
+            $data['title'] = "Cultivation Period Details ( Outlet Wise )";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->common_view_location . "/details", $data, true));
             if ($this->message)
@@ -717,13 +668,13 @@ class Variety_cultivation_period_request extends Root_Controller
             $this->db->from($this->config->item('table_bi_variety_cultivation_period_request') . ' item');
             $this->db->select('item.*');
 
-            $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = item.upazilla_id');
-            $this->db->select('upazilla.name upazilla_name');
+            $this->db->join($this->config->item('table_login_csetup_cus_info') . ' cus_info', 'cus_info.customer_id = item.outlet_id AND cus_info.revision=1', 'INNER');
+            $this->db->select('cus_info.name outlet_name');
 
-            $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id', 'INNER');
-            $this->db->select('district.id district_id, district.name district_name');
+            $this->db->join($this->config->item('table_login_setup_location_districts') . ' districts', 'districts.id = cus_info.district_id', 'INNER');
+            $this->db->select('districts.id district_id, districts.name district_name');
 
-            $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
+            $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = districts.territory_id', 'INNER');
             $this->db->select('territory.id territory_id, territory.name territory_name');
 
             $this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
@@ -790,7 +741,7 @@ class Variety_cultivation_period_request extends Root_Controller
                 }
             }
 
-            $data['title'] = "Forward Cultivation Period (Upazilla Wise)";
+            $data['title'] = "Forward Cultivation Period (Outlet Wise)";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/forward", $data, true));
             if ($this->message)

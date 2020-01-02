@@ -44,8 +44,8 @@ class Bi_helper
         );
         $data[] = array
         (
-            'label_1' => $CI->lang->line('LABEL_UPAZILLA_NAME'),
-            'value_1' => $result['upazilla_name'],
+            'label_1' => $CI->lang->line('LABEL_OUTLET_NAME'),
+            'value_1' => $result['outlet_name'],
             'label_2' => 'Revision (Edit)',
             'value_2' => $result['revision_count']
         );
