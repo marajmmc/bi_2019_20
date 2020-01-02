@@ -12,9 +12,9 @@ $season = Query_helper::get_info($CI->config->item('table_bi_setup_season'), arr
 ?>
 
 <div class="row widget">
-    <div class="col-lg-8" style="padding-right: 0px !important; min-height: 200px">
-        <div class="panel with-nav-tabs panel-default" style=" min-height: 200px">
-            <div class="panel-heading">
+    <div class="col-lg-9" style="padding: 0px !important; min-height: 150px">
+        <div class="panel with-nav-tabs panel-default panel-tab" style=" min-height: 150px; margin-bottom: 0px !important;">
+            <div class="panel-heading ">
                 <ul class="nav nav-tabs">
                     <li class="active"><a href="#tab_sales_amount" data-toggle="tab" class="dropdown tab_id_sales_amount" id="tab_id_sales_today" data-type="today" data-value="<?php echo date('d', time())?>">Today</a></li>
                     <li class="dropdown">
@@ -66,19 +66,19 @@ $season = Query_helper::get_info($CI->config->item('table_bi_setup_season'), arr
             </div>
         </div>
     </div>
-    <div class="col-lg-1 bg-success" style="padding: 0px !important; ">
-        <div style="text-align: center; background-color: #449d44; color:#fff; border: 1px solid green; border-top: 5px solid green; margin-bottom: 20px; min-height: 90px">
+    <!--<div class="col-lg-1 bg-success" style="padding: 0px !important; ">
+        <div style="text-align: center; background-color: #449d44; color:#fff; border: 1px solid green; border-top: 5px solid green; margin-bottom: 10px; min-height: 70px">
             <small>No of Due Invoice.</small>
             <hr style="margin: 5px !important;"/>
             <strong style="font-size: 25px; padding: 5px">3055</strong>
         </div>
-        <div style="text-align: center; background-color: #449d44; color:#fff; border: 1px solid green; border-top: 5px solid green; min-height: 90px">
+        <div style="text-align: center; background-color: #449d44; color:#fff; border: 1px solid green; border-top: 5px solid green; min-height: 70px">
             <small>No of Due Invoice.</small>
             <hr style="margin: 5px !important;"/>
             <strong style="font-size: 25px; padding: 5px">3055</strong>
         </div>
-    </div>
-    <div class="col-lg-3 col-xs-12 bg-info" style="padding: 5px; min-height: 200px">
+    </div>-->
+    <div class="col-lg-3 col-xs-12 bg-warning" style="padding: 5px; min-height: 150px">
         <div style="width: 100%; border-bottom: 1px green solid; margin-bottom: 2px;">
             <small> <strong>Focused Crops [ Season: <?php echo $season['name'].' ('.date('M, d',$season['date_start']).' - '.date('M, d',$season['date_end']).')'; ?> ]</strong> </small>
         </div>
@@ -91,10 +91,10 @@ $season = Query_helper::get_info($CI->config->item('table_bi_setup_season'), arr
         <span class="app-label-bg-none">Super Early (S)</span>
     </div>
 </div>
-<div class="row widget">
+<div class="row widget tab-section-2">
     <!-- crop wise sales  -->
-    <div class="col-md-6">
-        <div class="panel with-nav-tabs panel-default">
+    <div class="col-md-6" style="padding: 0px !important; ">
+        <div class="panel with-nav-tabs panel-default  panel-tab">
             <div class="panel-heading">
                 <ul class="nav nav-tabs">
                     <li class="active"><a href="#tab_sales_year" data-toggle="tab" class="dropdown tab_id_sales_years" id="tab_id_sales_today" data-type="today" data-unit-interval="10" data-value="<?php echo date('d', time())?>">Today</a></li>
@@ -127,109 +127,14 @@ $season = Query_helper::get_info($CI->config->item('table_bi_setup_season'), arr
             </div>
             <div class="panel-body">
                 <div class="tab-content">
-                    <div class="tab-pane fade in active" id="tab_sales_year">&nbsp;</div>
+                    <div class="tab-pane fade in active" id="tab_sales_year" style=" ">&nbsp;</div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <?php
-        if($user->user_group>1)
-        {
-            $user_group=','.$user->user_group.',';
-            $CI->db->where("item.user_group_ids LIKE '%$user_group%'");
-        }
-        $CI->db->from($CI->config->item('table_pos_setup_notice_request').' item');
-        $CI->db->select('item.*');
-        $CI->db->join($CI->config->item('table_pos_setup_notice_types').' type','type.id=item.type_id','INNER');
-        $CI->db->select('type.name notice_type');
-        //$CI->db->where('item.type_id',$id);
-        /*$CI->db->where('item.status',$CI->config->item('system_status_active'));
-        $CI->db->where('item.status_approve',$CI->config->item('system_status_approved'));
-        $CI->db->where('item.expire_time >=',time());*/
-        //$CI->db->order_by('item.ordering','ASC');
-        $CI->db->order_by('item.id','DESC');
-        $results=$CI->db->get()->result_array();
-        //echo $CI->db->last_query();
-        $notice_type_count=array();
-        $notice_type_names=array();
-        $notices=array();
-        foreach($results as $result)
-        {
-            if(isset($notice_type_count[$result['type_id']]))
-            {
-                $notice_type_count[$result['type_id']]+=1;
-            }
-            else
-            {
-                $notice_type_count[$result['type_id']]=1;
-            }
-            $notice_type_names[$result['type_id']]=$result['notice_type'];
-            $notices[$result['type_id']][]=$result;
-        }
-        ?>
-        <div class="panel with-nav-tabs panel-default">
-            <div class="panel-heading">
-                <ul class="nav nav-tabs">
-                    <li class="active">
-                        <a href="#tab_notice_0" data-toggle="tab" class="dropdown tab_id_notice" id="" >
-                            Event (1)
-                        </a>
-                    </li>
-                    <?php
-                    $div_active=2;
-                    ksort($notice_type_names);
-                    foreach($notice_type_names as $key=>$notice_type_name)
-                    {
-                        ?>
-                        <li class="<?php if($div_active==1){echo 'active';}?>">
-                            <a href="#tab_notice_<?php echo $key?>" data-toggle="tab" class="dropdown tab_id_notice" id="" >
-                                <?php echo $notice_type_name?> (<?php echo isset($notice_type_count[$key])?$notice_type_count[$key]:'';?>)
-                            </a>
-                        </li>
-                    <?php
-                        ++$div_active;
-                    }
-                    ?>
-                </ul>
-            </div>
-            <div class="panel-body">
-                <div class="tab-content">
-                    <div class="tab-pane fade in active" id="tab_notice_0">
-                        <strong>Best of Sale On This Month (ESME)</strong>
-                        <hr/>
-                        <img alt="Logo" height="200" class="site_logo pull-left" src="http://localhost/login_2018_19/images/logo.png">
-                        &nbsp; Md. Xyz Abcd
-                    </div>
-                    <?php
-                    $div_active=2;
-                    ksort($notice_type_names);
-                    foreach($notice_type_names as $key=>$notice_type_name)
-                    {
-                    ?>
-                        <div class="tab-pane fade in <?php if($div_active==1){echo 'active';}?>" id="tab_notice_<?php echo $key?>">
-                            <?php echo $key?>
-                        </div>
-                    <?php
-                        ++$div_active;
-                    }
-                    ?>
-
-                </div>
-            </div>
-        </div>
-    </div>
-    <style>
-        .tab_id_notice
-        {
-            padding: 5px !important;
-            font-size: 10px;
-            font-weight: bold;
-        }
-    </style>
     <!-- Invoice wise sales -->
-    <div class="col-md-3">
-        <div class="panel with-nav-tabs panel-default">
+    <div class="col-md-3" style="padding: 0px !important; ">
+        <div class="panel with-nav-tabs panel-default panel-tab">
             <div class="panel-heading">
                 <ul class="nav nav-tabs">
                     <li class="active"><a href="#tab_invoices_year" data-toggle="tab" class="dropdown tab_id_invoices_years" id="tab_id_invoice_today" data-type="today" data-unit-interval="10" data-value="<?php echo date('d', time())?>">Today</a></li>
@@ -262,14 +167,30 @@ $season = Query_helper::get_info($CI->config->item('table_bi_setup_season'), arr
             </div>
             <div class="panel-body">
                 <div class="tab-content">
-                    <div class="tab-pane fade in active" id="tab_invoices_year">&nbsp;</div>
+                    <div class="tab-pane fade in active" id="tab_invoices_year" style=" ">&nbsp;</div>
                 </div>
             </div>
         </div>
     </div>
+    <div class="col-md-3" style="padding: 0px !important; ">
+        <div id="div_report_farmer_balance_notification">
+
+        </div>
+    </div>
 
 </div>
-
+<style>
+    .tab_id_notice
+    {
+        padding: 5px !important;
+        font-size: 10px;
+        font-weight: bold;
+    }
+    .tab-section-2 .panel-body
+    {
+        min-height: 505px;;
+    }
+</style>
 <div class="clearfix"></div>
 <style>
     .tab-pane
@@ -338,10 +259,36 @@ $season = Query_helper::get_info($CI->config->item('table_bi_setup_season'), arr
             }
         });
     }
+    function load_report_farmer_balance_notification()
+    {
+        var elm_id="#div_report_farmer_balance_notification";
+        $($(elm_id).attr('href')).html('')
+        var url = "<?php echo site_url('Dashboard/index/report_farmer_balance_notification');?>";
+        var data_post =
+        {
+            html_id:elm_id
+        }
+        $.ajax({
+            url: url,
+            type: 'post',
+            dataType: "JSON",
+            data: data_post,
+            success: function (data, status)
+            {
+
+            },
+            error: function (xhr, desc, err)
+            {
+
+
+            }
+        });
+    }
     $(document).ready(function ()
     {
-        load_invoice_amount();
+        //load_invoice_amount();
         //load_chart();
+        load_report_farmer_balance_notification();
 
         $('.tab_id_sales_amount').on('click',function()
         {

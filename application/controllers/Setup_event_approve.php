@@ -21,10 +21,9 @@ class Setup_event_approve extends Root_Controller
     private function language_labels()
     {
         $this->lang->language['LABEL_REVISION_COUNT']='Number of edit';
-        $this->lang->language['LABEL_NOTICE_ID']='Notice ID';
-        $this->lang->language['LABEL_TITLE']='Notice Title';
-        $this->lang->language['LABEL_NOTICE_TYPE']='Notice Type';
-        $this->lang->language['LABEL_DATE_PUBLISH']='Notice Publish Date';
+        $this->lang->language['LABEL_EVENT_ID']='Event ID';
+        $this->lang->language['LABEL_TITLE']='Event Title';
+        $this->lang->language['LABEL_DATE_PUBLISH']='Event Publish Date';
         $this->lang->language['LABEL_EXPIRE_DAY']='Number Of Day As New';
         $this->lang->language['LABEL_REMAINING_DAY']='Number Of Remaining Day';
         $this->lang->language['LABEL_FILE_IMAGE']='File';
@@ -92,7 +91,6 @@ class Setup_event_approve extends Root_Controller
         if($method=='list')
         {
             $data['id']= 1;
-            $data['notice_type']= 1;
             $data['date_publish']= 1;
             $data['expire_day']= 1;
             $data['remaining_day']= 1;
@@ -104,7 +102,6 @@ class Setup_event_approve extends Root_Controller
         elseif($method=='list_all')
         {
             $data['id']= 1;
-            $data['notice_type']= 1;
             $data['date_publish']= 1;
             $data['expire_day']= 1;
             $data['remaining_day']= 1;
@@ -149,7 +146,7 @@ class Setup_event_approve extends Root_Controller
         if(isset($this->permissions['action0'])&&($this->permissions['action0']==1))
         {
             $data['system_preference_items']= System_helper::get_preference($user->user_id, $this->controller_url, $method, $this->get_preference_headers($method));
-            $data['title']="Notice Publish Approve Pending List";
+            $data['title']="Event Publish Approve Pending List";
             $ajax['status']=true;
             $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/list",$data,true));
             if($this->message)
@@ -168,10 +165,8 @@ class Setup_event_approve extends Root_Controller
     }
     private function system_get_items()
     {
-        $this->db->from($this->config->item('table_pos_setup_notice_request').' item');
+        $this->db->from($this->config->item('table_bi_setup_events').' item');
         $this->db->select('item.*');
-        $this->db->join($this->config->item('table_pos_setup_notice_types').' type','type.id=item.type_id','INNER');
-        $this->db->select('type.name notice_type');
         $this->db->where('item.status !=',$this->config->item('system_status_delete'));
         $this->db->where('item.status_forward',$this->config->item('system_status_forwarded'));
         $this->db->where('item.status_approve',$this->config->item('system_status_pending'));
@@ -192,7 +187,7 @@ class Setup_event_approve extends Root_Controller
         if(isset($this->permissions['action0'])&&($this->permissions['action0']==1))
         {
             $data['system_preference_items']= System_helper::get_preference($user->user_id, $this->controller_url, $method, $this->get_preference_headers($method));
-            $data['title']="Notice Publish Approve All List";
+            $data['title']="Event Publish Approve All List";
             $ajax['status']=true;
             $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/list_all",$data,true));
             if($this->message)
@@ -226,10 +221,8 @@ class Setup_event_approve extends Root_Controller
             $pagesize=$pagesize*2;
         }
         $time=time();
-        $this->db->from($this->config->item('table_pos_setup_notice_request').' item');
+        $this->db->from($this->config->item('table_bi_setup_events').' item');
         $this->db->select('item.*');
-        $this->db->join($this->config->item('table_pos_setup_notice_types').' type','type.id=item.type_id','INNER');
-        $this->db->select('type.name notice_type');
         $this->db->where('item.status !=',$this->config->item('system_status_delete'));
         $this->db->where('item.status_forward',$this->config->item('system_status_forwarded'));
         //$this->db->order_by('item.ordering','ASC');
@@ -257,10 +250,8 @@ class Setup_event_approve extends Root_Controller
                 $item_id=$this->input->post('id');
             }
 
-            $this->db->from($this->config->item('table_pos_setup_notice_request').' item');
+            $this->db->from($this->config->item('table_bi_setup_events').' item');
             $this->db->select('item.*');
-            $this->db->join($this->config->item('table_pos_setup_notice_types').' type','type.id=item.type_id','INNER');
-            $this->db->select('type.name notice_type');
             $this->db->where('item.id',$item_id);
             $this->db->where('item.status !=',$this->config->item('system_status_delete'));
             $this->db->order_by('item.id','DESC');
@@ -269,45 +260,30 @@ class Setup_event_approve extends Root_Controller
             {
                 System_helper::invalid_try('Approve Non Exists',$item_id);
                 $ajax['status']=false;
-                $ajax['system_message']='Invalid Notice.';
+                $ajax['system_message']='Invalid Event.';
                 $this->json_return($ajax);
             }
             if($data['item']['status']==$this->config->item('system_status_inactive'))
             {
                 $ajax['status']=false;
-                $ajax['system_message']='Notice In-Active.';
+                $ajax['system_message']='Event In-Active.';
                 $this->json_return($ajax);
             }
             if($data['item']['status_forward']!=$this->config->item('system_status_forwarded'))
             {
                 $ajax['status']=false;
-                $ajax['system_message']='Notice Not Forwarded.';
+                $ajax['system_message']='Event Not Forwarded.';
                 $this->json_return($ajax);
             }
             if($data['item']['status_approve']==$this->config->item('system_status_approved'))
             {
                 $ajax['status']=false;
-                $ajax['system_message']='Notice Already Approved.';
+                $ajax['system_message']='Event Already Approved.';
                 $this->json_return($ajax);
             }
             $data['info_basic']=Event_helper::get_basic_info($data['item']);
-            $data['files']=Query_helper::get_info($this->config->item('table_pos_setup_notice_file_videos'),'*',array('notice_id='.$item_id,'status ="'.$this->config->item('system_status_active').'"'),0,0,array('ordering ASC'));
 
-            $data['user_group_ids']=explode(',',trim($data['item']['user_group_ids'],','));
-            $data['urls']=json_decode($data['item']['url_links'],true);
-
-            $data['notice_types']=Query_helper::get_info($this->config->item('table_pos_setup_notice_types'),'*',array('status ="'.$this->config->item('system_status_active').'"'));
-            $user=User_helper::get_user();
-            if($user->user_group==1)
-            {
-                $data['user_groups']=Query_helper::get_info($this->config->item('table_system_user_group'),'*',array('status ="'.$this->config->item('system_status_active').'"'),0,0,array('ordering ASC'));
-            }
-            else
-            {
-                $data['user_groups']=Query_helper::get_info($this->config->item('table_system_user_group'),'*',array('id !=1','status ="'.$this->config->item('system_status_active').'"'),0,0,array('ordering ASC'));
-            }
-
-            $data['title']="Notice Approve :: ". $data['item']['id'];
+            $data['title']="Event Approve :: ". $data['item']['id'];
             $ajax['status']=true;
             $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/approve",$data,true));
             if($this->message)
@@ -395,7 +371,7 @@ class Setup_event_approve extends Root_Controller
             $data['status_approve']=$item_head['status_approve'];
             $this->db->set('revision_count_approved', 'revision_count_approved+1', FALSE);
         }
-        Query_helper::update($this->config->item('table_pos_setup_notice_request'),$data,array('id='.$id));
+        Query_helper::update($this->config->item('table_bi_setup_events'),$data,array('id='.$id));
 
         $this->db->trans_complete();   //DB Transaction Handle END
 
@@ -424,10 +400,8 @@ class Setup_event_approve extends Root_Controller
                 $item_id=$this->input->post('id');
             }
 
-            $this->db->from($this->config->item('table_pos_setup_notice_request').' item');
+            $this->db->from($this->config->item('table_bi_setup_events').' item');
             $this->db->select('item.*');
-            $this->db->join($this->config->item('table_pos_setup_notice_types').' type','type.id=item.type_id','INNER');
-            $this->db->select('type.name notice_type');
             $this->db->where('item.id',$item_id);
             $this->db->where('item.status !=',$this->config->item('system_status_delete'));
             $this->db->order_by('item.id','DESC');
@@ -436,34 +410,19 @@ class Setup_event_approve extends Root_Controller
             {
                 System_helper::invalid_try('Forward Non Exists',$item_id);
                 $ajax['status']=false;
-                $ajax['system_message']='Invalid Notice.';
+                $ajax['system_message']='Invalid Event.';
                 $this->json_return($ajax);
             }
             if($data['item']['status']==$this->config->item('system_status_inactive'))
             {
                 $ajax['status']=false;
-                $ajax['system_message']='Notice In-Active.';
+                $ajax['system_message']='Event In-Active.';
                 $this->json_return($ajax);
             }
 
             $data['info_basic']=Event_helper::get_basic_info($data['item']);
-            $data['files']=Query_helper::get_info($this->config->item('table_pos_setup_notice_file_videos'),'*',array('notice_id='.$item_id,'status ="'.$this->config->item('system_status_active').'"'),0,0,array('ordering ASC'));
 
-            $data['user_group_ids']=explode(',',trim($data['item']['user_group_ids'],','));
-            $data['urls']=json_decode($data['item']['url_links'],true);
-
-            $data['notice_types']=Query_helper::get_info($this->config->item('table_pos_setup_notice_types'),'*',array('status ="'.$this->config->item('system_status_active').'"'));
-            $user=User_helper::get_user();
-            if($user->user_group==1)
-            {
-                $data['user_groups']=Query_helper::get_info($this->config->item('table_system_user_group'),'*',array('status ="'.$this->config->item('system_status_active').'"'),0,0,array('ordering ASC'));
-            }
-            else
-            {
-                $data['user_groups']=Query_helper::get_info($this->config->item('table_system_user_group'),'*',array('id !=1','status ="'.$this->config->item('system_status_active').'"'),0,0,array('ordering ASC'));
-            }
-
-            $data['title']="Notice Delete :: ". $data['item']['id'];
+            $data['title']="Event Delete :: ". $data['item']['id'];
             $ajax['status']=true;
             $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/delete",$data,true));
             if($this->message)
@@ -522,7 +481,7 @@ class Setup_event_approve extends Root_Controller
         $data['user_updated']=$user->user_id;
         $data['reason_delete']=$item_head['reason_delete'];
         $data['status']=$item_head['status'];
-        Query_helper::update($this->config->item('table_pos_setup_notice_request'),$data,array('id='.$id));
+        Query_helper::update($this->config->item('table_bi_setup_events'),$data,array('id='.$id));
 
         $this->db->trans_complete();   //DB Transaction Handle END
 
@@ -550,10 +509,8 @@ class Setup_event_approve extends Root_Controller
             {
                 $item_id=$this->input->post('id');
             }
-            $this->db->from($this->config->item('table_pos_setup_notice_request').' item');
+            $this->db->from($this->config->item('table_bi_setup_events').' item');
             $this->db->select('item.*');
-            $this->db->join($this->config->item('table_pos_setup_notice_types').' type','type.id=item.type_id','INNER');
-            $this->db->select('type.name notice_type');
             $this->db->where('item.id',$item_id);
             $this->db->where('item.status !=',$this->config->item('system_status_delete'));
             $this->db->order_by('item.id','DESC');
@@ -566,23 +523,6 @@ class Setup_event_approve extends Root_Controller
                 $this->json_return($ajax);
             }
             $data['info_basic']=Event_helper::get_basic_info($data['item']);
-            $data['files']=Query_helper::get_info($this->config->item('table_pos_setup_notice_file_videos'),'*',array('notice_id='.$item_id,'status ="'.$this->config->item('system_status_active').'"'),0,0,array('ordering ASC'));
-
-            $data['user_group_ids']=explode(',',trim($data['item']['user_group_ids'],','));
-            $data['urls']=json_decode($data['item']['url_links'],true);
-            $data['notice_types']=Query_helper::get_info($this->config->item('table_pos_setup_notice_types'),'*',array('status ="'.$this->config->item('system_status_active').'"'));
-            $user=User_helper::get_user();
-            if($user->user_group==1)
-            {
-                $data['user_groups']=Query_helper::get_info($this->config->item('table_system_user_group'),'*',array('status ="'.$this->config->item('system_status_active').'"'),0,0,array('ordering ASC'));
-            }
-            else
-            {
-                $data['user_groups']=Query_helper::get_info($this->config->item('table_system_user_group'),'*',array('id !=1','status ="'.$this->config->item('system_status_active').'"'),0,0,array('ordering ASC'));
-            }
-
-            /* data show hide parameter*/
-            $data['user_groups_show']=true;
             /*list action button */
             //$data['action_buttons'][]=array();
             $data['action_buttons'][]=array(
@@ -593,7 +533,7 @@ class Setup_event_approve extends Root_Controller
                 'label'=>'Pending List',
                 'href'=>site_url($this->controller_url)
             );
-            $data['title']="Notice Details :: ". $data['item']['id'];
+            $data['title']="Event Details :: ". $data['item']['id'];
             $ajax['status']=true;
             $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->common_view_location."/details",$data,true));
             if($this->message)

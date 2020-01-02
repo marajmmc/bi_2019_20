@@ -1,7 +1,7 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 $CI = & get_instance();
 ?>
-<div style=" overflow-x: scroll">
+<div >
     <div id='jqxChartSalesYears' style="width:100%; height:500px; position: relative; left: 0px; top: 0px;">
         asdf
     </div>

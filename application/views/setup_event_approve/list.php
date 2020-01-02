@@ -139,7 +139,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 columns:
                 [
                     { text: '<?php echo $CI->lang->line('LABEL_NOTICE_ID'); ?>', dataField: 'id',width:'50',cellsAlign:'right',hidden: <?php echo $system_preference_items['id']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_NOTICE_TYPE'); ?>', dataField: 'notice_type',width:'150', hidden: <?php echo $system_preference_items['notice_type']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_DATE_PUBLISH'); ?>', dataField: 'date_publish',width:'100', hidden: <?php echo $system_preference_items['date_publish']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_EXPIRE_DAY'); ?>', dataField: 'expire_day',width:'50', hidden: <?php echo $system_preference_items['expire_day']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_REMAINING_DAY'); ?>', dataField: 'remaining_day',width:'50', hidden: <?php echo $system_preference_items['remaining_day']?0:1;?>},

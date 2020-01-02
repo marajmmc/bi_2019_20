@@ -198,42 +198,34 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
                 ?>
             </div>
         </div>
-        <div style="<?php if(!(sizeof($upazillas)>0)){echo 'display:none';} ?>" class="row show-grid" id="upazilla_id_container">
+        <div style="<?php echo (!($item['id'] > 0) && !($CI->locations['district_id'] > 0)) ? 'display:none' : '' ?>" class="row show-grid" id="outlet_id_container">
             <div class="col-xs-4">
-                <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_UPAZILLA_NAME');?><span style="color:#FF0000">*</span></label>
+                <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_OUTLET_NAME'); ?>
+                    <span style="color:#FF0000">*</span></label>
             </div>
             <div class="col-sm-4 col-xs-8">
                 <?php
-                if($CI->locations['upazilla_id']>0)
+                if ($item['id'] > 0)
                 {
                     ?>
-                    <label class="control-label"><?php echo $CI->locations['upazilla_name'];?></label>
-                    <input type="hidden" id="upazilla_id" name="item[upazilla_id]" class="form-control" value="<?php echo $CI->locations['upazilla_id'];?>" />
+                    <label class="control-label"><?php echo $item_info['outlet_name']; ?></label>
                 <?php
                 }
                 else
                 {
-                    if($item['id']>0)
-                    {
-                        ?>
-                        <label class="control-label"><?php echo $item['upazilla_name'];?></label>
-                    <?php
-                    }
-                    else
-                    {
-                        ?>
-                        <select id="upazilla_id" name="item[upazilla_id]" class="form-control">
-                            <option value=""><?php echo $CI->lang->line('SELECT');?></option>
-                            <?php
-                            foreach($upazillas[$item['district_id']] as $upazilla)
-                            {?>
-                                <option value="<?php echo $upazilla['value']?>" <?php if($upazilla['value']==$item['upazilla_id']){ echo "selected";}?>><?php echo $upazilla['text'];?></option>
-                            <?php
-                            }
+                    ?>
+                    <select id="outlet_id" name="outlet_id" class="form-control">
+                        <option value=""><?php echo $CI->lang->line('SELECT'); ?></option>
+                        <?php
+                        foreach ($outlets as $outlet)
+                        {
                             ?>
-                        </select>
-                    <?php
-                    }
+                            <option value="<?php echo $outlet['value'] ?>"><?php echo $outlet['text']; ?></option>
+                        <?php
+                        }
+                        ?>
+                    </select>
+                <?php
                 }
                 ?>
             </div>
@@ -378,7 +370,7 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
             $('#zone_id_container').hide();
             $('#territory_id_container').hide();
             $('#district_id_container').hide();
-            $('#upazilla_id_container').hide();
+            $('#outlet_id_container').hide();
             $("#items_container").html('');
             if(division_id>0)
             {
@@ -396,11 +388,10 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
             $('#territory_id').val('');
             $('#district_id').val('');
             $('#outlet_id').val('');
-            $('#upazilla_id').val('');
             var zone_id=$('#zone_id').val();
             $('#territory_id_container').hide();
             $('#district_id_container').hide();
-            $('#upazilla_id_container').hide();
+            $('#outlet_id_container').hide();
             $("#items_container").html('');
             if(zone_id>0)
             {
@@ -416,8 +407,7 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
         {
             $('#district_id').val('');
             $('#outlet_id').val('');
-            $('#upazilla_id').val('');
-            $('#upazilla_id_container').hide();
+            $('#outlet_id_container').hide();
             $('#district_id_container').hide();
             $("#items_container").html('');
             var territory_id=$('#territory_id').val();
@@ -434,32 +424,32 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
         $(document).off('change', '#district_id');
         $(document).on('change','#district_id',function()
         {
-            $('#upazilla_id').val('');
+            $('#outlet_id').val('');
             $("#items_container").html('');
             var district_id=$('#district_id').val();
-            $('#upazilla_id_container').hide();
+            $('#outlet_id_container').hide();
             //console.log(system_upazillas);
             if(district_id>0)
             {
                 if(system_upazillas[district_id]!==undefined)
                 {
-                    $('#upazilla_id_container').show();
-                    $('#upazilla_id').html(get_dropdown_with_select(system_upazillas[district_id]));
+                    $('#outlet_id_container').show();
+                    $('#outlet_id').html(get_dropdown_with_select(system_upazillas[district_id]));
                 }
             }
         });
-        $(document).off('change', '#upazilla_id');
-        $(document).on('change','#upazilla_id',function()
+        $(document).off('change', '#outlet_id');
+        $(document).on('change','#outlet_id',function()
         {
             $("#items_container").html('');
-            var upazilla_id=$('#upazilla_id').val();
-            if(upazilla_id>0)
+            var outlet_id=$('#outlet_id').val();
+            if(outlet_id>0)
             {
                 $.ajax({
                     url: '<?php echo site_url($CI->controller_url.'/index/get_cultivation_period_info'); ?>',
                     type: 'POST',
                     datatype: "JSON",
-                    data:{upazilla_id:upazilla_id},
+                    data:{outlet_id:outlet_id},
                     success: function (data, status)
                     {
                         //$("#items_container").html('');

@@ -23,9 +23,6 @@ class Event_helper
         }
         $user_info = System_helper::get_users_info($user_ids);
 
-        echo '<pre>';
-        print_r($user_ids);
-        echo '</pre>';
         //---------------- Basic Info ----------------
         $data = array();
         $data[] = array
@@ -44,7 +41,7 @@ class Event_helper
         $data[] = array
         (
             'label_1' => $CI->lang->line('LABEL_NOTICE_TYPE'),
-            'value_1' => $result['notice_type'],
+            'value_1' => '',//$result['notice_type'],
             'label_2' => $CI->lang->line('LABEL_EXPIRE_DAY'),
             'value_2' => Event_helper::get_expire_day($result['date_publish'],$result['expire_time']).', <span class="bg-info">Remaining Days: '.Event_helper::get_expire_day_by_current_time($result['expire_time']).'</span>'
         );

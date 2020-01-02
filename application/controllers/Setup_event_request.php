@@ -81,44 +81,12 @@ class Setup_event_request extends Root_Controller
         {
             $this->system_details($id);
         }
-        elseif($action=="list_image")
-        {
-            $this->file_type = $this->config->item('system_file_type_image');
-            $this->system_list_file($id);
-        }
-        elseif($action=="get_items_image")
-        {
-            $this->file_type = $this->config->item('system_file_type_image');
-            $this->system_get_items_file($id);
-        }
         elseif($action=="add_image")
         {
-            //$this->file_type = $this->config->item('system_file_type_image');
             $this->system_add_file($id);
         }
         elseif($action=="edit_image")
         {
-            $this->file_type = $this->config->item('system_file_type_image');
-            $this->system_edit_file($id,$id1);
-        }
-        elseif($action=="list_video")
-        {
-            $this->file_type = $this->config->item('system_file_type_video');
-            $this->system_list_file($id);
-        }
-        elseif($action=="get_items_video")
-        {
-            $this->file_type = $this->config->item('system_file_type_video');
-            $this->system_get_items_file($id);
-        }
-        elseif($action=="add_video")
-        {
-            $this->file_type = $this->config->item('system_file_type_video');
-            $this->system_add_file($id,$id1);
-        }
-        elseif($action=="edit_video")
-        {
-            $this->file_type = $this->config->item('system_file_type_video');
             $this->system_edit_file($id,$id1);
         }
         elseif($action=="save_file")
@@ -148,7 +116,6 @@ class Setup_event_request extends Root_Controller
         if($method=='list')
         {
             $data['id']= 1;
-            //$data['event_type']= 1;
             $data['date_publish']= 1;
             $data['expire_day']= 1;
             $data['remaining_day']= 1;
@@ -161,7 +128,6 @@ class Setup_event_request extends Root_Controller
         elseif($method=='list_all')
         {
             $data['id']= 1;
-            //$data['notice_type']= 1;
             $data['date_publish']= 1;
             $data['expire_day']= 1;
             $data['remaining_day']= 1;
@@ -544,8 +510,6 @@ class Setup_event_request extends Root_Controller
 
             $this->db->from($this->config->item('table_bi_setup_events').' item');
             $this->db->select('item.*');
-            /*$this->db->join($this->config->item('table_pos_setup_notice_types').' type','type.id=item.type_id','INNER');
-            $this->db->select('type.name notice_type');*/
             $this->db->where('item.id',$item_id);
             $this->db->where('item.status !=',$this->config->item('system_status_delete'));
             $this->db->order_by('item.id','DESC');
@@ -569,24 +533,7 @@ class Setup_event_request extends Root_Controller
                 $ajax['system_message']='Event Already Forwarded.';
                 $this->json_return($ajax);
             }
-
             $data['info_basic']=Event_helper::get_basic_info($data['item']);
-            //$data['files']=Query_helper::get_info($this->config->item('table_pos_setup_notice_file_videos'),'*',array('notice_id='.$item_id,'status ="'.$this->config->item('system_status_active').'"'),0,0,array('ordering ASC'));
-
-            /*$data['user_group_ids']=explode(',',trim($data['item']['user_group_ids'],','));
-            $data['urls']=json_decode($data['item']['url_links'],true);*/
-
-            //$data['notice_types']=Query_helper::get_info($this->config->item('table_pos_setup_notice_types'),'*',array('status ="'.$this->config->item('system_status_active').'"'));
-            /*$user=User_helper::get_user();
-            if($user->user_group==1)
-            {
-                $data['user_groups']=Query_helper::get_info($this->config->item('table_system_user_group'),'*',array('status ="'.$this->config->item('system_status_active').'"'),0,0,array('ordering ASC'));
-            }
-            else
-            {
-                $data['user_groups']=Query_helper::get_info($this->config->item('table_system_user_group'),'*',array('id !=1','status ="'.$this->config->item('system_status_active').'"'),0,0,array('ordering ASC'));
-            }*/
-
             $data['title']="Event Forward :: ". $data['item']['id'];
             $ajax['status']=true;
             $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/forward",$data,true));
@@ -862,98 +809,6 @@ class Setup_event_request extends Root_Controller
             $this->json_return($ajax);
         }
     }
-    private function system_list_file($id)
-    {
-        if($id>0)
-        {
-            $data['event_id']=$id;
-        }
-        else
-        {
-            $data['event_id']=$this->input->post('id');
-        }
-        $data['file_type']=$this->file_type;
-        $user = User_helper::get_user();
-        $method='list_file';
-        if(isset($this->permissions['action2'])&&($this->permissions['action2']==1))
-        {
-            $data['system_preference_items']= System_helper::get_preference($user->user_id, $this->controller_url, $method, $this->get_preference_headers($method));
-            if($data['file_type']==$this->config->item('system_file_type_image'))
-            {
-                $data['title']='Event Publish Request File Upload List :: (Event ID: '.$data['event_id'].')';
-            }
-            else if($data['file_type']==$this->config->item('system_file_type_video'))
-            {
-                $data['title']='Event Publish Request Video Upload List :: (Event ID: '.$data['event_id'].')';
-            }
-            else
-            {
-
-            }
-
-            $this->db->from($this->config->item('table_bi_setup_events').' item');
-            $this->db->select('item.*');
-            /*$this->db->join($this->config->item('table_pos_setup_notice_types').' type','type.id=item.type_id','INNER');
-            $this->db->select('type.name notice_type');*/
-            $this->db->where('item.id',$data['event_id']);
-            $this->db->where('item.status !=',$this->config->item('system_status_delete'));
-            $this->db->where('item.status_forward',$this->config->item('system_status_pending'));
-            $this->db->order_by('item.id','DESC');
-            $item=$this->db->get()->row_array();
-            if($item['status']==$this->config->item('system_status_inactive'))
-            {
-                $ajax['status']=false;
-                $ajax['system_message']='Event In-Active.';
-                $this->json_return($ajax);
-            }
-            if($item['status_forward']==$this->config->item('system_status_forwarded'))
-            {
-                $ajax['status']=false;
-                $ajax['system_message']='Event Already Forwarded.';
-                $this->json_return($ajax);
-            }
-            $data['info_basic']=Event_helper::get_basic_info($item);
-
-            $ajax['status']=true;
-            $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/list_file",$data,true));
-            if($this->message)
-            {
-                $ajax['system_message']=$this->message;
-            }
-            $ajax['system_page_url']=site_url($this->controller_url.'/index/'.strtolower('list_'.$data['file_type']).'/'.$data['event_id'].'/');
-            $this->json_return($ajax);
-        }
-        else
-        {
-            $ajax['status']=false;
-            $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
-            $this->json_return($ajax);
-        }
-    }
-    private function system_get_items_file($event_id)
-    {
-        $this->db->from($this->config->item('table_pos_setup_notice_file_videos').' item');
-        $this->db->where('item.status !=',$this->config->item('system_status_delete'));
-        $this->db->order_by('item.ordering','ASC');
-        $this->db->order_by('item.id','ASC');
-        $this->db->where('item.file_type',$this->file_type);
-        $this->db->where('item.notice_id',$notice_id);
-        $items=$this->db->get()->result_array();
-        foreach($items as &$item)
-        {
-            $file_location = $this->config->item('system_base_url_picture') . $item['file_location'];
-            if($item['link_url'])
-            {
-                $item['link_url']="<a href='".$item['link_url']."' class='external' target='_blank'><i class='fa fa-view'></i> ".$item['link_url']."</a>";
-            }
-            if($item['file_name']=='no_image.jpg')
-            {
-                $item['file_name']='';
-            }
-            $item['file_image_video']='<a href="'.$file_location.'" class="external" target="_blank">'.$item['file_name'].'</a>';
-        }
-        $this->json_return($items);
-    }
     private function system_add_file($id)
     {
         if($id>0)
@@ -967,38 +822,31 @@ class Setup_event_request extends Root_Controller
         if(isset($this->permissions['action2'])&&($this->permissions['action2']==1))
         {
             $data['title']="Create New Event File Upload";
-            $data['item']['id']=0;
-            //$data['item']['notice_id']=$notice_id;
-            //$data['item']['file_type']=$this->file_type;
-            $data['item']['file_name']='';
+            $data['item']['id']=$notice_id;
+            /*$data['item']['file_name']='';
             $data['item']['file_location']='images/no_image.jpg';
-            $data['item']['remarks']='';
-            //$data['item']['link_url']='';
-            $data['item']['ordering']=99;
-            //$data['item']['status']=$this->config->item('system_status_active');
+            $data['item']['remarks_photo']='';*/
 
             $this->db->from($this->config->item('table_bi_setup_events').' item');
             $this->db->select('item.*');
-            /*$this->db->join($this->config->item('table_pos_setup_notice_types').' type','type.id=item.type_id','INNER');
-            $this->db->select('type.name notice_type');*/
             $this->db->where('item.id',$notice_id);
             $this->db->where('item.status !=',$this->config->item('system_status_delete'));
             $this->db->where('item.status_forward',$this->config->item('system_status_pending'));
             $this->db->order_by('item.id','DESC');
-            $item=$this->db->get()->row_array();
-            if($item['status']==$this->config->item('system_status_inactive'))
+            $data['item']=$this->db->get()->row_array();
+            if($data['item']['status']==$this->config->item('system_status_inactive'))
             {
                 $ajax['status']=false;
                 $ajax['system_message']='Event In-Active.';
                 $this->json_return($ajax);
             }
-            if($item['status_forward']==$this->config->item('system_status_forwarded'))
+            if($data['item']['status_forward']==$this->config->item('system_status_forwarded'))
             {
                 $ajax['status']=false;
                 $ajax['system_message']='Event Already Forwarded.';
                 $this->json_return($ajax);
             }
-            $data['info_basic']=Event_helper::get_basic_info($item);
+            $data['info_basic']=Event_helper::get_basic_info($data['item']);
 
             $ajax['status']=true;
             $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/add_file",$data,true));
@@ -1006,7 +854,7 @@ class Setup_event_request extends Root_Controller
             {
                 $ajax['system_message']=$this->message;
             }
-            $ajax['system_page_url']=site_url($this->controller_url.'/index/'.strtolower('add_'.$this->file_type).'/'.$notice_id.'/');
+            $ajax['system_page_url']=site_url($this->controller_url.'/index/add_image/'.$notice_id.'/');
             $this->json_return($ajax);
         }
         else
@@ -1016,7 +864,7 @@ class Setup_event_request extends Root_Controller
             $this->json_return($ajax);
         }
     }
-    private function system_edit_file($notice_id, $id)
+    private function system_edit_file($id)
     {
         if(isset($this->permissions['action2'])&&($this->permissions['action2']==1))
         {
@@ -1029,19 +877,9 @@ class Setup_event_request extends Root_Controller
                 $item_id=$this->input->post('id');
             }
 
-            /*$data['item']=Query_helper::get_info($this->config->item('table_pos_setup_notice_request'),array('*'),array('id ='.$notice_id),1,0,array('id ASC'));
-            if(!$data['item'])
-            {
-                System_helper::invalid_try('Edit Non Exists',$notice_id);
-                $ajax['status']=false;
-                $ajax['system_message']='Invalid Notice.';
-                $this->json_return($ajax);
-            }*/
-            $this->db->from($this->config->item('table_pos_setup_notice_request').' item');
+            $this->db->from($this->config->item('table_bi_setup_events').' item');
             $this->db->select('item.*');
-            $this->db->join($this->config->item('table_pos_setup_notice_types').' type','type.id=item.type_id','INNER');
-            $this->db->select('type.name notice_type');
-            $this->db->where('item.id',$notice_id);
+            $this->db->where('item.id',$item_id);
             $this->db->where('item.status !=',$this->config->item('system_status_delete'));
             $this->db->where('item.status_forward',$this->config->item('system_status_pending'));
             $this->db->order_by('item.id','DESC');
@@ -1059,7 +897,7 @@ class Setup_event_request extends Root_Controller
                 $this->json_return($ajax);
             }
             $data['info_basic']=Event_helper::get_basic_info($item);
-            $data['item']=Query_helper::get_info($this->config->item('table_pos_setup_notice_file_videos'),array('*'),array('id ='.$item_id,'notice_id ='.$notice_id,'file_type ="'.$this->file_type.'"'),1,0,array('id ASC'));
+            $data['item']=Query_helper::get_info($this->config->item('table_pos_setup_notice_file_videos'),array('*'),array('id ='.$item_id),1,0,array('id ASC'));
             if(!$data['item'])
             {
                 $ajax['status']=false;
@@ -1074,7 +912,7 @@ class Setup_event_request extends Root_Controller
             {
                 $ajax['system_message']=$this->message;
             }
-            $ajax['system_page_url']=site_url($this->controller_url.'/index/'.strtolower('edit_'.$this->file_type).'/'.$notice_id.'/'.$item_id.'/');
+            $ajax['system_page_url']=site_url($this->controller_url.'/index/edit_image/'.$item_id.'/');
             $this->json_return($ajax);
         }
         else
@@ -1087,8 +925,6 @@ class Setup_event_request extends Root_Controller
     private function system_save_file()
     {
         $id = $this->input->post("id");
-        $notice_id = $this->input->post("notice_id");
-        $file_type = $this->input->post('file_type');
         $user = User_helper::get_user();
         $time=time();
         $item_head=$this->input->post('item');
@@ -1107,7 +943,7 @@ class Setup_event_request extends Root_Controller
                 $this->json_return($ajax);
             }
         }
-        $result=Query_helper::get_info($this->config->item('table_pos_setup_notice_request'),'*',array('id ='.$notice_id),1);
+        $result=Query_helper::get_info($this->config->item('table_bi_setup_events'),'*',array('id ='.$id),1);
         if(!$result)
         {
             System_helper::invalid_try('Update File Non Exists',$id);
@@ -1127,25 +963,11 @@ class Setup_event_request extends Root_Controller
             $ajax['system_message']='Notice Already Forwarded.';
             $this->json_return($ajax);
         }
-        $this->file_type = $file_type;
+
         $data=array();
         $uploaded_files = array();
-
-        $path = 'images/notice/' . $notice_id;
-        if ($file_type == $this->config->item('system_file_type_image')) // For Image Upload
-        {
-            $uploaded_files = System_helper::upload_file($path,'jpg|jpeg|png|bmp|gif|pdf|doc|docx|xls|xlsx',10240);
-            $data['file_type']=$this->config->item('system_file_type_image');
-        }
-        else if ($file_type == $this->config->item('system_file_type_video')) // For Video Upload
-        {
-            $uploaded_files = System_helper::upload_file($path, $this->config->item('system_file_type_video_ext'), $this->config->item('system_file_type_video_max_size'));
-            $data['file_type']=$this->config->item('system_file_type_video');
-        }
-        else
-        {
-            //$data['file_type']='';
-        }
+        $path = 'images/event/' . $id;
+        $uploaded_files = System_helper::upload_file($path,'jpg|jpeg|png|bmp',10240);
 
         if(array_key_exists('file_name',$uploaded_files))
         {
@@ -1166,25 +988,10 @@ class Setup_event_request extends Root_Controller
 
         $this->db->trans_start();  //DB Transaction Handle START
 
-        $data['remarks']=$item_head['remarks'];
-        $data['link_url']=$item_head['link_url'];
-        $data['ordering']=$item_head['ordering'];
-        $data['status']=$item_head['status'];
-        if($id>0)
-        {
-            $data['date_updated'] = $time;
-            $data['user_updated'] = $user->user_id;
-            $this->db->set('revision_count', 'revision_count+1', FALSE);
-            Query_helper::update($this->config->item('table_pos_setup_notice_file_videos'),$data, array('id='.$id), false);
-        }
-        else
-        {
-            $data['notice_id']=$notice_id;
-            $data['date_created']=$time;
-            $data['user_created']=$user->user_id;
-            $data['revision_count']=1;
-            Query_helper::add($this->config->item('table_pos_setup_notice_file_videos'),$data, false);
-        }
+        $data['remarks_photo']=$item_head['remarks_photo'];
+        $data['date_file_uploaded'] = $time;
+        $data['user_file_uploaded'] = $user->user_id;
+        Query_helper::update($this->config->item('table_bi_setup_events'),$data, array('id='.$id), false);
 
         $this->db->trans_complete();   //DB Transaction Handle END
 
@@ -1194,11 +1001,11 @@ class Setup_event_request extends Root_Controller
             $this->message=$this->lang->line("MSG_SAVED_SUCCESS");
             if($save_and_new==1)
             {
-                $this->system_add_file($notice_id);
+                $this->system_add_file($id);
             }
             else
             {
-                $this->system_list_file($notice_id);
+                $this->system_list();
             }
         }
         else
@@ -1210,7 +1017,7 @@ class Setup_event_request extends Root_Controller
     }
     private function check_validation()
     {
-        $id = $this->input->post('item');
+        $id = $this->input->post('id');
         $item_head = $this->input->post('item');
         $time_today=System_helper::get_time(System_helper::display_date(time()));
         $time_publish = System_helper::get_time($item_head['date_publish']);
@@ -1241,23 +1048,11 @@ class Setup_event_request extends Root_Controller
     }
     private function check_validation_file()
     {
-        if($this->input->post('file_type')==$this->config->item('system_file_type_image'))
-        {
-            $label_image_video=$this->lang->line('LABEL_FILE_IMAGE');
-        }
-        elseif($this->input->post('file_type')==$this->config->item('system_file_type_video'))
-        {
-            $label_image_video=$this->lang->line('LABEL_FILE_VIDEO');
-        }
-        else
-        {
-            $label_image_video='';
-        }
         $this->load->library('form_validation');
-        $this->form_validation->set_rules('notice_id','Notice ID','required');
+        $this->form_validation->set_rules('id','ID','required');
         if (!($_FILES['file_name']['name']))
         {
-            $this->form_validation->set_rules('file_name',$label_image_video,'required');
+            $this->form_validation->set_rules('file_name',$this->lang->line('LABEL_FILE_IMAGE'),'required');
         }
         if($this->form_validation->run() == FALSE)
         {
