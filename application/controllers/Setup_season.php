@@ -149,18 +149,18 @@ class Setup_season extends Root_Controller
             if ($date_end != 0) {
                 $date_end += 24 * 3600 - 1;
             }
-            $data['date_start'] = $date_start;
-            $data['date_end'] = $date_end;
+            $item_head['date_start'] = $date_start;
+            $item_head['date_end'] = $date_end;
 
             $this->db->trans_start(); //DB Transaction Handle START
             if ($id > 0) {
-                $data['user_updated'] = $user->user_id;
-                $data['date_updated'] = time();
-                Query_helper::update($this->config->item('table_bi_setup_season'), $data, array("id = " . $id));
+                $item_head['user_updated'] = $user->user_id;
+                $item_head['date_updated'] = time();
+                Query_helper::update($this->config->item('table_bi_setup_season'), $item_head, array("id = " . $id));
             } else {
-                $data['user_created'] = $user->user_id;
-                $data['date_created'] = time();
-                Query_helper::add($this->config->item('table_bi_setup_season'), $data);
+                $item_head['user_created'] = $user->user_id;
+                $item_head['date_created'] = time();
+                Query_helper::add($this->config->item('table_bi_setup_season'), $item_head);
             }
             $this->db->trans_complete(); //DB Transaction Handle END
             if ($this->db->trans_status() === TRUE) {

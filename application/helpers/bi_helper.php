@@ -361,9 +361,13 @@ class Bi_helper
         $CI->db->join($CI->config->item('table_login_setup_classification_hybrid') . ' hybrid', 'hybrid.id = v.hybrid');
         $CI->db->select('hybrid.name hybrid');
 
-        if ($variety_id > 0) {
+        if(is_array($variety_id) && (sizeof($variety_id) > 0)){
+            $CI->db->where_in('v.id', $variety_id);
+        }
+        elseif ($variety_id > 0) {
             $CI->db->where('v.id', $variety_id);
         }
+
         if ($crop_type_id > 0) {
             $CI->db->where('type.id', $crop_type_id);
         }
@@ -384,7 +388,9 @@ class Bi_helper
         $CI->db->order_by('crop.id');
         $CI->db->order_by('type.id');
 
-        if ($variety_id > 0) {
+        if(is_array($variety_id) && (sizeof($variety_id) > 0)){
+            return $CI->db->get()->result_array(); // Results
+        }elseif ($variety_id > 0) {
             return $CI->db->get()->row_array(); // Result
         } else {
             return $CI->db->get()->result_array(); // Results

@@ -52,7 +52,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <label class="control-label pull-right"><?php echo $this->lang->line('LABEL_DATE_START');?> <span style="color:#FF0000">*</span></label>
             </div>
             <div class="col-sm-4 col-xs-8">
-                <input type="text" name="season[date_start]" id="date_start" class="form-control datepicker" value="<?php echo Bi_helper::cultivation_date_display($season['date_start']);?>"/>
+                <input type="text" name="season[date_start]" id="date_start" class="form-control datepicker" readonly value="<?php echo Bi_helper::cultivation_date_display($season['date_start']);?>"/>
             </div>
         </div>
         <div class="row show-grid">
@@ -60,7 +60,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <label class="control-label pull-right"><?php echo $this->lang->line('LABEL_DATE_END');?> <span style="color:#FF0000">*</span></label>
             </div>
             <div class="col-sm-4 col-xs-8">
-                <input type="text" name="season[date_end]" id="date_end" class="form-control datepicker" value="<?php echo Bi_helper::cultivation_date_display($season['date_end']);?>"/>
+                <input type="text" name="season[date_end]" id="date_end" class="form-control datepicker" readonly value="<?php echo ($season['date_end']!='')? Bi_helper::cultivation_date_display($season['date_end']):'';?>"/>
             </div>
         </div>
         <div class="row show-grid">

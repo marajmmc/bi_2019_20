@@ -2,13 +2,36 @@
 $CI = & get_instance();
 $user = User_helper::get_user();
 
-$current_time = System_helper::get_time(date("Y-m-d"));
 $where = array(
-    "date_start <=". $current_time,
-    "date_end >=". $current_time,
     "status ='". $CI->config->item('system_status_active')."'"
 );
-$season = Query_helper::get_info($CI->config->item('table_bi_setup_season'), array('*'), $where, 1); System_helper::display_date($current_time);
+$select = array('name','date_start','date_end','description');
+$seasons = Query_helper::get_info($CI->config->item('table_bi_setup_season'), $select, $where, 0, 0, array('date_start ASC'));
+
+$time_today = System_helper::get_time(date("1970-m-d"));
+$current_season=array();
+foreach($seasons as &$season){
+    if(($time_today >= $season['date_start']) && ($time_today <= $season['date_end']))
+    {
+        $current_season = $season;
+        break;
+    }
+    else if(date('Y', $season['date_end']) > date('Y', $season['date_start']))
+    {
+        $season['date_end'] = strtotime('-1 years', $season['date_end']);
+        $season['date_start'] = strtotime('-1 years', $season['date_start']);
+
+        /*$season['date_end2'] = System_helper::display_date($season['date_end']);
+        $season['date_start2'] = System_helper::display_date($season['date_start']);
+        $season['date_today'] = System_helper::display_date($time_today);*/
+
+        if(($time_today >= $season['date_start']) && ($time_today <= $season['date_end']))
+        {
+            $current_season = $season;
+            break;
+        }
+    }
+}
 ?>
 
 <div class="row widget">
@@ -80,7 +103,15 @@ $season = Query_helper::get_info($CI->config->item('table_bi_setup_season'), arr
     </div>-->
     <div class="col-lg-3 col-xs-12 bg-warning" style="padding: 5px; min-height: 150px">
         <div style="width: 100%; border-bottom: 1px green solid; margin-bottom: 2px;">
-            <small> <strong>Focused Crops [ Season: <?php echo $season['name'].' ('.date('M, d',$season['date_start']).' - '.date('M, d',$season['date_end']).')'; ?> ]</strong> </small>
+            <small>
+                <strong>Focused Crops
+                    <?php if($current_season) { ?>
+                    [ Season: <?php echo $current_season['name'].' ('.date('M, d',$current_season['date_start']).' - '.date('M, d',$current_season['date_end']).')'; ?> ]
+                    <?php } else { ?>
+                    [ Season Not Set. ]
+                    <?php } ?>
+                </strong>
+            </small>
         </div>
         <span class="app-label-bg-none">White Love</span>
         <span class="app-label-bg-none">White Love</span>
