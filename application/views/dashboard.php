@@ -1,7 +1,9 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 $CI = & get_instance();
 $user = User_helper::get_user();
+$user_locations = User_helper::get_locations();
 
+/*--------SEASON CODE--------*/
 $where = array(
     "status ='". $CI->config->item('system_status_active')."'"
 );
@@ -20,11 +22,6 @@ foreach($seasons as &$season){
     {
         $season['date_end'] = strtotime('-1 years', $season['date_end']);
         $season['date_start'] = strtotime('-1 years', $season['date_start']);
-
-        /*$season['date_end2'] = System_helper::display_date($season['date_end']);
-        $season['date_start2'] = System_helper::display_date($season['date_start']);
-        $season['date_today'] = System_helper::display_date($time_today);*/
-
         if(($time_today >= $season['date_start']) && ($time_today <= $season['date_end']))
         {
             $current_season = $season;
@@ -32,6 +29,61 @@ foreach($seasons as &$season){
         }
     }
 }
+
+/*--------FOCUSED VARIETY CODE--------*/
+
+$this->db->from($this->config->item('table_login_csetup_cus_info') . ' cus_info');
+$this->db->select('cus_info.id outlet_id, cus_info.name outlet_name');
+
+$this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = cus_info.district_id', 'INNER');
+$this->db->select('district.id district_id, district.name district_name');
+
+$this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
+$this->db->select('territory.id territory_id, territory.name territory_name');
+
+$this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
+$this->db->select('zone.id zone_id, zone.name zone_name');
+
+$this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
+$this->db->select('division.id division_id, division.name division_name');
+
+$this->db->where('cus_info.revision', 1);
+$this->db->where('cus_info.type', $this->config->item('system_customer_type_outlet_id'));
+
+if ($user_locations['division_id'] > 0) {
+    $this->db->where('division.id', $user_locations['division_id']);
+    if ($user_locations['zone_id'] > 0) {
+        $this->db->where('zone.id', $user_locations['zone_id']);
+        if ($user_locations['territory_id'] > 0) {
+            $this->db->where('territory.id', $user_locations['territory_id']);
+            if ($user_locations['district_id'] > 0) {
+                $this->db->where('district.id', $user_locations['district_id']);
+            }
+        }
+    }
+}
+$this->db->order_by('division.id');
+$this->db->order_by('zone.id');
+$this->db->order_by('territory.id');
+$this->db->order_by('district.id');
+$this->db->order_by('cus_info.customer_id');
+
+$results_outlet = $this->db->get()->result_array();
+$current_user_outlets = array();
+$counter=1;
+foreach($results_outlet as $result_outlet)
+{
+    $current_user_outlets[$result_outlet['outlet_id']] = $result_outlet;
+    $current_user_outlets[$result_outlet['outlet_id']]['serial'] = $counter++;
+}
+
+//echo '<pre>';
+//print_r($current_user_outlets);
+////print_r($user_locations);
+////print_r($user);
+//echo '</pre>';
+//die('===============');
+
 ?>
 
 <div class="row widget">
@@ -256,7 +308,7 @@ foreach($seasons as &$season){
                 $("#invoice_amount_credit").html(data.invoice_amount_credit)
             },
             error: function (xhr, desc, err)
-            {
+            {.0000
 
 
             }
@@ -286,7 +338,6 @@ foreach($seasons as &$season){
             error: function (xhr, desc, err)
             {
 
-
             }
         });
     }
@@ -310,7 +361,6 @@ foreach($seasons as &$season){
             },
             error: function (xhr, desc, err)
             {
-
 
             }
         });

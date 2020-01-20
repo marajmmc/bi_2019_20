@@ -25,7 +25,6 @@ $action_buttons[] = array(
 );
 $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
 ?>
-
 <form class="form_valid" id="save_form" action="<?php echo site_url($CI->controller_url . '/index/save'); ?>" method="post">
 
     <input type="hidden" id="id" name="id" value="<?php echo $item_info['id']; ?>"/>
