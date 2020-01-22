@@ -292,17 +292,19 @@ class Setup_variety_focused extends Root_Controller
                 $this->json_return($ajax);
             }
 
-            $focused_variety_names = array();
+            /*$focused_variety_names = array();
             if ($result['variety_focused']) {
                 $varieties = Bi_helper::get_all_varieties('', json_decode($result['variety_focused'], TRUE));
                 $i = 0;
                 foreach ($varieties as $variety) {
                     $focused_variety_names[] = (++$i) . '. ' . $variety['variety_name'] . ' <i style="font-size:0.85em">(' . $variety['crop_type_name'] . ', ' . $variety['crop_name'] . ')</i>';
                 }
-            }
+            }*/
 
             //---------------- Basic Info ----------------
             $data = array();
+            $data['variety_focused'] = json_decode($result['variety_focused'], TRUE);
+            $data['outlet_id'] = $result['outlet_id'];
             $data['item'][] = array
             (
                 'label_1' => $this->lang->line('LABEL_DIVISION_NAME'),
@@ -322,7 +324,8 @@ class Setup_variety_focused extends Root_Controller
                 'label_1' => $this->lang->line('LABEL_OUTLET_NAME'),
                 'value_1' => $result['outlet_name']
             );
-            if ($focused_variety_names) {
+            //if ($focused_variety_names) {
+            if ($data['variety_focused']) {
                 //--------- System User Info ------------
                 $user_ids = array();
                 $user_ids[$result['user_created']] = $result['user_created'];
@@ -331,11 +334,11 @@ class Setup_variety_focused extends Root_Controller
                 }
                 $user_info = System_helper::get_users_info($user_ids);
 
-                $data['item'][] = array
+                /*$data['item'][] = array
                 (
                     'label_1' => $this->lang->line('LABEL_FOCUSED_VARIETY'),
                     'value_1' => implode(',<br/>', $focused_variety_names)
-                );
+                );*/
                 $data['item'][] = array
                 (
                     'label_1' => $this->lang->line('LABEL_CREATED_BY'),

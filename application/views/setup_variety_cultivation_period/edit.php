@@ -46,16 +46,16 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
                         <th colspan="6" style="text-align:center"><?php echo $title; ?></th>
                     </tr>
                     <tr class="table_head">
-                        <th rowspan="2"><?php echo $this->lang->line('LABEL_CROP_NAME'); ?></th>
-                        <th rowspan="2"><?php echo $this->lang->line('LABEL_CROP_TYPE_NAME'); ?></th>
-                        <th colspan="2" style="text-align:center">Existing <?php echo $this->lang->line('LABEL_CULTIVATION_PERIOD'); ?></th>
-                        <th colspan="2" style="text-align:center">Edited <?php echo $this->lang->line('LABEL_CULTIVATION_PERIOD'); ?></th>
+                        <th rowspan="2"><?php echo $CI->lang->line('LABEL_CROP_NAME'); ?></th>
+                        <th rowspan="2"><?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?></th>
+                        <th colspan="2" style="text-align:center">Existing <?php echo $CI->lang->line('LABEL_CULTIVATION_PERIOD'); ?></th>
+                        <th colspan="2" style="text-align:center">Edited <?php echo $CI->lang->line('LABEL_CULTIVATION_PERIOD'); ?></th>
                     </tr>
                     <tr>
-                        <th style="text-align:center">Start Date</th>
-                        <th style="text-align:center">End Date</th>
-                        <th style="text-align:center">Start Date</th>
-                        <th style="text-align:center">End Date</th>
+                        <th style="text-align:center"><?php echo $CI->lang->line('LABEL_DATE_START'); ?></th>
+                        <th style="text-align:center"><?php echo $CI->lang->line('LABEL_DATE_END'); ?></th>
+                        <th style="text-align:center"><?php echo $CI->lang->line('LABEL_DATE_START'); ?></th>
+                        <th style="text-align:center"><?php echo $CI->lang->line('LABEL_DATE_END'); ?></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -116,12 +116,12 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
                             <th colspan="8" style="text-align:center">Cultivation Period Setup History (<?php echo $history['revision']?>)</th>
                         </tr>
                         <tr class="table_head">
-                            <th rowspan="2"><?php echo $this->lang->line('LABEL_CROP_NAME'); ?></th>
-                            <th rowspan="2"><?php echo $this->lang->line('LABEL_CROP_TYPE_NAME'); ?></th>
-                            <th colspan="2" style="text-align:center">Before <?php echo $this->lang->line('LABEL_CULTIVATION_PERIOD'); ?></th>
-                            <th colspan="2" style="text-align:center"><?php echo $this->lang->line('LABEL_CULTIVATION_PERIOD'); ?></th>
-                            <th rowspan="2" style="text-align:center"><?php echo $this->lang->line('LABEL_DATE_CREATED'); ?></th>
-                            <th rowspan="2" style="text-align:center"><?php echo $this->lang->line('LABEL_USER_CREATED'); ?></th>
+                            <th rowspan="2"><?php echo $CI->lang->line('LABEL_CROP_NAME'); ?></th>
+                            <th rowspan="2"><?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?></th>
+                            <th colspan="2" style="text-align:center">Before <?php echo $CI->lang->line('LABEL_CULTIVATION_PERIOD'); ?></th>
+                            <th colspan="2" style="text-align:center"><?php echo $CI->lang->line('LABEL_CULTIVATION_PERIOD'); ?></th>
+                            <th rowspan="2" style="text-align:center"><?php echo $CI->lang->line('LABEL_DATE_CREATED'); ?></th>
+                            <th rowspan="2" style="text-align:center"><?php echo $CI->lang->line('LABEL_USER_CREATED'); ?></th>
                         </tr>
                         <tr>
                             <th style="text-align:center">Start Date</th>

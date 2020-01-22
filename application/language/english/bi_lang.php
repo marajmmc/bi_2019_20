@@ -210,7 +210,7 @@ $lang['LABEL_OTHER_SITES'] = 'Other Sites';
 
 //date & time
 $lang['LABEL_DATE']='Date';
-$lang['LABEL_DATE_START'] = 'Starting Date';
+$lang['LABEL_DATE_START'] = 'Start Date';
 $lang['LABEL_DATE_END'] = 'End Date';
 $lang['LABEL_DATE_CREATED']='Creation date';
 $lang['LABEL_DATE_RECEIVE']='Receive Date';

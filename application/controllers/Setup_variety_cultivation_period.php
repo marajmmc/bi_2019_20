@@ -441,10 +441,12 @@ class Setup_variety_cultivation_period extends Root_Controller
     }
     private function check_validation()
     {
-        $item = $this->input->post('item');
-        if(!($item['date_start'] || $item['date_end']))
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules('item[date_start]', $this->lang->line('LABEL_DATE_START'), 'trim|required');
+        $this->form_validation->set_rules('item[date_end]', $this->lang->line('LABEL_DATE_END'), 'trim|required');
+        if ($this->form_validation->run() == FALSE)
         {
-            $this->message = 'Start & End date field is required.';
+            $this->message = validation_errors();
             return false;
         }
         return true;

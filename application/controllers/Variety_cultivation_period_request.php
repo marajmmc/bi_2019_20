@@ -833,13 +833,32 @@ class Variety_cultivation_period_request extends Root_Controller
     }
     private function check_validation()
     {
-        $id=$this->input->post('id');
+        $id = $this->input->post('id');
         $outlet_id = $this->input->post('outlet_id');
-        if (!($id > 0) && !($outlet_id > 0))
-        {
+        $items = $this->input->post('items');
+
+        if( !($id > 0) && (!isset($outlet_id) || !($outlet_id > 0)) ){
             $this->message = $this->lang->line('LABEL_OUTLET_NAME') . ' field is required.';
             return false;
         }
+
+        $entry_not_found = TRUE;
+        foreach($items as $item){
+            if(trim($item['date_start'])!='' && trim($item['date_end'])!=''){
+                $entry_not_found = FALSE;
+            }elseif(trim($item['date_start'])=='' && trim($item['date_end'])==''){
+                // Do nothing
+            }else{
+                $this->message = 'Both '.$this->lang->line('LABEL_DATE_START').' and '.$this->lang->line('LABEL_DATE_END').' fields are required';
+                return false;
+            }
+        }
+
+        if($entry_not_found){
+            $this->message = 'Atleast One '.$this->lang->line('LABEL_DATE_START').' and '.$this->lang->line('LABEL_DATE_END').' is required.';
+            return false;
+        }
+
         return true;
     }
     private function system_get_cultivation_period_info()

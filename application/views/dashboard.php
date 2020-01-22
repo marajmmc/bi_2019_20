@@ -1,5 +1,7 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 $CI = & get_instance();
+$CI->load->helper('bi_helper');
+
 $user = User_helper::get_user();
 $user_locations = User_helper::get_locations();
 
@@ -32,57 +34,85 @@ foreach($seasons as &$season){
 
 /*--------FOCUSED VARIETY CODE--------*/
 
-$this->db->from($this->config->item('table_login_csetup_cus_info') . ' cus_info');
-$this->db->select('cus_info.id outlet_id, cus_info.name outlet_name');
+$CI->db->from($CI->config->item('table_login_csetup_cus_info') . ' cus_info');
+$CI->db->select('cus_info.id outlet_id, cus_info.name outlet_name');
 
-$this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = cus_info.district_id', 'INNER');
-$this->db->select('district.id district_id, district.name district_name');
+$CI->db->join($CI->config->item('table_login_setup_location_districts') . ' district', 'district.id = cus_info.district_id', 'INNER');
+$CI->db->select('district.id district_id, district.name district_name');
 
-$this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
-$this->db->select('territory.id territory_id, territory.name territory_name');
+$CI->db->join($CI->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
+$CI->db->select('territory.id territory_id, territory.name territory_name');
 
-$this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
-$this->db->select('zone.id zone_id, zone.name zone_name');
+$CI->db->join($CI->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
+$CI->db->select('zone.id zone_id, zone.name zone_name');
 
-$this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
-$this->db->select('division.id division_id, division.name division_name');
+$CI->db->join($CI->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
+$CI->db->select('division.id division_id, division.name division_name');
 
-$this->db->where('cus_info.revision', 1);
-$this->db->where('cus_info.type', $this->config->item('system_customer_type_outlet_id'));
+$CI->db->where('cus_info.revision', 1);
+$CI->db->where('cus_info.type', $CI->config->item('system_customer_type_outlet_id'));
 
 if ($user_locations['division_id'] > 0) {
-    $this->db->where('division.id', $user_locations['division_id']);
+    $CI->db->where('division.id', $user_locations['division_id']);
     if ($user_locations['zone_id'] > 0) {
-        $this->db->where('zone.id', $user_locations['zone_id']);
+        $CI->db->where('zone.id', $user_locations['zone_id']);
         if ($user_locations['territory_id'] > 0) {
-            $this->db->where('territory.id', $user_locations['territory_id']);
+            $CI->db->where('territory.id', $user_locations['territory_id']);
             if ($user_locations['district_id'] > 0) {
-                $this->db->where('district.id', $user_locations['district_id']);
+                $CI->db->where('district.id', $user_locations['district_id']);
             }
         }
     }
 }
-$this->db->order_by('division.id');
-$this->db->order_by('zone.id');
-$this->db->order_by('territory.id');
-$this->db->order_by('district.id');
-$this->db->order_by('cus_info.customer_id');
+$CI->db->order_by('division.id');
+$CI->db->order_by('zone.id');
+$CI->db->order_by('territory.id');
+$CI->db->order_by('district.id');
+$CI->db->order_by('cus_info.customer_id');
 
-$results_outlet = $this->db->get()->result_array();
+$results_outlet = $CI->db->get()->result_array();
 $current_user_outlets = array();
-$counter=1;
+$current_user_outlet_ids = array();
 foreach($results_outlet as $result_outlet)
 {
     $current_user_outlets[$result_outlet['outlet_id']] = $result_outlet;
-    $current_user_outlets[$result_outlet['outlet_id']]['serial'] = $counter++;
+    $current_user_outlet_ids[] = $result_outlet['outlet_id'];
+}
+$CI->db->from($CI->config->item('table_bi_setup_variety_focused'));
+$CI->db->select('*');
+$CI->db->where('status', $CI->config->item('system_status_active'));
+$CI->db->where('revision', 1);
+$CI->db->where_in('outlet_id', $current_user_outlet_ids);
+$user_focused_varieties = $CI->db->get()->result_array();
+
+$user_focused_variety_ids=array();
+foreach($user_focused_varieties as $user_focused_variety)
+{
+    foreach(json_decode($user_focused_variety['variety_focused'], TRUE) as $focused_variety_id){
+        $user_focused_variety_ids[$focused_variety_id] = $focused_variety_id;
+    }
 }
 
-//echo '<pre>';
-//print_r($current_user_outlets);
-////print_r($user_locations);
-////print_r($user);
-//echo '</pre>';
-//die('===============');
+$results_focused_varieties = Bi_helper::get_all_varieties('', $user_focused_variety_ids);
+$user_focused_variety_types=array();
+foreach($results_focused_varieties as $result_focused_varieties)
+{
+    $user_focused_variety_types[$result_focused_varieties['crop_type_id']][] = $result_focused_varieties;
+}
+
+$compare_current_season = array(
+    'date_start' => strtotime('+1 years', $current_season['date_start']),
+    'date_start_display' => System_helper::display_date(strtotime('+1 years', $current_season['date_start'])),
+    'date_end' => strtotime('+1 years', $current_season['date_end']),
+    'date_end_display' => System_helper::display_date(strtotime('+1 years', $current_season['date_end']))
+);
+
+$cultivation_period_condition=array(
+    'revision = 1',
+    'date_start >= '.$compare_current_season['date_start'],
+    'date_end <= '.$compare_current_season['date_end']
+);
+$cultivation_period=Query_helper::get_info($this->config->item('table_bi_setup_variety_cultivation_period'), array('*'), $cultivation_period_condition);
 
 ?>
 
@@ -165,13 +195,29 @@ foreach($results_outlet as $result_outlet)
                 </strong>
             </small>
         </div>
+
+        <?php
+        foreach($cultivation_period as $period)
+        {
+            if(isset($user_focused_variety_types[$period['crop_type_id']]))
+            {
+                foreach($user_focused_variety_types[$period['crop_type_id']] as $type)
+                {
+                    if(in_array($type['variety_id'], $user_focused_variety_ids))
+                    {
+                    ?>
+                        <span class="app-label-bg-none" title="<?php echo 'Crop: '.$type['crop_name'].' | Type: '.$type['crop_type_name']; ?>">
+                            <?php echo $type['variety_name']; ?>
+                        </span> &nbsp;
+                    <?php
+                    }
+                }
+            }
+        }
+        ?>
+        <!--<span class="app-label-bg-none">White Love</span>
         <span class="app-label-bg-none">White Love</span>
-        <span class="app-label-bg-none">White Love</span>
-        <span class="app-label-bg-none">Snow Star</span>
-        <span class="app-label-bg-none">No. 777</span>
-        <span class="app-label-bg-none">Milkyway</span>
-        <span class="app-label-bg-none">Quick Set (S)</span>
-        <span class="app-label-bg-none">Super Early (S)</span>
+        <span class="app-label-bg-none">Snow Star</span>-->
     </div>
 </div>
 <div class="row widget tab-section-2">
