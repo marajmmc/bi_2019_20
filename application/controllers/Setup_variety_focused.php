@@ -424,7 +424,7 @@ class Setup_variety_focused extends Root_Controller
             }
         }
         $this->db->where('cus_info.revision', 1);
-        $this->db->where('cus_info.type', $CI->config->item('system_customer_type_outlet_id'));
+        $this->db->where('cus_info.type', $this->config->item('system_customer_type_outlet_id'));
         $this->db->order_by('cus_info.id', 'DESC');
 
         $this->db->stop_cache();
