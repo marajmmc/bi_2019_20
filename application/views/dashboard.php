@@ -85,35 +85,40 @@ $CI->db->where('revision', 1);
 $CI->db->where_in('outlet_id', $current_user_outlet_ids);
 $user_focused_varieties = $CI->db->get()->result_array();
 
-$user_focused_variety_ids=array();
-foreach($user_focused_varieties as $user_focused_variety)
-{
-    foreach(json_decode($user_focused_variety['variety_focused'], TRUE) as $focused_variety_id){
-        $user_focused_variety_ids[$focused_variety_id] = $focused_variety_id;
+if($user_focused_varieties){
+    $user_focused_variety_ids=array();
+    foreach($user_focused_varieties as $user_focused_variety)
+    {
+        foreach(json_decode($user_focused_variety['variety_focused'], TRUE) as $focused_variety_id){
+            $user_focused_variety_ids[$focused_variety_id] = $focused_variety_id;
+        }
     }
-}
 
-$results_focused_varieties = Bi_helper::get_all_varieties('', $user_focused_variety_ids);
-$user_focused_variety_types=array();
-foreach($results_focused_varieties as $result_focused_varieties)
+    $results_focused_varieties = Bi_helper::get_all_varieties('', $user_focused_variety_ids);
+    $user_focused_variety_types=array();
+    foreach($results_focused_varieties as $result_focused_varieties)
+    {
+        $user_focused_variety_types[$result_focused_varieties['crop_type_id']][] = $result_focused_varieties;
+    }
+
+    $compare_current_season = array(
+        'date_start' => strtotime('+1 years', $current_season['date_start']),
+        'date_start_display' => System_helper::display_date(strtotime('+1 years', $current_season['date_start'])),
+        'date_end' => strtotime('+1 years', $current_season['date_end']),
+        'date_end_display' => System_helper::display_date(strtotime('+1 years', $current_season['date_end']))
+    );
+
+    $cultivation_condition=array(
+        'revision = 1',
+        'date_start >= '.$compare_current_season['date_start'],
+        'date_end <= '.$compare_current_season['date_end']
+    );
+    $cultivation_period = Query_helper::get_info($this->config->item('table_bi_setup_variety_cultivation_period'), array('*'), $cultivation_condition);
+}
+else
 {
-    $user_focused_variety_types[$result_focused_varieties['crop_type_id']][] = $result_focused_varieties;
+    $cultivation_period = array();
 }
-
-$compare_current_season = array(
-    'date_start' => strtotime('+1 years', $current_season['date_start']),
-    'date_start_display' => System_helper::display_date(strtotime('+1 years', $current_season['date_start'])),
-    'date_end' => strtotime('+1 years', $current_season['date_end']),
-    'date_end_display' => System_helper::display_date(strtotime('+1 years', $current_season['date_end']))
-);
-
-$cultivation_period_condition=array(
-    'revision = 1',
-    'date_start >= '.$compare_current_season['date_start'],
-    'date_end <= '.$compare_current_season['date_end']
-);
-$cultivation_period=Query_helper::get_info($this->config->item('table_bi_setup_variety_cultivation_period'), array('*'), $cultivation_period_condition);
-
 ?>
 
 <div class="row widget">
