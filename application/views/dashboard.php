@@ -17,7 +17,7 @@ $fiscal_current = $fiscal_year_current['date_start'];
 $fiscal_months =array();
 
 do{
-    $fiscal_months[date( 'Y_m', $fiscal_current )] = date( 'M Y', $fiscal_current );
+    $fiscal_months[date( 'Y-m', $fiscal_current )] = date( 'M Y', $fiscal_current );
     $fiscal_current = strtotime( '+1 months', $fiscal_current);
 } while ($fiscal_current <= $fiscal_year_current['date_end']);
 
