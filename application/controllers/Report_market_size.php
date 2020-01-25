@@ -350,8 +350,8 @@ class Report_market_size extends Root_Controller
         $this->db->from($this->config->item('table_bi_variety_cultivation_period').' cultivation_period');
         $this->db->select('cultivation_period.type_id, MIN(cultivation_period.date_start) as date_start_min');
         $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = cultivation_period.type_id','INNER');
-        $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = cultivation_period.upazilla_id');
-        $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id');
+        $this->db->join($this->config->item('table_login_csetup_cus_info') . ' cus_info', 'cus_info.customer_id = cultivation_period.outlet_id AND cus_info.revision=1', 'INNER');
+        $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = cus_info.district_id');
         $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
         $this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
         $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
@@ -376,10 +376,10 @@ class Report_market_size extends Root_Controller
                     if ($district_id > 0)
                     {
                         $this->db->where('district.id', $district_id);
-                        if ($upazilla_id > 0)
+                        /*if ($upazilla_id > 0)
                         {
                             $this->db->where('upazilla.id', $upazilla_id);
-                        }
+                        }*/
                     }
                 }
             }
@@ -395,8 +395,8 @@ class Report_market_size extends Root_Controller
         $this->db->from($this->config->item('table_bi_variety_cultivation_period').' cultivation_period');
         $this->db->select('cultivation_period.type_id,MAX(cultivation_period.date_end) as date_end_max');
         $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = cultivation_period.type_id','INNER');
-        $this->db->join($this->config->item('table_login_setup_location_upazillas') . ' upazilla', 'upazilla.id = cultivation_period.upazilla_id');
-        $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = upazilla.district_id');
+        $this->db->join($this->config->item('table_login_csetup_cus_info') . ' cus_info', 'cus_info.customer_id = cultivation_period.outlet_id AND cus_info.revision=1', 'INNER');
+        $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = cus_info.district_id');
         $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
         $this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
         $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
@@ -421,10 +421,10 @@ class Report_market_size extends Root_Controller
                     if ($district_id > 0)
                     {
                         $this->db->where('district.id', $district_id);
-                        if ($upazilla_id > 0)
+                        /*if ($upazilla_id > 0)
                         {
                             $this->db->where('upazilla.id', $upazilla_id);
-                        }
+                        }*/
                     }
                 }
             }
