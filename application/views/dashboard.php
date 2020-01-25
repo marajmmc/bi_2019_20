@@ -5,17 +5,33 @@ $CI->load->helper('bi_helper');
 $user = User_helper::get_user();
 $user_locations = User_helper::get_locations();
 
-/*--------SEASON CODE--------*/
+/*---------------------------- FISCAL YEAR ----------------------------*/
+$time_today = System_helper::get_time(date('Y-m-d'));
+$where = array(
+    "status ='". $CI->config->item('system_status_active')."'",
+    "date_start <=". $time_today,
+    "date_end >=". $time_today
+);
+$fiscal_year_current = Query_helper::get_info($CI->config->item('table_login_basic_setup_fiscal_year'), '*', $where, 1);
+$fiscal_current = $fiscal_year_current['date_start'];
+$fiscal_months =array();
+
+do{
+    $fiscal_months[date( 'Y_m', $fiscal_current )] = date( 'M Y', $fiscal_current );
+    $fiscal_current = strtotime( '+1 months', $fiscal_current);
+} while ($fiscal_current <= $fiscal_year_current['date_end']);
+
+/*---------------------------- SEASON CODE ----------------------------*/
 $where = array(
     "status ='". $CI->config->item('system_status_active')."'"
 );
 $select = array('name','date_start','date_end','description');
 $seasons = Query_helper::get_info($CI->config->item('table_bi_setup_season'), $select, $where, 0, 0, array('date_start ASC'));
 
-$time_today = System_helper::get_time(date("1970-m-d"));
+$time_assumed_today = System_helper::get_time(date("1970-m-d"));
 $current_season=array();
 foreach($seasons as &$season){
-    if(($time_today >= $season['date_start']) && ($time_today <= $season['date_end']))
+    if(($time_assumed_today >= $season['date_start']) && ($time_assumed_today <= $season['date_end']))
     {
         $current_season = $season;
         break;
@@ -24,7 +40,7 @@ foreach($seasons as &$season){
     {
         $season['date_end'] = strtotime('-1 years', $season['date_end']);
         $season['date_start'] = strtotime('-1 years', $season['date_start']);
-        if(($time_today >= $season['date_start']) && ($time_today <= $season['date_end']))
+        if(($time_assumed_today >= $season['date_start']) && ($time_assumed_today <= $season['date_end']))
         {
             $current_season = $season;
             break;
@@ -32,8 +48,7 @@ foreach($seasons as &$season){
     }
 }
 
-/*--------FOCUSED VARIETY CODE--------*/
-
+/*-------------------------- FOCUSED VARIETY --------------------------*/
 $CI->db->from($CI->config->item('table_login_csetup_cus_info') . ' cus_info');
 $CI->db->select('cus_info.id outlet_id, cus_info.name outlet_name');
 
@@ -131,7 +146,15 @@ else
                         <a href="#" data-toggle="dropdown" class="dropdown">Month <span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
                             <?php
-                            for ($i = 1; $i <= 12; $i++)
+                            foreach($fiscal_months as $key => $fiscal_month)
+                            {
+                                ?>
+                                <li>
+                                    <a href="#tab_sales_year" class="dropdown tab_id_sales_amount" data-toggle="tab" data-type="month" data-unit-interval="500" data-value="<?php echo $key?>"><?php echo $fiscal_month?></a>
+                                </li>
+                            <?php
+                            }
+                            /*for ($i = 1; $i <= 12; $i++)
                             {
                                 $month=date("m", strtotime( date( 'Y-'.$i.'-01' )));
                                 $month_name=date("M", strtotime( date( 'Y-'.$i.'-01' )));
@@ -140,7 +163,7 @@ else
                                     <a href="#tab_sales_amount" class="dropdown tab_id_sales_amount" data-toggle="tab" data-type="month" data-value="<?php echo $month?>"><?php echo $month_name?></a>
                                 </li>
                             <?php
-                            }
+                            }*/
                             ?>
                         </ul>
                     </li>
@@ -236,7 +259,15 @@ else
                         <a href="#" data-toggle="dropdown" class="dropdown">Month <span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
                             <?php
-                            for ($i = 1; $i <= 12; $i++)
+                            foreach($fiscal_months as $key => $fiscal_month)
+                            {
+                                ?>
+                                <li>
+                                    <a href="#tab_sales_year" class="dropdown tab_id_sales_years" data-toggle="tab" data-type="month" data-unit-interval="500" data-value="<?php echo $key?>"><?php echo $fiscal_month?></a>
+                                </li>
+                            <?php
+                            }
+                            /*for ($i = 1; $i <= 12; $i++)
                             {
                                 $month=date("m", strtotime( date( 'Y-'.$i.'-01' )));
                                 $month_name=date("M", strtotime( date( 'Y-'.$i.'-01' )));
@@ -245,7 +276,7 @@ else
                                     <a href="#tab_sales_year" class="dropdown tab_id_sales_years" data-toggle="tab" data-type="month" data-unit-interval="500" data-value="<?php echo $month?>"><?php echo $month_name?></a>
                                 </li>
                                 <?php
-                            }
+                            }*/
                             ?>
                         </ul>
                     </li>
@@ -276,7 +307,15 @@ else
                         <a href="#" data-toggle="dropdown" class="dropdown">Month <span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
                             <?php
-                            for ($i = 1; $i <= 12; $i++)
+                            foreach($fiscal_months as $key => $fiscal_month)
+                            {
+                                ?>
+                                <li>
+                                    <a href="#tab_sales_year" class="dropdown tab_id_invoices_years" data-toggle="tab" data-type="month" data-unit-interval="500" data-value="<?php echo $key?>"><?php echo $fiscal_month?></a>
+                                </li>
+                            <?php
+                            }
+                            /*for ($i = 1; $i <= 12; $i++)
                             {
                                 $month=date("m", strtotime( date( 'Y-'.$i.'-01' )));
                                 $month_name=date("M", strtotime( date( 'Y-'.$i.'-01' )));
@@ -285,7 +324,7 @@ else
                                     <a href="#tab_invoices_year" class="dropdown tab_id_invoices_years" data-toggle="tab" data-type="month" data-unit-interval="500" data-value="<?php echo $month?>"><?php echo $month_name?></a>
                                 </li>
                                 <?php
-                            }
+                            }*/
                             ?>
                         </ul>
                     </li>
