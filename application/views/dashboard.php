@@ -137,6 +137,40 @@ else
 ?>
 
 <div class="row widget">
+    <?php
+    if($user->user_group==0)
+    {
+        ?>
+        <div class="col-sm-12 text-center">
+            <h3 class="alert alert-warning"><?php echo $CI->lang->line('MSG_NOT_ASSIGNED_GROUP');?></h3>
+
+        </div>
+    <?php
+    }
+    ?>
+    <?php
+    if($user->username_password_same)
+    {
+        ?>
+        <div class="col-sm-12 text-center">
+            <h3 class="alert alert-warning"><?php echo $CI->lang->line('MSG_USERNAME_PASSWORD_SAME');?></h3>
+
+        </div>
+    <?php
+    }
+    ?>
+    <?php
+    if($CI->is_site_offline())
+    {
+        ?>
+        <div class="col-sm-12 text-center">
+            <h3 class="alert alert-warning"><?php echo $CI->lang->line('MSG_SITE_OFFLINE');?></h3>
+        </div>
+    <?php
+    }
+    ?>
+</div>
+<div class="row widget">
     <div class="col-lg-9" style="padding: 0px !important; min-height: 150px">
         <div class="panel with-nav-tabs panel-default panel-tab" style=" min-height: 150px; margin-bottom: 0px !important;">
             <div class="panel-heading ">
