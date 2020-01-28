@@ -135,6 +135,7 @@ else
 {
     $cultivation_period = array();
 }
+$locations = User_helper::get_locations();
 ?>
 
 <div class="row widget">
@@ -170,6 +171,113 @@ else
     <?php
     }
     ?>
+</div>
+
+<div class="row widget">
+    <div class="col-sm-2 col-xs-12">
+        <?php
+        if ($locations['division_id'] > 0)
+        {
+            ?>
+            <label class="control-label"><?php echo $CI->locations['division_name']; ?></label>
+            <input type="hidden" id="division_id" value="<?php echo $CI->locations['division_id']; ?>" />
+        <?php
+        }
+        else
+        {
+            ?>
+            <div class="form-group">
+                <label for="usr"><?php echo $CI->lang->line('LABEL_DIVISION_NAME'); ?></label>
+                <select id="division_id" class="form-control" >
+                    <option value=""><?php echo $CI->lang->line('SELECT'); ?></option>
+                </select>
+            </div>
+        <?php
+        }
+        ?>
+    </div>
+    <div class="col-sm-2 col-xs-12" id="zone_id_container" style="display: <?php if ($locations['zone_id'] > 0){echo 'block';}else{echo 'none';}?>" >
+        <?php
+        if ($locations['zone_id'] > 0)
+        {
+            ?>
+            <label class="control-label"><?php echo $CI->locations['zone_name']; ?></label>
+            <input type="hidden" id="zone_id" value="<?php echo $CI->locations['zone_id']; ?>" />
+        <?php
+        }
+        else
+        {
+            ?>
+            <div class="form-group">
+                <label for="usr"><?php echo $CI->lang->line('LABEL_ZONE_NAME'); ?></label>
+                <select id="zone_id" class="form-control">
+                    <option value=""><?php echo $CI->lang->line('SELECT'); ?></option>
+                </select>
+            </div>
+        <?php
+        }
+        ?>
+    </div>
+    <div class="col-sm-2 col-xs-12" id="territory_id_container" style="display: <?php if ($locations['territory_id'] > 0){echo 'block';}else{echo 'none';}?>" >
+        <?php
+        if ($locations['territory_id'] > 0)
+        {
+            ?>
+            <div class="form-group">
+                <label class="control-label"><?php echo $CI->locations['territory_name']; ?></label>
+                <input type="hidden" id="territory_id" value="<?php echo $CI->locations['territory_id']; ?>" />
+            </div>
+        <?php
+        }
+        else
+        {
+            ?>
+            <div class="form-group">
+                <label for="usr"><?php echo $CI->lang->line('LABEL_TERRITORY_NAME'); ?></label>
+                <select id="territory_id" class="form-control">
+                    <option value=""><?php echo $CI->lang->line('SELECT'); ?></option>
+                </select>
+            </div>
+        <?php
+        }
+        ?>
+    </div>
+    <div class="col-sm-2 col-xs-12" id="district_id_container" style="display: <?php if ($locations['district_id'] > 0){echo 'block';}else{echo 'none';}?>" >
+        <?php
+        if ($locations['district_id'] > 0)
+        {
+            ?>
+            <label class="control-label"><?php echo $CI->locations['district_name']; ?></label>
+            <input type="hidden" id="district_id" value="<?php echo $CI->locations['district_id']; ?>" />
+        <?php
+        }
+        else
+        {
+            ?>
+            <div class="form-group">
+                <label for="usr"><?php echo $CI->lang->line('LABEL_DISTRICT_NAME'); ?></label>
+                <select id="district_id" class="form-control">
+                    <option value=""><?php echo $CI->lang->line('SELECT'); ?></option>
+                </select>
+            </div>
+        <?php
+        }
+        ?>
+    </div>
+    <div class="col-sm-2 col-xs-12" id="outlet_id_container" style="display: none;" >
+        <div class="form-group">
+            <label for="usr"><?php echo $CI->lang->line('LABEL_OUTLET_NAME'); ?></label>
+            <select id="outlet_id" class="form-control">
+                <option value=""><?php echo $CI->lang->line('SELECT'); ?></option>
+            </select>
+        </div>
+    </div>
+    <div class="col-sm-2 col-xs-12 pull-right" >
+        <div class="form-group">
+            <label for="usr">&nbsp;</label>
+            <button type="button" class="btn btn-success form-control"> View </button>
+        </div>
+    </div>
 </div>
 <div class="row widget">
     <div class="col-lg-9" style="padding: 0px !important; min-height: 150px">
@@ -378,6 +486,171 @@ else
 </style>
 
 <script type="text/javascript">
+
+    $(document).ready(function ()
+    {
+        <?php
+        if (!($locations['division_id'] > 0))
+        {
+        ?>
+        $('#division_id').html(get_dropdown_with_select(system_divisions));
+        <?php
+        }
+        ?>
+        $(document).on('change', '#division_id', function () {
+            $('#zone_id').val('');
+            $('#territory_id').val('');
+            $('#district_id').val('');
+            $('#outlet_id').val('');
+            var division_id = $('#division_id').val();
+            $('#zone_id_container').hide();
+            $('#territory_id_container').hide();
+            $('#district_id_container').hide();
+            $('#outlet_id_container').hide();
+            $("#system_report_container").html('');
+            if (division_id > 0) {
+                if (system_zones[division_id] !== undefined) {
+                    $('#zone_id_container').show();
+                    $('#zone_id').html(get_dropdown_with_select(system_zones[division_id]));
+                }
+            }
+        });
+        $(document).on('change', '#zone_id', function () {
+            $('#territory_id').val('');
+            $('#district_id').val('');
+            $('#outlet_id').val('');
+            var zone_id = $('#zone_id').val();
+            $('#territory_id_container').hide();
+            $('#district_id_container').hide();
+            $('#outlet_id_container').hide();
+            $("#system_report_container").html('');
+            if (zone_id > 0) {
+                if (system_territories[zone_id] !== undefined) {
+                    $('#territory_id_container').show();
+                    $('#territory_id').html(get_dropdown_with_select(system_territories[zone_id]));
+                }
+            }
+        });
+        $(document).on('change', '#territory_id', function () {
+            $('#district_id').val('');
+            $('#outlet_id').val('');
+            $('#outlet_id_container').hide();
+            $('#district_id_container').hide();
+            $("#system_report_container").html('');
+            var territory_id = $('#territory_id').val();
+            if (territory_id > 0) {
+                if (system_districts[territory_id] !== undefined) {
+                    $('#district_id_container').show();
+                    $('#district_id').html(get_dropdown_with_select(system_districts[territory_id]));
+                }
+            }
+        });
+        $(document).on('change', '#district_id', function () {
+            $('#outlet_id').val('');
+            $("#system_report_container").html('');
+            var district_id = $('#district_id').val();
+            $('#outlet_id_container').hide();
+            if (district_id > 0) {
+                if (system_outlets[district_id] !== undefined) {
+                    $('#outlet_id_container').show();
+                    $('#outlet_id').html(get_dropdown_with_select(system_outlets[district_id]));
+                }
+            }
+        });
+
+        load_invoice_amount();
+        load_report_farmer_balance_notification();
+        /*load_chart_crop_wise_sales();*/
+        load_chart_invoice_payment();
+
+        $('.tab_id_sales_amount').on('click',function()
+        {
+            $("#invoice_amount_total").html('')
+            $("#invoice_amount_cash").html('')
+            $("#invoice_amount_credit").html('')
+            var report_type = 'month'
+            var url = "<?php echo site_url('Dashboard/index/invoice_amount');?>";
+            var data_post =
+            {
+                type:$(this).attr('data-type'),
+                value:$(this).attr('data-value')
+            }
+            $.ajax({
+                url: url,
+                type: 'post',
+                dataType: "JSON",
+                data: data_post,
+                success: function (data, status)
+                {
+                    $("#invoice_amount_total").html(data.invoice_amount_total)
+                    $("#invoice_amount_cash").html(data.invoice_amount_cash)
+                    $("#invoice_amount_credit").html(data.invoice_amount_credit)
+                },
+                error: function (xhr, desc, err)
+                {
+
+
+                }
+            });
+        })
+        $('.tab_id_sales_years').on('click',function()
+        {
+            $($(this).attr('href')).html('')
+             var url = "<?php echo site_url('Dashboard/index/chart_sales_crop_wise');?>";
+             var data=
+             {
+                 html_id:$(this).attr('href'),
+                 type:$(this).attr('data-type'),
+                 value:$(this).attr('data-value'),
+                 unitInterval:$(this).attr('data-unit-interval')
+             }
+             $.ajax({
+                 url: url,
+                 type: 'post',
+                 dataType: "JSON",
+                 data: data,
+                 success: function (data, status)
+                 {
+
+                 },
+                 error: function (xhr, desc, err)
+                 {
+
+
+                 }
+            });
+
+        })
+        $('.tab_id_invoices_years').on('click',function()
+        {
+            $($(this).attr('href')).html('')
+             var url = "<?php echo site_url('Dashboard/index/chart_invoice_payment_wise');?>";
+             var data=
+             {
+                 html_id:$(this).attr('href'),
+                 type:$(this).attr('data-type'),
+                 value:$(this).attr('data-value'),
+                 unitInterval:$(this).attr('data-unit-interval')
+             }
+             $.ajax({
+                 url: url,
+                 type: 'post',
+                 dataType: "JSON",
+                 data: data,
+                 success: function (data, status)
+                 {
+
+                 },
+                 error: function (xhr, desc, err)
+                 {
+
+
+                 }
+            });
+
+        })
+
+    });
     function load_invoice_amount()
     {
         $("#invoice_amount_total").html('')
@@ -491,100 +764,4 @@ else
             }
         });
     }
-    $(document).ready(function ()
-    {
-        load_invoice_amount();
-        load_report_farmer_balance_notification();
-        /*load_chart_crop_wise_sales();*/
-        load_chart_invoice_payment();
-
-        $('.tab_id_sales_amount').on('click',function()
-        {
-            $("#invoice_amount_total").html('')
-            $("#invoice_amount_cash").html('')
-            $("#invoice_amount_credit").html('')
-            var report_type = 'month'
-            var url = "<?php echo site_url('Dashboard/index/invoice_amount');?>";
-            var data_post =
-            {
-                type:$(this).attr('data-type'),
-                value:$(this).attr('data-value')
-            }
-            $.ajax({
-                url: url,
-                type: 'post',
-                dataType: "JSON",
-                data: data_post,
-                success: function (data, status)
-                {
-                    $("#invoice_amount_total").html(data.invoice_amount_total)
-                    $("#invoice_amount_cash").html(data.invoice_amount_cash)
-                    $("#invoice_amount_credit").html(data.invoice_amount_credit)
-                },
-                error: function (xhr, desc, err)
-                {
-
-
-                }
-            });
-        })
-        $('.tab_id_sales_years').on('click',function()
-        {
-            $($(this).attr('href')).html('')
-             var url = "<?php echo site_url('Dashboard/index/chart_sales_crop_wise');?>";
-             var data=
-             {
-                 html_id:$(this).attr('href'),
-                 type:$(this).attr('data-type'),
-                 value:$(this).attr('data-value'),
-                 unitInterval:$(this).attr('data-unit-interval')
-             }
-             $.ajax({
-                 url: url,
-                 type: 'post',
-                 dataType: "JSON",
-                 data: data,
-                 success: function (data, status)
-                 {
-
-                 },
-                 error: function (xhr, desc, err)
-                 {
-
-
-                 }
-            });
-
-        })
-        $('.tab_id_invoices_years').on('click',function()
-        {
-            $($(this).attr('href')).html('')
-             var url = "<?php echo site_url('Dashboard/index/chart_invoice_payment_wise');?>";
-             var data=
-             {
-                 html_id:$(this).attr('href'),
-                 type:$(this).attr('data-type'),
-                 value:$(this).attr('data-value'),
-                 unitInterval:$(this).attr('data-unit-interval')
-             }
-             $.ajax({
-                 url: url,
-                 type: 'post',
-                 dataType: "JSON",
-                 data: data,
-                 success: function (data, status)
-                 {
-
-                 },
-                 error: function (xhr, desc, err)
-                 {
-
-
-                 }
-            });
-
-        })
-
-    });
-
 </script>
