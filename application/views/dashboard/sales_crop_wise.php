@@ -3,7 +3,7 @@ $CI = & get_instance();
 ?>
 <div >
     <div id='jqxChartSalesYears' style="width:100%; height:500px; position: relative; left: 0px; top: 0px;">
-        asdf
+
     </div>
 </div>
 <script type="text/javascript">

@@ -21,6 +21,26 @@ class Dashboard extends Root_controller
         }
         $this->load->helper('bi');
         //$this->load->helper('barcode');
+        $this->language_labels();
+    }
+    private function language_labels()
+    {
+        $this->lang->language['LABEL_AMOUNT_CREDIT_LIMIT'] = 'Credit Limit';
+        $this->lang->language['LABEL_AMOUNT_CREDIT_BALANCE'] = 'Available Credit';
+        $this->lang->language['LABEL_AMOUNT_CREDIT_DUE'] = 'Due';
+        $this->lang->language['LABEL_AMOUNT_LAST_PAYMENT'] = 'Last payment amount';
+        $this->lang->language['LABEL_DATE_LAST_PAYMENT'] = 'Last Payment Date';
+        $this->lang->language['LABEL_DAY_LAST_PAYMENT'] = 'Last Payment days';
+        $this->lang->language['LABEL_AMOUNT_LAST_SALE'] = 'Last Invoice amount';
+        $this->lang->language['LABEL_DATE_LAST_SALE'] = 'Last Invoice Date';
+        $this->lang->language['LABEL_DAY_LAST_SALE'] = 'Last Invoice days';
+        $this->lang->language['LABEL_DAY_COLOR_PAYMENT_START'] = 'Payment warning color start(days)';
+        $this->lang->language['LABEL_DAY_COLOR_PAYMENT_INTERVAL'] = 'Payment warning color interval(days)';
+
+        $this->lang->language['LABEL_DAY_COLOR_SALES_START'] = 'Invoice warning color start(days)';
+        $this->lang->language['LABEL_DAY_COLOR_SALES_INTERVAL'] = 'Invoice warning color interval(days)';
+
+        $this->lang->language['LABEL_SALE_DUE_STATUS'] = 'Last Invoice due status';
     }
     public function index($action="",$type="", $value=0)
     {
@@ -512,6 +532,11 @@ class Dashboard extends Root_controller
     {
         $data=array();
         $html_id=$this->input->post('html_id');
+        $reports['day_color_payment_start']=20;
+        $reports['day_color_payment_interval']=10;
+        $reports['day_color_sales_start']=20;
+        $reports['day_color_sales_interval']=20;
+        $data['options'] = $reports;
         $ajax['status']=true;
         $ajax['system_content'][]=array("id"=>$html_id,"html"=>$this->load->view($this->controller_url."/report_farmer_balanace_notification",$data,true));
         if($this->message)

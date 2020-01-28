@@ -15,11 +15,12 @@ $where = array(
 $fiscal_year_current = Query_helper::get_info($CI->config->item('table_login_basic_setup_fiscal_year'), '*', $where, 1);
 $fiscal_current = $fiscal_year_current['date_start'];
 $fiscal_months =array();
-
-do{
-    $fiscal_months[date( 'Y-m', $fiscal_current )] = date( 'M Y', $fiscal_current );
+do
+{
+    $fiscal_months[date( 'm', $fiscal_current )] = date( 'M Y', $fiscal_current );
     $fiscal_current = strtotime( '+1 months', $fiscal_current);
-} while ($fiscal_current <= $fiscal_year_current['date_end']);
+}
+while ($fiscal_current <= $fiscal_year_current['date_end']);
 
 /*---------------------------- SEASON CODE ----------------------------*/
 $where = array(
@@ -175,7 +176,7 @@ else
         <div class="panel with-nav-tabs panel-default panel-tab" style=" min-height: 150px; margin-bottom: 0px !important;">
             <div class="panel-heading ">
                 <ul class="nav nav-tabs">
-                    <li class="active"><a href="#tab_sales_amount" data-toggle="tab" class="dropdown tab_id_sales_amount" id="tab_id_sales_today" data-type="today" data-value="<?php echo date('d', time())?>">Today</a></li>
+                    <li class="active"><a href="#tab_sales_amount" data-toggle="tab" class="dropdown tab_id_sales_amount" id="tab_id_sales_amount_today" data-type="today" data-value="<?php echo date('d', time())?>">Today</a></li>
                     <li class="dropdown">
                         <a href="#" data-toggle="dropdown" class="dropdown">Month <span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
@@ -184,24 +185,14 @@ else
                             {
                                 ?>
                                 <li>
-                                    <a href="#tab_sales_year" class="dropdown tab_id_sales_amount" data-toggle="tab" data-type="month" data-unit-interval="500" data-value="<?php echo $key?>"><?php echo $fiscal_month?></a>
+                                    <a href="#tab_sales_amount" class="dropdown tab_id_sales_amount" data-toggle="tab" data-type="month" data-unit-interval="500" data-value="<?php echo $key?>"><?php echo $fiscal_month?></a>
                                 </li>
                             <?php
                             }
-                            /*for ($i = 1; $i <= 12; $i++)
-                            {
-                                $month=date("m", strtotime( date( 'Y-'.$i.'-01' )));
-                                $month_name=date("M", strtotime( date( 'Y-'.$i.'-01' )));
-                                ?>
-                                <li>
-                                    <a href="#tab_sales_amount" class="dropdown tab_id_sales_amount" data-toggle="tab" data-type="month" data-value="<?php echo $month?>"><?php echo $month_name?></a>
-                                </li>
-                            <?php
-                            }*/
                             ?>
                         </ul>
                     </li>
-                    <li><a href="#tab_sales_amount" data-toggle="tab" class="dropdown tab_id_sales_amount" id="tab_id_sales_amount" data-type="year" data-value="2">Current Years</a></li>
+                    <li><a href="#tab_sales_amount" data-toggle="tab" class="dropdown tab_id_sales_amount" id="tab_id_sales_amount_today" data-type="year" data-value="2">Current Years</a></li>
                 </ul>
             </div>
             <div class="panel-body  bg-warning">
@@ -301,16 +292,6 @@ else
                                 </li>
                             <?php
                             }
-                            /*for ($i = 1; $i <= 12; $i++)
-                            {
-                                $month=date("m", strtotime( date( 'Y-'.$i.'-01' )));
-                                $month_name=date("M", strtotime( date( 'Y-'.$i.'-01' )));
-                                ?>
-                                <li>
-                                    <a href="#tab_sales_year" class="dropdown tab_id_sales_years" data-toggle="tab" data-type="month" data-unit-interval="500" data-value="<?php echo $month?>"><?php echo $month_name?></a>
-                                </li>
-                                <?php
-                            }*/
                             ?>
                         </ul>
                     </li>
@@ -345,20 +326,10 @@ else
                             {
                                 ?>
                                 <li>
-                                    <a href="#tab_sales_year" class="dropdown tab_id_invoices_years" data-toggle="tab" data-type="month" data-unit-interval="500" data-value="<?php echo $key?>"><?php echo $fiscal_month?></a>
+                                    <a href="#tab_invoices_year" class="dropdown tab_id_invoices_years" data-toggle="tab" data-type="month" data-unit-interval="500" data-value="<?php echo $key?>"><?php echo $fiscal_month?></a>
                                 </li>
                             <?php
                             }
-                            /*for ($i = 1; $i <= 12; $i++)
-                            {
-                                $month=date("m", strtotime( date( 'Y-'.$i.'-01' )));
-                                $month_name=date("M", strtotime( date( 'Y-'.$i.'-01' )));
-                                ?>
-                                <li>
-                                    <a href="#tab_invoices_year" class="dropdown tab_id_invoices_years" data-toggle="tab" data-type="month" data-unit-interval="500" data-value="<?php echo $month?>"><?php echo $month_name?></a>
-                                </li>
-                                <?php
-                            }*/
                             ?>
                         </ul>
                     </li>
@@ -438,7 +409,7 @@ else
             }
         });
     }
-    function load_chart()
+    function load_chart_crop_wise_sales()
     {
         var elm_id="#tab_id_sales_today";
         $($(elm_id).attr('href')).html('')
@@ -446,8 +417,39 @@ else
         var data_post =
         {
             html_id:$(elm_id).attr('href'),
-            type:$(elm_id).attr('data-type'),
-            value:$(elm_id).attr('data-value'),
+            //type:$(elm_id).attr('data-type'),
+            //value:$(elm_id).attr('data-value'),
+            type:'month',
+            value:'<?php echo date('m', time())?>',
+            unitInterval:$(elm_id).attr('data-unit-interval')
+        }
+        $.ajax({
+            url: url,
+            type: 'post',
+            dataType: "JSON",
+            data: data_post,
+            success: function (data, status)
+            {
+
+            },
+            error: function (xhr, desc, err)
+            {
+
+            }
+        });
+    }
+    function load_chart_invoice_payment()
+    {
+        var elm_id="#tab_id_invoice_today";
+        $($(elm_id).attr('href')).html('')
+        var url = "<?php echo site_url('Dashboard/index/chart_invoice_payment_wise');?>";
+        var data_post =
+        {
+            html_id:$(elm_id).attr('href'),
+            //type:$(elm_id).attr('data-type'),
+            //value:$(elm_id).attr('data-value'),
+            type:'month',
+            value:'<?php echo date('m', time())?>',
             unitInterval:$(elm_id).attr('data-unit-interval')
         }
         $.ajax({
@@ -491,9 +493,10 @@ else
     }
     $(document).ready(function ()
     {
-        //load_invoice_amount();
-        //load_chart();
+        load_invoice_amount();
         load_report_farmer_balance_notification();
+        /*load_chart_crop_wise_sales();*/
+        load_chart_invoice_payment();
 
         $('.tab_id_sales_amount').on('click',function()
         {
