@@ -30,13 +30,6 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
         ?>
 
         <div class="row show-grid">
-            <div class="col-sm-3 col-xs-1"> &nbsp; </div>
-            <div class="col-sm-6 col-xs-11">
-                <?php echo $target_variety_list; ?>
-            </div>
-        </div>
-
-        <div class="row show-grid">
             <div class="col-xs-4">
                 <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_STATUS_APPROVE'); ?> <span style="color:#FF0000">*</span></label>
             </div>
@@ -52,7 +45,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
 
         <div class="row show-grid">
             <div class="col-xs-4">
-                <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_REMARKS'); ?> &nbsp;</label>
+                <label class="control-label pull-right"><span class="remarks_label">Approve</span> <?php echo $CI->lang->line('LABEL_REMARKS'); ?> &nbsp;</label>
             </div>
             <div class="col-xs-4">
                 <textarea id="remarks" name="item[remarks_approve]" class="form-control"></textarea>
@@ -97,18 +90,21 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
             }
             else if (options == '<?php echo $CI->config->item('system_status_rollback'); ?>')
             {
+                $("span.remarks_label").text('Rollback');
                 $("label.remarks-req").text('This field is required for Rollback');
                 $(".remarks-req").css('display','inline-block');
                 $("#button_action_save").attr('data-message-confirm', '<?php echo $CI->lang->line('MSG_CONFIRM_ROLLBACK'); ?>');
             }
             else if (options == '<?php echo $CI->config->item('system_status_rejected'); ?>')
             {
+                $("span.remarks_label").text('Reject');
                 $("label.remarks-req").text('This field is required for Reject');
                 $(".remarks-req").css('display','inline-block');
                 $("#button_action_save").attr('data-message-confirm', '<?php echo $CI->lang->line('MSG_CONFIRM_REJECT'); ?>');
             }
             else
             {
+                $("span.remarks_label").text('Approve');
                 $("#button_action_save").removeAttr('data-message-confirm');
             }
         });

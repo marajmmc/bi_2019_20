@@ -31,11 +31,4 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
     $CI->load->view('info_basic', $data);
     ?>
 
-    <div class="row show-grid">
-        <div class="col-sm-3 col-xs-1"> &nbsp; </div>
-        <div class="col-sm-6 col-xs-11">
-            <?php echo $target_variety_list; ?>
-        </div>
-    </div>
-
 </div>

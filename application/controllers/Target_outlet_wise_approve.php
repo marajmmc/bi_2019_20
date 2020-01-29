@@ -76,8 +76,7 @@ class Target_outlet_wise_approve extends Root_Controller
         $data['outlet_name'] = 1;
         $data['year'] = 1;
         $data['month'] = 1;
-        $data['total_target_amount'] = 1;
-        $data['total_target_varieties'] = 1;
+        $data['amount_target'] = 1;
         $data['district_name'] = 1;
         $data['territory_name'] = 1;
         $data['zone_name'] = 1;
@@ -155,25 +154,10 @@ class Target_outlet_wise_approve extends Root_Controller
         $items = $this->db->get()->result_array();
         $this->db->flush_cache(); // Flush/Clear current Query Stack
 
-        // Details Table
-        $this->db->from($this->config->item('table_bi_target_outlet_wise_details'));
-        $this->db->select('target_id, COUNT(*) AS total_varieties, SUM(amount_target) AS total_amount');
-        $this->db->where('amount_target >', 0);
-        $this->db->group_by('target_id');
-        $results = $this->db->get()->result_array();
-
-        $item_details = array();
-        foreach ($results as $result) {
-            $item_details[$result['target_id']] = array(
-                'total_target_varieties' => $result['total_varieties'],
-                'total_target_amount' => System_helper::get_string_amount($result['total_amount'])
-            );
-        }
-
         foreach ($items as &$item) {
             $item['month'] = DateTime::createFromFormat('!m', $item['month'])->format('F');
+            $item['amount_target'] = System_helper::get_string_amount($item['amount_target']);
             $item['requested_time'] = System_helper::display_date_time($item['date_created']);
-            $item = array_merge($item, $item_details[$item['id']]);
         }
 
         $this->json_return($items);
@@ -236,25 +220,10 @@ class Target_outlet_wise_approve extends Root_Controller
         $items = $this->db->get()->result_array();
         $this->db->flush_cache(); // Flush/Clear current Query Stack
 
-        // Details Table
-        $this->db->from($this->config->item('table_bi_target_outlet_wise_details'));
-        $this->db->select('target_id, COUNT(*) AS total_varieties, SUM(amount_target) AS total_amount');
-        $this->db->where('amount_target >', 0);
-        $this->db->group_by('target_id');
-        $results = $this->db->get()->result_array();
-
-        $item_details = array();
-        foreach ($results as $result) {
-            $item_details[$result['target_id']] = array(
-                'total_target_varieties' => $result['total_varieties'],
-                'total_target_amount' => System_helper::get_string_amount($result['total_amount'])
-            );
-        }
-
         foreach ($items as &$item) {
             $item['month'] = DateTime::createFromFormat('!m', $item['month'])->format('F');
+            $item['amount_target'] = System_helper::get_string_amount($item['amount_target']);
             $item['requested_time'] = System_helper::display_date_time($item['date_created']);
-            $item = array_merge($item, $item_details[$item['id']]);
         }
 
         $this->json_return($items);
@@ -270,18 +239,6 @@ class Target_outlet_wise_approve extends Root_Controller
             }
 
             $data = $this->get_item_info($item_id);
-            $data['target_id'] = $item_id;
-
-            $varieties_old_ids = Query_helper::get_info($this->config->item('table_bi_target_outlet_wise_details'), 'GROUP_CONCAT(variety_id) as varieties_old', array('target_id =' . $item_id), 1);
-            $varieties_old = explode(',', $varieties_old_ids['varieties_old']);
-
-            $results = Bi_helper::get_all_varieties('', $varieties_old);
-            foreach ($results as $result) {
-                $data['crops'][$result['crop_id']]['name'] = $result['crop_name'];
-                $data['crops'][$result['crop_id']]['types'][$result['crop_type_id']]['name'] = $result['crop_type_name'];
-                $data['crops'][$result['crop_id']]['types'][$result['crop_type_id']]['varieties'][$result['variety_id']] = $result['variety_name'];
-            }
-            $data['target_variety_list'] = $this->load->view($this->common_view_location . "/get_variety_targets_view", $data, true);
 
             $data['title'] = ($this->lang->line('LABEL_OUTLET_NAME')) . "-wise Variety Target Details (ID: " . $item_id . ")";
             $ajax['status'] = true;
@@ -308,7 +265,7 @@ class Target_outlet_wise_approve extends Root_Controller
             }
 
             $data = $this->get_item_info($item_id);
-            $data['id'] = $data['target_id'] = $item_id;
+            $data['id'] = $item_id;
 
             // Validation
             if ($data['item_head']['status_approve'] == $this->config->item('system_status_approved')) {
@@ -321,17 +278,6 @@ class Target_outlet_wise_approve extends Root_Controller
                 $ajax['system_message'] = $this->lang->line('MSG_REJECTED');
                 $this->json_return($ajax);
             }
-
-            $varieties_old_ids = Query_helper::get_info($this->config->item('table_bi_target_outlet_wise_details'), 'GROUP_CONCAT(variety_id) as varieties_old', array('target_id =' . $item_id), 1);
-            $varieties_old = explode(',', $varieties_old_ids['varieties_old']);
-
-            $results = Bi_helper::get_all_varieties('', $varieties_old);
-            foreach ($results as $result) {
-                $data['crops'][$result['crop_id']]['name'] = $result['crop_name'];
-                $data['crops'][$result['crop_id']]['types'][$result['crop_type_id']]['name'] = $result['crop_type_name'];
-                $data['crops'][$result['crop_id']]['types'][$result['crop_type_id']]['varieties'][$result['variety_id']] = $result['variety_name'];
-            }
-            $data['target_variety_list'] = $this->load->view($this->common_view_location . "/get_variety_targets_view", $data, true);
 
             $data['title'] = "Approve " . ($this->lang->line('LABEL_OUTLET_NAME')) . "-wise Target (ID: " . $item_id . ")";
             $ajax['status'] = true;
@@ -475,7 +421,9 @@ class Target_outlet_wise_approve extends Root_Controller
         $data['item'][] = array
         (
             'label_1' => 'Target '.$this->lang->line('LABEL_MONTH'),
-            'value_1' => (DateTime::createFromFormat('!m', $result['month'])->format('F')). ', '. $result['year']
+            'value_1' => (DateTime::createFromFormat('!m', $result['month'])->format('F')). ', '. $result['year'],
+            'label_2' => 'Target '.$this->lang->line('LABEL_AMOUNT_TARGET'),
+            'value_2' => System_helper::get_string_amount($result['amount_target'])
         );
         $data['item'][] = array
         (

@@ -307,23 +307,11 @@ if($item['district_id'] > 0 || $CI->locations['district_id'] > 0)
 
     <div class="row show-grid" id="target_container">
         <div class="col-xs-4">
-            <label class="control-label pull-right">Total <?php echo $CI->lang->line('LABEL_AMOUNT_TARGET'); ?>
-                <span style="color:#FF0000">*</span></label>
-        </div>
-        <div class="col-sm-5 col-xs-8">
-            <label class="total_target_label"></label>
-        </div>
-    </div>
-
-    <div class="row show-grid" id="target_container">
-        <div class="col-xs-4">
             <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_AMOUNT_TARGET'); ?>
                 <span style="color:#FF0000">*</span></label>
         </div>
-        <div class="col-sm-5 col-xs-8" id="target_content">
-
-            <?php echo $variety_items; ?>
-
+        <div class="col-sm-4 col-xs-8">
+            <input type="text" class="form-control float_type_positive price_unit_tk" value="<?php echo $item['amount_target']; ?>" name="item[amount_target]" />
         </div>
     </div>
 
@@ -334,28 +322,11 @@ if($item['district_id'] > 0 || $CI->locations['district_id'] > 0)
 <style type="text/css"> label { margin-top: 5px;} </style>
 
 <script type="text/javascript">
-    function total_target(){
-        var sum = parseFloat(0);
-        var item_amount = parseFloat(0);
-        $(".target_input").each(function (e) {
-            item_amount = parseFloat($(this).val());
-            if (!isNaN(item_amount) && (item_amount > 0)) {
-                sum += item_amount;
-            }
-        });
-        $(".total_target_label").text(get_string_amount(sum));
-    }
-
     jQuery(document).ready(function ($) {
         system_preset({controller: '<?php echo $CI->router->class; ?>'});
         system_off_events(); // Triggers
-        total_target();
 
         $('#division_id').html(get_dropdown_with_select(system_divisions));
-
-        $(document).on("input", ".target_input", function (event) {
-            total_target();
-        });
 
         <?php
         if($CI->locations['division_id'] > 0)

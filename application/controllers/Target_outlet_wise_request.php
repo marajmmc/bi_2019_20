@@ -32,6 +32,7 @@ class Target_outlet_wise_request extends Root_Controller
         $this->lang->language['LABEL_TOTAL_TARGET_AMOUNT'] = 'Total Target Amount';
         $this->lang->language['LABEL_NO_OF_EDIT'] = 'No. of Edit';
         $this->lang->language['LABEL_AMOUNT_TARGET'] = 'Target Amount';
+        $this->lang->language['LABEL_REQUESTED_BY'] = 'Requested By';
         $this->lang->language['LABEL_REQUESTED_TIME'] = 'Requested Time';
         // Messages
         $this->lang->language['MSG_ID_NOT_EXIST'] = 'ID Not Exist.';
@@ -75,16 +76,12 @@ class Target_outlet_wise_request extends Root_Controller
 
     private function get_preference_headers($method = 'list')
     {
-        /*$user = User_helper::get_user();
-        $user->user_group == $this->config->item('USER_GROUP_SUPER');*/
-
         $data = array();
         $data['id'] = 1;
         $data['outlet_name'] = 1;
         $data['year'] = 1;
         $data['month'] = 1;
-        $data['total_target_amount'] = 1;
-        $data['total_target_varieties'] = 1;
+        $data['amount_target'] = 1;
         $data['district_name'] = 1;
         $data['territory_name'] = 1;
         $data['zone_name'] = 1;
@@ -161,26 +158,9 @@ class Target_outlet_wise_request extends Root_Controller
         $items = $this->db->get()->result_array();
         $this->db->flush_cache(); // Flush/Clear current Query Stack
 
-        // Details Table
-        $this->db->from($this->config->item('table_bi_target_outlet_wise_details'));
-        $this->db->select('target_id, COUNT(*) AS total_varieties, SUM(amount_target) AS total_amount');
-        $this->db->where('amount_target >', 0);
-        $this->db->group_by('target_id');
-        $results = $this->db->get()->result_array();
-
-        $item_details = array();
-        foreach($results as $result)
-        {
-            $item_details[$result['target_id']] = array(
-                'total_target_varieties' => $result['total_varieties'],
-                'total_target_amount' => System_helper::get_string_amount($result['total_amount'])
-            );
-        }
-
         foreach ($items as &$item) {
             $item['month'] = DateTime::createFromFormat('!m', $item['month'])->format('F');
-            $item['requested_time'] = System_helper::display_date_time($item['date_created']);
-            $item = array_merge($item, $item_details[$item['id']]);
+            $item['amount_target'] = System_helper::get_string_amount($item['amount_target']);
         }
 
         $this->json_return($items);
@@ -243,26 +223,9 @@ class Target_outlet_wise_request extends Root_Controller
         $items = $this->db->get()->result_array();
         $this->db->flush_cache(); // Flush/Clear current Query Stack
 
-        // Details Table
-        $this->db->from($this->config->item('table_bi_target_outlet_wise_details'));
-        $this->db->select('target_id, COUNT(*) AS total_varieties, SUM(amount_target) AS total_amount');
-        $this->db->where('amount_target >', 0);
-        $this->db->group_by('target_id');
-        $results = $this->db->get()->result_array();
-
-        $item_details = array();
-        foreach($results as $result)
-        {
-            $item_details[$result['target_id']] = array(
-                'total_target_varieties' => $result['total_varieties'],
-                'total_target_amount' => System_helper::get_string_amount($result['total_amount'])
-            );
-        }
-
         foreach ($items as &$item) {
             $item['month'] = DateTime::createFromFormat('!m', $item['month'])->format('F');
-            $item['requested_time'] = System_helper::display_date_time($item['date_created']);
-            $item = array_merge($item, $item_details[$item['id']]);
+            $item['amount_target'] = System_helper::get_string_amount($item['amount_target']);
         }
 
         $this->json_return($items);
@@ -276,6 +239,7 @@ class Target_outlet_wise_request extends Root_Controller
                 'id' => 0,
                 'month' => intval(date('m')),
                 'year' => intval(date('Y')),
+                'amount_target' => '',
                 'division_id' => 0,
                 'zone_id' => 0,
                 'territory_id' => 0,
@@ -284,8 +248,6 @@ class Target_outlet_wise_request extends Root_Controller
                 'remarks' => '',
                 'status' => ''
             );
-
-            $data['variety_items'] = $this->system_get_variety_targets($data['item']['id']);
 
             $data['title'] = "Add " . ($this->lang->line('LABEL_OUTLET_NAME')) . "-wise Target";
             $ajax['status'] = true;
@@ -339,8 +301,6 @@ class Target_outlet_wise_request extends Root_Controller
                 $this->json_return($ajax);
             }
 
-            $data['variety_items'] = $this->system_get_variety_targets($item_id);
-
             $data['title'] = "Edit " . ($this->lang->line('LABEL_OUTLET_NAME')) . "-wise Target (ID: " . $item_id . ")";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/add_edit", $data, true));
@@ -363,7 +323,6 @@ class Target_outlet_wise_request extends Root_Controller
 
         $item_id = $this->input->post('id');
         $item_head = $this->input->post('item');
-        $varieties = $this->input->post('varieties');
 
         //Validation Checking
         if (!$this->check_validation()) {
@@ -435,33 +394,8 @@ class Target_outlet_wise_request extends Root_Controller
 
         $this->db->trans_start(); //DB Transaction Handle START
 
-        $variety_not_found = true;
-        $items = array();
-        foreach($varieties as $variety_id => $amount){
-            if(trim($amount) > 0){
-                $items[] = array(
-                    'variety_id'=> $variety_id,
-                    'amount_target'=> $amount
-                );
-                $variety_not_found=false;
-            }
-        }
-
-        if($variety_not_found){
-            $ajax['status'] = false;
-            $ajax['system_message'] = 'Atleast One Variety Target need to Insert.';
-            $this->json_return($ajax);
-        }
-
-        $varieties_old =array();
         if ($item_id > 0) // Revision Update if EDIT
         {
-            $varieties_old_ids = Query_helper::get_info($this->config->item('table_bi_target_outlet_wise_details'), 'GROUP_CONCAT(variety_id) as varieties_old', array('target_id ='.$item_id), 1);
-            $varieties_old = explode(',', $varieties_old_ids['varieties_old']);
-
-            // Delete Old Targets
-            Query_helper::update($this->config->item('table_bi_target_outlet_wise_details'), array('amount_target' => 0), array('target_id ='.$item_id, 'variety_id IN ( '.$varieties_old_ids['varieties_old'].' )'), FALSE);
-
             $item_head['user_updated'] = $user->user_id;
             $item_head['date_updated'] = $time;
             $this->db->set('revision_count', 'revision_count+1', FALSE);
@@ -473,17 +407,7 @@ class Target_outlet_wise_request extends Root_Controller
             $item_head['revision_count'] = 1;
             $item_head['date_created'] = $time;
             $item_head['user_created'] = $user->user_id;
-            $item_id = Query_helper::add($this->config->item('table_bi_target_outlet_wise'), $item_head, FALSE);
-        }
-
-        // UPDATE or, Insert Targets
-        foreach($items as &$item){
-            $item['target_id'] = $item_id;
-            if(in_array($item['variety_id'], $varieties_old)){
-                Query_helper::update($this->config->item('table_bi_target_outlet_wise_details'), $item, array('target_id ='.$item_id, 'variety_id ='.$item['variety_id']), FALSE);
-            }else{
-                Query_helper::add($this->config->item('table_bi_target_outlet_wise_details'), $item, FALSE);
-            }
+            Query_helper::add($this->config->item('table_bi_target_outlet_wise'), $item_head, FALSE);
         }
 
         $this->db->trans_complete(); //DB Transaction Handle END
@@ -509,18 +433,6 @@ class Target_outlet_wise_request extends Root_Controller
             }
 
             $data = $this->get_item_info($item_id);
-            $data['target_id'] = $item_id;
-
-            $varieties_old_ids = Query_helper::get_info($this->config->item('table_bi_target_outlet_wise_details'), 'GROUP_CONCAT(variety_id) as varieties_old', array('target_id ='.$item_id), 1);
-            $varieties_old = explode(',', $varieties_old_ids['varieties_old']);
-
-            $results = Bi_helper::get_all_varieties('', $varieties_old);
-            foreach ($results as $result) {
-                $data['crops'][$result['crop_id']]['name'] = $result['crop_name'];
-                $data['crops'][$result['crop_id']]['types'][$result['crop_type_id']]['name'] = $result['crop_type_name'];
-                $data['crops'][$result['crop_id']]['types'][$result['crop_type_id']]['varieties'][$result['variety_id']] = $result['variety_name'];
-            }
-            $data['target_variety_list'] = $this->load->view($this->common_view_location . "/get_variety_targets_view", $data, true);
 
             $data['title'] = ($this->lang->line('LABEL_OUTLET_NAME')) . "-wise Variety Target Details (ID: " . $item_id . ")";
             $ajax['status'] = true;
@@ -537,31 +449,6 @@ class Target_outlet_wise_request extends Root_Controller
         }
     }
 
-    private function system_get_variety_targets($target_id=0, $crop_id=0)
-    {
-        $results = Bi_helper::get_all_varieties('', 0, 0, $crop_id);
-
-        $data = array();
-        $data['target_id'] = $target_id;
-
-        foreach ($results as $result) {
-            $data['crops'][$result['crop_id']]['name'] = $result['crop_name'];
-            $data['crops'][$result['crop_id']]['types'][$result['crop_type_id']]['name'] = $result['crop_type_name'];
-            $data['crops'][$result['crop_id']]['types'][$result['crop_type_id']]['varieties'][$result['variety_id']] = $result['variety_name'];
-        }
-
-        if ($data)
-        {
-            return $this->load->view($this->common_view_location . "/get_variety_targets", $data, true);
-        }
-        else
-        {
-            $ajax['status'] = false;
-            $ajax['system_message'] = 'No Data Found.';
-            $this->json_return($ajax);
-        }
-    }
-
     private function system_forward($id)
     {
         if (isset($this->permissions['action7']) && ($this->permissions['action7'] == 1)) {
@@ -572,25 +459,13 @@ class Target_outlet_wise_request extends Root_Controller
             }
 
             $data = $this->get_item_info($item_id);
-            $data['id'] = $data['target_id'] = $item_id;
-
+            $data['id'] = $item_id;
             // Validation
             if($data['item_head']['status_forward'] == $this->config->item('system_status_forwarded')) {
                 $ajax['status'] = false;
                 $ajax['system_message'] = $this->lang->line('MSG_FORWARDED_ALREADY');
                 $this->json_return($ajax);
             }
-
-            $varieties_old_ids = Query_helper::get_info($this->config->item('table_bi_target_outlet_wise_details'), 'GROUP_CONCAT(variety_id) as varieties_old', array('target_id ='.$item_id), 1);
-            $varieties_old = explode(',', $varieties_old_ids['varieties_old']);
-
-            $results = Bi_helper::get_all_varieties('', $varieties_old);
-            foreach ($results as $result) {
-                $data['crops'][$result['crop_id']]['name'] = $result['crop_name'];
-                $data['crops'][$result['crop_id']]['types'][$result['crop_type_id']]['name'] = $result['crop_type_name'];
-                $data['crops'][$result['crop_id']]['types'][$result['crop_type_id']]['varieties'][$result['variety_id']] = $result['variety_name'];
-            }
-            $data['target_variety_list'] = $this->load->view($this->common_view_location . "/get_variety_targets_view", $data, true);
 
             $data['title'] = "Forward " . ($this->lang->line('LABEL_OUTLET_NAME')) . "-wise Target (ID: " . $item_id . ")";
             $ajax['status'] = true;
@@ -716,7 +591,9 @@ class Target_outlet_wise_request extends Root_Controller
         $data['item'][] = array
         (
             'label_1' => 'Target '.$this->lang->line('LABEL_MONTH'),
-            'value_1' => (DateTime::createFromFormat('!m', $result['month'])->format('F')). ', '. $result['year']
+            'value_1' => (DateTime::createFromFormat('!m', $result['month'])->format('F')). ', '. $result['year'],
+            'label_2' => 'Target '.$this->lang->line('LABEL_AMOUNT_TARGET'),
+            'value_2' => System_helper::get_string_amount($result['amount_target'])
         );
         $data['item'][] = array
         (
@@ -815,6 +692,7 @@ class Target_outlet_wise_request extends Root_Controller
         $this->form_validation->set_rules('item[month]', $this->lang->line('LABEL_MONTH'), 'required|trim|is_natural_no_zero');
         $this->form_validation->set_rules('item[year]', $this->lang->line('LABEL_YEAR'), 'required|trim|is_natural_no_zero');
         $this->form_validation->set_rules('item[outlet_id]', $this->lang->line('LABEL_OUTLET_NAME'), 'required|trim|is_natural_no_zero');
+        $this->form_validation->set_rules('item[amount_target]', $this->lang->line('LABEL_AMOUNT_TARGET'), 'required|trim|is_natural_no_zero');
         if ($this->form_validation->run() == FALSE) {
             $this->message = validation_errors();
             return false;
