@@ -592,7 +592,7 @@ class Target_outlet_wise_request extends Root_Controller
         (
             'label_1' => 'Target '.$this->lang->line('LABEL_MONTH'),
             'value_1' => (DateTime::createFromFormat('!m', $result['month'])->format('F')). ', '. $result['year'],
-            'label_2' => 'Target '.$this->lang->line('LABEL_AMOUNT_TARGET'),
+            'label_2' => $this->lang->line('LABEL_AMOUNT_TARGET'),
             'value_2' => System_helper::get_string_amount($result['amount_target'])
         );
         $data['item'][] = array
