@@ -28,13 +28,18 @@ class Target_outlet_wise_approve extends Root_Controller
     private function language_labels()
     {
         // Labels
+        $this->lang->language['LABEL_TOTAL_TARGET_VARIETIES'] = 'Total Target Varieties';
+        $this->lang->language['LABEL_TOTAL_TARGET_AMOUNT'] = 'Total Target Amount';
         $this->lang->language['LABEL_NO_OF_EDIT'] = 'No. of Edit';
         $this->lang->language['LABEL_AMOUNT_TARGET'] = 'Target Amount';
-        $this->lang->language['LABEL_REQUESTED_ON'] = 'Requested On';
+        $this->lang->language['LABEL_REQUESTED_BY'] = 'Requested By';
+        $this->lang->language['LABEL_REQUESTED_TIME'] = 'Requested Time';
         // Messages
         $this->lang->language['MSG_ID_NOT_EXIST'] = 'ID Not Exist.';
         $this->lang->language['MSG_INVALID_TRY'] = 'Invalid Try.';
         $this->lang->language['MSG_LOCATION_ERROR'] = 'Trying to Access Other Location';
+        $this->lang->language['MSG_APPROVED_ALREADY'] = 'This Variety Target has been Approved Already';
+        $this->lang->language['MSG_REJECTED'] = 'This Variety Target has been Rejected';
     }
 
     public function index($action = "list", $id = 0)
@@ -69,11 +74,16 @@ class Target_outlet_wise_approve extends Root_Controller
         $data = array();
         $data['id'] = 1;
         $data['outlet_name'] = 1;
+        $data['year'] = 1;
+        $data['month'] = 1;
+        $data['total_target_amount'] = 1;
+        $data['total_target_varieties'] = 1;
         $data['district_name'] = 1;
         $data['territory_name'] = 1;
         $data['zone_name'] = 1;
         $data['division_name'] = 1;
-        $data['requested_on'] = 1;
+        $data['no_of_edit'] = 1;
+        $data['requested_time'] = 1;
         $data['requested_by'] = 1;
         if ($method == 'list_all') {
             $data['status_approve'] = 1;
@@ -139,15 +149,31 @@ class Target_outlet_wise_approve extends Root_Controller
             }
         }
         $this->db->where('target.status', $this->config->item('system_status_active'));
-        $this->db->where('target.status_forward', $this->config->item('system_status_forwarded'));
-        $this->db->where('target.status_approve !=', $this->config->item('system_status_approved'));
+        $this->db->where('target.status_approve', $this->config->item('system_status_pending'));
         // Additional Conditions -ENDS
 
         $items = $this->db->get()->result_array();
         $this->db->flush_cache(); // Flush/Clear current Query Stack
 
+        // Details Table
+        $this->db->from($this->config->item('table_bi_target_outlet_wise_details'));
+        $this->db->select('target_id, COUNT(*) AS total_varieties, SUM(amount_target) AS total_amount');
+        $this->db->where('amount_target >', 0);
+        $this->db->group_by('target_id');
+        $results = $this->db->get()->result_array();
+
+        $item_details = array();
+        foreach ($results as $result) {
+            $item_details[$result['target_id']] = array(
+                'total_target_varieties' => $result['total_varieties'],
+                'total_target_amount' => System_helper::get_string_amount($result['total_amount'])
+            );
+        }
+
         foreach ($items as &$item) {
-            $item['requested_on'] = System_helper::display_date_time($item['date_created']);
+            $item['month'] = DateTime::createFromFormat('!m', $item['month'])->format('F');
+            $item['requested_time'] = System_helper::display_date_time($item['date_created']);
+            $item = array_merge($item, $item_details[$item['id']]);
         }
 
         $this->json_return($items);
@@ -204,15 +230,31 @@ class Target_outlet_wise_approve extends Root_Controller
             }
         }
         $this->db->where('target.status', $this->config->item('system_status_active'));
-        $this->db->where('target.status_forward', $this->config->item('system_status_forwarded'));
         $this->db->limit($pagesize, $current_records);
         // Additional Conditions -ENDS
 
         $items = $this->db->get()->result_array();
         $this->db->flush_cache(); // Flush/Clear current Query Stack
 
+        // Details Table
+        $this->db->from($this->config->item('table_bi_target_outlet_wise_details'));
+        $this->db->select('target_id, COUNT(*) AS total_varieties, SUM(amount_target) AS total_amount');
+        $this->db->where('amount_target >', 0);
+        $this->db->group_by('target_id');
+        $results = $this->db->get()->result_array();
+
+        $item_details = array();
+        foreach ($results as $result) {
+            $item_details[$result['target_id']] = array(
+                'total_target_varieties' => $result['total_varieties'],
+                'total_target_amount' => System_helper::get_string_amount($result['total_amount'])
+            );
+        }
+
         foreach ($items as &$item) {
-            $item['requested_on'] = System_helper::display_date_time($item['date_created']);
+            $item['month'] = DateTime::createFromFormat('!m', $item['month'])->format('F');
+            $item['requested_time'] = System_helper::display_date_time($item['date_created']);
+            $item = array_merge($item, $item_details[$item['id']]);
         }
 
         $this->json_return($items);
@@ -228,10 +270,9 @@ class Target_outlet_wise_approve extends Root_Controller
             }
 
             $data = $this->get_item_info($item_id);
-            $data['id'] = $item_id;
-            $data['outlet_id'] = $data['item_head']['outlet_id'];
+            $data['target_id'] = $item_id;
 
-            $varieties_old_ids = Query_helper::get_info($this->config->item('table_bi_target_outlet_wise_details'), 'GROUP_CONCAT(variety_id) as varieties_old', array('outlet_id =' . $data['item_head']['outlet_id']), 1);
+            $varieties_old_ids = Query_helper::get_info($this->config->item('table_bi_target_outlet_wise_details'), 'GROUP_CONCAT(variety_id) as varieties_old', array('target_id =' . $item_id), 1);
             $varieties_old = explode(',', $varieties_old_ids['varieties_old']);
 
             $results = Bi_helper::get_all_varieties('', $varieties_old);
@@ -257,28 +298,6 @@ class Target_outlet_wise_approve extends Root_Controller
         }
     }
 
-    /*private function system_get_variety_targets($outlet_id = 0, $crop_id = 0)
-    {
-        $results = Bi_helper::get_all_varieties('', 0, 0, $crop_id);
-
-        $data = array();
-        $data['outlet_id'] = $outlet_id;
-
-        foreach ($results as $result) {
-            $data['crops'][$result['crop_id']]['name'] = $result['crop_name'];
-            $data['crops'][$result['crop_id']]['types'][$result['crop_type_id']]['name'] = $result['crop_type_name'];
-            $data['crops'][$result['crop_id']]['types'][$result['crop_type_id']]['varieties'][$result['variety_id']] = $result['variety_name'];
-        }
-
-        if ($data) {
-            return $this->load->view($this->common_view_location . "/get_variety_targets", $data, true);
-        } else {
-            $ajax['status'] = false;
-            $ajax['system_message'] = 'No Data Found.';
-            $this->json_return($ajax);
-        }
-    }*/
-
     private function system_approve($id)
     {
         if (isset($this->permissions['action7']) && ($this->permissions['action7'] == 1)) {
@@ -288,11 +307,22 @@ class Target_outlet_wise_approve extends Root_Controller
                 $item_id = $this->input->post('id');
             }
 
-            $data = $this->get_item_info($item_id, $this->config->item('system_status_approved'));
-            $data['id'] = $item_id;
-            $data['outlet_id'] = $data['item_head']['outlet_id'];
+            $data = $this->get_item_info($item_id);
+            $data['id'] = $data['target_id'] = $item_id;
 
-            $varieties_old_ids = Query_helper::get_info($this->config->item('table_bi_target_outlet_wise_details'), 'GROUP_CONCAT(variety_id) as varieties_old', array('outlet_id =' . $data['item_head']['outlet_id']), 1);
+            // Validation
+            if ($data['item_head']['status_approve'] == $this->config->item('system_status_approved')) {
+                $ajax['status'] = false;
+                $ajax['system_message'] = $this->lang->line('MSG_APPROVED_ALREADY');
+                $this->json_return($ajax);
+            }
+            if ($data['item_head']['status_approve'] == $this->config->item('system_status_rejected')) {
+                $ajax['status'] = false;
+                $ajax['system_message'] = $this->lang->line('MSG_REJECTED');
+                $this->json_return($ajax);
+            }
+
+            $varieties_old_ids = Query_helper::get_info($this->config->item('table_bi_target_outlet_wise_details'), 'GROUP_CONCAT(variety_id) as varieties_old', array('target_id =' . $item_id), 1);
             $varieties_old = explode(',', $varieties_old_ids['varieties_old']);
 
             $results = Bi_helper::get_all_varieties('', $varieties_old);
@@ -320,11 +350,6 @@ class Target_outlet_wise_approve extends Root_Controller
 
     private function system_save_approve()
     {
-        /*echo '<pre>';
-        print_r($this->input->post());
-        echo '</pre>';
-        die('========APPROVE=======');*/
-
         $item_id = $this->input->post('id');
         $item = $this->input->post('item');
         $user = User_helper::get_user();
@@ -359,21 +384,39 @@ class Target_outlet_wise_approve extends Root_Controller
             $ajax['system_message'] = $this->lang->line('MSG_LOCATION_ERROR');
             $this->json_return($ajax);
         }
-        if ($item['status_approve'] != $this->config->item('system_status_approved')) {
+        if (!$this->check_validation())
+        {
             $ajax['status'] = false;
-            $ajax['system_message'] = $this->lang->line('LABEL_STATUS_APPROVE') . ' field is required.';
+            $ajax['system_message'] = $this->message;
             $this->json_return($ajax);
         }
         if ($result['status_approve'] == $this->config->item('system_status_approved')) {
             $ajax['status'] = false;
-            $ajax['system_message'] = 'This Variety Target has been '.$this->config->item('system_status_approved').' Already.';
+            $ajax['system_message'] = $this->lang->line('MSG_APPROVED_ALREADY');
+            $this->json_return($ajax);
+        }
+        if ($result['status_approve'] == $this->config->item('system_status_rejected')) {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line('MSG_REJECTED');
             $this->json_return($ajax);
         }
 
         $this->db->trans_start(); //DB Transaction Handle START
 
-        $item['date_approved'] = $time;
-        $item['user_approved'] = $user->user_id;
+        if($item['status_approve'] == $this->config->item('system_status_rollback'))
+        {
+            $item['status_forward'] = $this->config->item('system_status_pending');
+            $item['remarks_rollback'] = $item['remarks_approve'];
+            $item['date_rollback'] = $time;
+            $item['user_rollback'] = $user->user_id;
+
+            unset($item['status_approve']);
+            unset($item['remarks_approve']);
+        }
+        else{
+            $item['date_approved'] = $time;
+            $item['user_approved'] = $user->user_id;
+        }
 
         // Main Table UPDATE
         Query_helper::update($this->config->item('table_bi_target_outlet_wise'), $item, array("id =" . $item_id), FALSE);
@@ -390,7 +433,7 @@ class Target_outlet_wise_approve extends Root_Controller
         }
     }
 
-    private function get_item_info($item_id, $action = '') // Common Item Details Info
+    private function get_item_info($item_id) // Common Item Details Info
     {
         $this->common_query(); // Call Common part of below Query Stack
 
@@ -408,19 +451,6 @@ class Target_outlet_wise_approve extends Root_Controller
             $ajax['system_message'] = $this->lang->line('MSG_INVALID_TRY');
             $this->json_return($ajax);
         }
-        if ($action == $this->config->item('system_status_approved')) {
-            if (!$this->check_my_editable($result)) {
-                System_helper::invalid_try(__FUNCTION__, $item_id, $this->lang->line('MSG_LOCATION_ERROR'));
-                $ajax['status'] = false;
-                $ajax['system_message'] = $this->lang->line('MSG_LOCATION_ERROR');
-                $this->json_return($ajax);
-            }
-            if ($result['status_approve'] != $this->config->item('system_status_pending')) {
-                $ajax['status'] = false;
-                $ajax['system_message'] = 'This Variety Target has been ' . $action . ' Already.';
-                $this->json_return($ajax);
-            }
-        }
 
         //--------- System User Info ------------
         $user_ids = array();
@@ -431,6 +461,9 @@ class Target_outlet_wise_approve extends Root_Controller
         if ($result['user_forwarded'] > 0) {
             $user_ids[$result['user_forwarded']] = $result['user_forwarded'];
         }
+        if ($result['user_rollback'] > 0) {
+            $user_ids[$result['user_rollback']] = $result['user_rollback'];
+        }
         if ($result['user_approved'] > 0) {
             $user_ids[$result['user_approved']] = $result['user_approved'];
         }
@@ -439,6 +472,11 @@ class Target_outlet_wise_approve extends Root_Controller
         //---------------- Basic Info ----------------
         $data = array();
         $data['item_head'] = $result;
+        $data['item'][] = array
+        (
+            'label_1' => 'Target '.$this->lang->line('LABEL_MONTH'),
+            'value_1' => (DateTime::createFromFormat('!m', $result['month'])->format('F')). ', '. $result['year']
+        );
         $data['item'][] = array
         (
             'label_1' => $this->lang->line('LABEL_DIVISION_NAME'),
@@ -463,10 +501,10 @@ class Target_outlet_wise_approve extends Root_Controller
         (
             'label_1' => $this->lang->line('LABEL_REQUESTED_BY'),
             'value_1' => $user_info[$result['user_created']]['name'] . ' ( ' . $user_info[$result['user_created']]['employee_id'] . ' )',
-            'label_2' => $this->lang->line('LABEL_REQUESTED_ON'),
+            'label_2' => $this->lang->line('LABEL_REQUESTED_TIME'),
             'value_2' => System_helper::display_date_time($result['date_created'])
         );
-        if ($result['status_forward'] == $this->config->item('system_status_forwarded')) {
+        if ($result['status_forward'] == $this->config->item('system_status_forwarded') || ($result['user_rollback'] > 0)) {
             $data['item'][] = array
             (
                 'label_1' => $this->lang->line('LABEL_FORWARDED_BY'),
@@ -474,7 +512,29 @@ class Target_outlet_wise_approve extends Root_Controller
                 'label_2' => $this->lang->line('LABEL_DATE_FORWARDED_TIME'),
                 'value_2' => System_helper::display_date_time($result['date_forwarded'])
             );
+            if(trim($result['remarks_forward']) != ''){
+                $data['item'][] = array
+                (
+                    'label_1' => 'Forward '. $this->lang->line('LABEL_REMARKS'),
+                    'value_1' => nl2br($result['remarks_forward'])
+                );
+            }
         }
+        if($result['user_rollback'] > 0){
+            $data['item'][] = array
+            (
+                'label_1' => $this->lang->line('LABEL_ROLLBACK_BY'),
+                'value_1' => $user_info[$result['user_rollback']]['name'] . ' ( ' . $user_info[$result['user_rollback']]['employee_id'] . ' )',
+                'label_2' => $this->lang->line('LABEL_DATE_ROLLBACK_TIME'),
+                'value_2' => System_helper::display_date_time($result['date_rollback'])
+            );
+            $data['item'][] = array
+            (
+                'label_1' => 'Rollback '. $this->lang->line('LABEL_REMARKS'),
+                'value_1' => nl2br($result['remarks_rollback'])
+            );
+        }
+
         if ($result['status_approve'] == $this->config->item('system_status_approved')) {
             $data['item'][] = array
             (
@@ -483,21 +543,46 @@ class Target_outlet_wise_approve extends Root_Controller
                 'label_2' => $this->lang->line('LABEL_DATE_APPROVED_TIME'),
                 'value_2' => System_helper::display_date_time($result['date_approved'])
             );
+            if(trim($result['remarks_approve']) != ''){
+                $data['item'][] = array
+                (
+                    'label_1' => 'Approve '. $this->lang->line('LABEL_REMARKS'),
+                    'value_1' => nl2br($result['remarks_approve'])
+                );
+            }
+        }elseif ($result['status_approve'] == $this->config->item('system_status_rejected')) {
+            $data['item'][] = array
+            (
+                'label_1' => $this->lang->line('LABEL_REJECTED_BY'),
+                'value_1' => $user_info[$result['user_approved']]['name'] . ' ( ' . $user_info[$result['user_approved']]['employee_id'] . ' )',
+                'label_2' => $this->lang->line('LABEL_DATE_REJECTED_TIME'),
+                'value_2' => System_helper::display_date_time($result['date_approved'])
+            );
+            $data['item'][] = array
+            (
+                'label_1' => 'Reject '. $this->lang->line('LABEL_REMARKS'),
+                'value_1' => nl2br($result['remarks_approve'])
+            );
         }
 
         return $data;
     }
 
-    /* private function check_validation()
+    private function check_validation()
     {
+        $item = $this->input->post('item');
         $this->load->library('form_validation');
-        $this->form_validation->set_rules('item[outlet_id]', $this->lang->line('LABEL_OUTLET_NAME'), 'required|trim|is_natural_no_zero');
+        $this->form_validation->set_rules('item[status_approve]', $this->lang->line('LABEL_STATUS_APPROVE'), 'required|trim');
+        if(($item['status_approve'] == $this->config->item('system_status_rollback')) || ($item['status_approve'] == $this->config->item('system_status_rejected')))
+        {
+            $this->form_validation->set_rules('item[remarks_approve]', $this->lang->line('LABEL_REMARKS'), 'required|trim');
+        }
         if ($this->form_validation->run() == FALSE) {
             $this->message = validation_errors();
             return false;
         }
         return true;
-    } */
+    }
 
     private function check_my_editable($item)
     {
@@ -547,6 +632,7 @@ class Target_outlet_wise_approve extends Root_Controller
         {
             $this->db->where('target.user_created', $user->user_id);
         }
+        $this->db->where('target.status_forward', $this->config->item('system_status_forwarded'));
         $this->db->where('cus_info.revision', 1);
         $this->db->where('user_info.revision', 1);
         $this->db->order_by('target.id', 'DESC');

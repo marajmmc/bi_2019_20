@@ -2,8 +2,8 @@
 $CI = & get_instance();
 
 $target_varieties = array();
-if($outlet_id > 0){
-    $results = Query_helper::get_info($CI->config->item('table_bi_target_outlet_wise_details'), '*', array('outlet_id ='.$outlet_id, 'status ="'.$CI->config->item('system_status_active').'"'));
+if($target_id > 0){
+    $results = Query_helper::get_info($CI->config->item('table_bi_target_outlet_wise_details'), '*', array('target_id ='.$target_id, 'amount_target > 0'));
     foreach($results as $result)
     {
         $target_varieties[$result['variety_id']] = $result['amount_target'];
@@ -43,7 +43,7 @@ if($outlet_id > 0){
                         <label style="font-weight:normal; display:block; clear:both">
                             <div style="width:58%; padding:5px 0; text-align:right;<?php echo $style; ?>" class="pull-left"><span><?php echo $variety; ?> :</span></div>
                             <div style="width:40%; margin-bottom:5px" class="pull-right">
-                                <input type="text" class="form-control float_type_positive price_unit_tk" value="<?php echo $value; ?>" name="varieties[<?php echo $variety_id; ?>]" />
+                                <input type="text" class="form-control float_type_positive price_unit_tk target_input" value="<?php echo $value; ?>" name="varieties[<?php echo $variety_id; ?>]" />
                             </div>
                         </label>
                     <?php } ?>

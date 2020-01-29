@@ -60,6 +60,70 @@ if($item['district_id'] > 0 || $CI->locations['district_id'] > 0)
 
     <div class="row show-grid">
         <div class="col-xs-4">
+            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_YEAR'); ?>
+                <span style="color:#FF0000">*</span></label>
+        </div>
+        <div class="col-sm-4 col-xs-8">
+            <?php
+            if ($item['id'] > 0)
+            {
+                ?>
+                <label class="control-label"><?php echo $item['year']; ?></label>
+                <input type="hidden" name="item[year]" value="<?php echo $item['year']; ?>" />
+            <?php
+            }
+            else
+            {
+                ?>
+                <select id="year" name="item[year]" class="form-control">
+                    <?php
+                    for($i = ($item['year']-2); $i <= ($item['year']+2); $i++){
+                        ?>
+                        <option value="<?php echo $i; ?>" <?php echo ($item['year']==$i)? 'selected':''; ?>>
+                            <?php echo $i; ?>
+                        </option>
+                    <?php } ?>
+                </select>
+            <?php
+            }
+            ?>
+        </div>
+    </div>
+
+    <div class="row show-grid">
+        <div class="col-xs-4">
+            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_MONTH'); ?>
+                <span style="color:#FF0000">*</span></label>
+        </div>
+        <div class="col-sm-4 col-xs-8">
+            <?php
+            if ($item['id'] > 0)
+            {
+                ?>
+                <label class="control-label"><?php echo DateTime::createFromFormat('!m', $item['month'])->format('F'); ?></label>
+                <input type="hidden" name="item[month]" value="<?php echo $item['month']; ?>" />
+            <?php
+            }
+            else
+            {
+                ?>
+                <select id="month" name="item[month]" class="form-control">
+                    <?php
+                    for($i=1; $i<=12; $i++){
+                    ?>
+                        <option value="<?php echo $i; ?>" <?php echo ($item['month']==$i)? 'selected':''; ?>>
+                            <?php echo DateTime::createFromFormat('!m', $i)->format('F'); ?>
+                        </option>
+                    <?php } ?>
+                </select>
+            <?php
+            }
+            ?>
+        </div>
+    </div>
+
+    <div class="row show-grid">
+        <div class="col-xs-4">
             <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_DIVISION_NAME'); ?>
                 <span style="color:#FF0000">*</span></label>
         </div>
@@ -208,7 +272,7 @@ if($item['district_id'] > 0 || $CI->locations['district_id'] > 0)
         </div>
     </div>
 
-    <div class="row show-grid">
+    <?php /* <div class="row show-grid">
         <div class="col-xs-4">
             <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_REMARKS'); ?> &nbsp;</label>
         </div>
@@ -217,7 +281,7 @@ if($item['district_id'] > 0 || $CI->locations['district_id'] > 0)
         </div>
     </div>
 
-    <?php /* <div style="" class="row show-grid" id="crop_id_container">
+    <div style="" class="row show-grid" id="crop_id_container">
         <div class="col-xs-4">
             <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>
                 <span style="color:#FF0000">*</span></label>
@@ -243,6 +307,16 @@ if($item['district_id'] > 0 || $CI->locations['district_id'] > 0)
 
     <div class="row show-grid" id="target_container">
         <div class="col-xs-4">
+            <label class="control-label pull-right">Total <?php echo $CI->lang->line('LABEL_AMOUNT_TARGET'); ?>
+                <span style="color:#FF0000">*</span></label>
+        </div>
+        <div class="col-sm-5 col-xs-8">
+            <label class="total_target_label"></label>
+        </div>
+    </div>
+
+    <div class="row show-grid" id="target_container">
+        <div class="col-xs-4">
             <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_AMOUNT_TARGET'); ?>
                 <span style="color:#FF0000">*</span></label>
         </div>
@@ -260,40 +334,28 @@ if($item['district_id'] > 0 || $CI->locations['district_id'] > 0)
 <style type="text/css"> label { margin-top: 5px;} </style>
 
 <script type="text/javascript">
-
-    /*/function load_varieties(outlet_id=0, crop_id=0)
-    {
-        $.ajax({
-            url: '<?php echo site_url($CI->controller_url.'/index/get_variety_targets'); ?>',
-            type: 'POST',
-            datatype: "JSON",
-            data:{
-                outlet_id: outlet_id,
-                crop_id: crop_id,
-                html_container_id: '#target_content'
-            },
-            success: function (data, status)
-            {
-                if (data.status) {
-                    $('#target_container').show();
-                }
-            },
-            error: function (xhr, desc, err)
-            {
-                console.log("error");
+    function total_target(){
+        var sum = parseFloat(0);
+        var item_amount = parseFloat(0);
+        $(".target_input").each(function (e) {
+            item_amount = parseFloat($(this).val());
+            if (!isNaN(item_amount) && (item_amount > 0)) {
+                sum += item_amount;
             }
         });
-    }*/
+        $(".total_target_label").text(get_string_amount(sum));
+    }
 
     jQuery(document).ready(function ($) {
         system_preset({controller: '<?php echo $CI->router->class; ?>'});
         system_off_events(); // Triggers
+        total_target();
 
         $('#division_id').html(get_dropdown_with_select(system_divisions));
 
-        <?php /* if($item['id'] > 0){ ?>
-            load_varieties(<?php echo $item['outlet_id']; ?>);
-        <?php } */ ?>
+        $(document).on("input", ".target_input", function (event) {
+            total_target();
+        });
 
         <?php
         if($CI->locations['division_id'] > 0)
@@ -314,15 +376,6 @@ if($item['district_id'] > 0 || $CI->locations['district_id'] > 0)
         }
         ?>
 
-        /*$(document).on('change', '#outlet_id', function () {
-            $("#target_container").hide();
-            $("#target_content").html('');
-            var outlet_id=$('#outlet_id').val();
-            if(outlet_id > 0)
-            {
-                load_varieties();
-            }
-        });*/
         $(document).on('change', '#division_id', function () {
             $('#zone_id').val('');
             $('#territory_id').val('');
@@ -384,6 +437,4 @@ if($item['district_id'] > 0 || $CI->locations['district_id'] > 0)
             }
         });
     });
-
-
 </script>

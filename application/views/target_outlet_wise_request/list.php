@@ -151,18 +151,16 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 columnsreorder: true,
                 columns: [
                     { text: '<?php echo $CI->lang->line('LABEL_ID'); ?>', pinned: true, dataField: 'id', width: '50', cellsalign: 'right', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['id']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_NO_OF_EDIT'); ?>', pinned: true, dataField: 'no_of_edit', width: '80', cellsalign: 'right', filtertype: 'none', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['no_of_edit']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_OUTLET_NAME'); ?>', pinned: true, dataField: 'outlet_name', width: '220', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['outlet_name']?0:1;?>},
+                    { text: '<?php echo $CI->lang->line('LABEL_YEAR'); ?>', pinned: true, dataField: 'year', width: '60', cellsalign: 'right', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['year']?0:1;?>},
+                    { text: '<?php echo $CI->lang->line('LABEL_MONTH'); ?>', pinned: true, dataField: 'month', width: '100', cellsalign: 'right', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['month']?0:1;?>},
+                    { text: '<?php echo $CI->lang->line('LABEL_TOTAL_TARGET_AMOUNT'); ?>', pinned: true, dataField: 'total_target_amount', width: '140', cellsalign: 'right', filtertype: 'none', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['total_target_amount']?0:1;?>},
+                    { text: '<?php echo $CI->lang->line('LABEL_TOTAL_TARGET_VARIETIES'); ?>', pinned: true, dataField: 'total_target_varieties', width: '50', cellsalign: 'right', filtertype: 'none', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['total_target_varieties']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_DISTRICT_NAME'); ?>', dataField: 'district_name', width: '120', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['district_name']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_TERRITORY_NAME'); ?>', dataField: 'territory_name', width: '120', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['territory_name']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_ZONE_NAME'); ?>', dataField: 'zone_name', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['zone_name']?0:1;?>},
+                    { text: '<?php echo $CI->lang->line('LABEL_ZONE_NAME'); ?>', dataField: 'zone_name', width: '120', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['zone_name']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_DIVISION_NAME'); ?>', dataField: 'division_name', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['division_name']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_REQUESTED_ON'); ?>', dataField: 'requested_on', width: '200', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['requested_on']?0:1;?>}
-                    <?php
-                    $user = User_helper::get_user();
-                    if($user->user_group == $CI->config->item('USER_GROUP_SUPER')): ?>
-                        , { text: '<?php echo $CI->lang->line('LABEL_REQUESTED_BY'); ?>', dataField: 'requested_by', width: '120', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['requested_by']?0:1;?>}
-                    <?php endif; ?>
+                    { text: '<?php echo $CI->lang->line('LABEL_NO_OF_EDIT'); ?>', dataField: 'no_of_edit', width: '80', cellsalign: 'right', filtertype: 'none', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['no_of_edit']?0:1;?>}
                 ]
             });
     });
