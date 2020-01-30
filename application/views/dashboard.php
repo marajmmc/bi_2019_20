@@ -179,8 +179,11 @@ $locations = User_helper::get_locations();
         if ($locations['division_id'] > 0)
         {
             ?>
-            <label class="control-label"><?php echo $CI->locations['division_name']; ?></label>
-            <input type="hidden" id="division_id" value="<?php echo $CI->locations['division_id']; ?>" />
+            <div class="form-group">
+                <label for="usr"><?php echo $CI->lang->line('LABEL_DIVISION_NAME'); ?></label>
+                <span class="form-control"> <?php echo $locations['division_name']; ?></span>
+                <input type="hidden" id="division_id" value="<?php echo $locations['division_id']; ?>" />
+            </div>
         <?php
         }
         else
@@ -201,8 +204,11 @@ $locations = User_helper::get_locations();
         if ($locations['zone_id'] > 0)
         {
             ?>
-            <label class="control-label"><?php echo $CI->locations['zone_name']; ?></label>
-            <input type="hidden" id="zone_id" value="<?php echo $CI->locations['zone_id']; ?>" />
+            <div class="form-group">
+                <label for="usr"><?php echo $CI->lang->line('LABEL_ZONE_NAME'); ?></label>
+                <span class="form-control"> <?php echo $locations['zone_name']; ?></span>
+                <input type="hidden" id="zone_id" value="<?php echo $locations['zone_id']; ?>" />
+            </div>
         <?php
         }
         else
@@ -224,8 +230,9 @@ $locations = User_helper::get_locations();
         {
             ?>
             <div class="form-group">
-                <label class="control-label"><?php echo $CI->locations['territory_name']; ?></label>
-                <input type="hidden" id="territory_id" value="<?php echo $CI->locations['territory_id']; ?>" />
+                <label for="usr"><?php echo $CI->lang->line('LABEL_TERRITORY_NAME'); ?></label>
+                <span class="form-control"> <?php echo $locations['territory_name']; ?></span>
+                <input type="hidden" id="territory_id" value="<?php echo $locations['territory_id']; ?>" />
             </div>
         <?php
         }
@@ -247,8 +254,11 @@ $locations = User_helper::get_locations();
         if ($locations['district_id'] > 0)
         {
             ?>
-            <label class="control-label"><?php echo $CI->locations['district_name']; ?></label>
-            <input type="hidden" id="district_id" value="<?php echo $CI->locations['district_id']; ?>" />
+            <div class="form-group">
+                <label for="usr"><?php echo $CI->lang->line('LABEL_DISTRICT_NAME'); ?></label>
+                <span class="form-control"> <?php echo $locations['district_name']; ?></span>
+                <input type="hidden" id="district_id" value="<?php echo $locations['district_id']; ?>" />
+            </div>
         <?php
         }
         else
@@ -264,7 +274,7 @@ $locations = User_helper::get_locations();
         }
         ?>
     </div>
-    <div class="col-sm-2 col-xs-12" id="outlet_id_container" style="display: none;" >
+    <div class="col-sm-2 col-xs-12" id="outlet_id_container" style="display: <?php if ($locations['district_id'] > 0){echo 'block';}else{echo 'none';}?>;" >
         <div class="form-group">
             <label for="usr"><?php echo $CI->lang->line('LABEL_OUTLET_NAME'); ?></label>
             <select id="outlet_id" class="form-control">
@@ -496,6 +506,32 @@ $locations = User_helper::get_locations();
         $('#division_id').html(get_dropdown_with_select(system_divisions));
         <?php
         }
+        if($locations['division_id'] > 0)
+        {
+            ?>
+        $('#zone_id_container').show();
+        $('#zone_id').html(get_dropdown_with_select(system_zones[<?php echo $locations['division_id']; ?>]));
+        <?php
+        }
+        if($locations['zone_id'] > 0)
+        {
+            ?>
+        $('#territory_id_container').show();
+        $('#territory_id').html(get_dropdown_with_select(system_territories[<?php echo $locations['zone_id']; ?>]));
+        <?php
+        }
+        if($locations['territory_id'] > 0)
+        {
+            ?>
+        $('#district_id_container').show();
+        $('#district_id').html(get_dropdown_with_select(system_districts[<?php echo $locations['territory_id']; ?>])); <?php
+        }
+        if($locations['district_id'] > 0)
+        {
+            ?>
+        $('#outlet_id_container').show();
+        $('#outlet_id').html(get_dropdown_with_select(system_outlets[<?php echo $locations['district_id']; ?>])); <?php
+        }
         ?>
         $(document).on('change', '#division_id', function () {
             $('#zone_id').val('');
@@ -563,6 +599,29 @@ $locations = User_helper::get_locations();
         /*load_chart_crop_wise_sales();*/
         load_chart_invoice_payment();
 
+        /*var division_id = $('#division_id').val();
+        var zone_id = $('#zone_id').val();
+        var territory_id = $('#territory_id').val();
+        var district_id = $('#district_id').val();
+        var outlet_id = $('#outlet_id').val();*/
+        var locations =
+        {
+            /*division_id:division_id,
+            zone_id:zone_id,
+            territory_id:territory_id,
+            district_id:district_id,
+            outlet_id:outlet_id,*/
+            division_id:$('#division_id').val(),
+            zone_id:$('#zone_id').val(),
+            territory_id:$('#territory_id').val(),
+            district_id:$('#district_id').val(),
+            outlet_id:$('#outlet_id').val(),
+        }
+        var division_id = 0;
+        var zone_id =0;
+        var territory_id = 0;
+        var district_id = 0;
+        var outlet_id = 0;
         $('.tab_id_sales_amount').on('click',function()
         {
             $("#invoice_amount_total").html('')
@@ -572,6 +631,7 @@ $locations = User_helper::get_locations();
             var url = "<?php echo site_url('Dashboard/index/invoice_amount');?>";
             var data_post =
             {
+
                 type:$(this).attr('data-type'),
                 value:$(this).attr('data-value')
             }
@@ -599,6 +659,7 @@ $locations = User_helper::get_locations();
              var url = "<?php echo site_url('Dashboard/index/chart_sales_crop_wise');?>";
              var data=
              {
+                 locations:locations,
                  html_id:$(this).attr('href'),
                  type:$(this).attr('data-type'),
                  value:$(this).attr('data-value'),
@@ -627,6 +688,11 @@ $locations = User_helper::get_locations();
              var url = "<?php echo site_url('Dashboard/index/chart_invoice_payment_wise');?>";
              var data=
              {
+                 division_id:division_id,
+                 zone_id:zone_id,
+                 territory_id:territory_id,
+                 district_id:district_id,
+                 outlet_id:outlet_id,
                  html_id:$(this).attr('href'),
                  type:$(this).attr('data-type'),
                  value:$(this).attr('data-value'),
@@ -660,6 +726,11 @@ $locations = User_helper::get_locations();
         var url = "<?php echo site_url('Dashboard/index/invoice_amount');?>";
         var data_post =
         {
+            /*division_id:division_id,
+            zone_id:zone_id,
+            territory_id:territory_id,
+            district_id:district_id,
+            outlet_id:outlet_id,*/
             //html_id:$(elm_id).attr('href'),
             type:'month',
             value:'<?php echo date('m', time())?>'
@@ -689,6 +760,11 @@ $locations = User_helper::get_locations();
         var url = "<?php echo site_url('Dashboard/index/chart_sales_crop_wise');?>";
         var data_post =
         {
+            /*division_id:division_id,
+            zone_id:zone_id,
+            territory_id:territory_id,
+            district_id:district_id,
+            outlet_id:outlet_id,*/
             html_id:$(elm_id).attr('href'),
             //type:$(elm_id).attr('data-type'),
             //value:$(elm_id).attr('data-value'),
@@ -718,6 +794,11 @@ $locations = User_helper::get_locations();
         var url = "<?php echo site_url('Dashboard/index/chart_invoice_payment_wise');?>";
         var data_post =
         {
+            /*division_id:division_id,
+            zone_id:zone_id,
+            territory_id:territory_id,
+            district_id:district_id,
+            outlet_id:outlet_id,*/
             html_id:$(elm_id).attr('href'),
             //type:$(elm_id).attr('data-type'),
             //value:$(elm_id).attr('data-value'),
@@ -747,6 +828,11 @@ $locations = User_helper::get_locations();
         var url = "<?php echo site_url('Dashboard/index/report_farmer_balance_notification');?>";
         var data_post =
         {
+            /*division_id:division_id,
+            zone_id:zone_id,
+            territory_id:territory_id,
+            district_id:district_id,
+            outlet_id:outlet_id,*/
             html_id:elm_id
         }
         $.ajax({

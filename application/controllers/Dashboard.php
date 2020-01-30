@@ -79,9 +79,14 @@ class Dashboard extends Root_controller
     {
         $data=array();
         $html_id = $this->input->post('html_id');
+        $locations = $this->input->post('locations');
         $data['type'] = $this->input->post('type');
         $data['value'] = $this->input->post('value');
         $data['unitInterval'] = $this->input->post('unitInterval');
+        echo '<pre>';
+        print_r($locations);
+        echo '</pre>';
+        die();
 
         if($data['type']=='today')
         {
