@@ -10,6 +10,13 @@ $CI = & get_instance();
     jQuery(document).ready(function ()
     {
         system_preset({controller:'<?php echo $CI->router->class; ?>'});
+        var locations={
+            division_id: $('#division_id').val(),
+            zone_id: $('#zone_id').val(),
+            territory_id: $('#territory_id').val(),
+            district_id: $('#district_id').val(),
+            outlet_id: $('#outlet_id').val(),
+        }
         var url = "<?php echo site_url($CI->controller_url.'/index/get_item_report_farmer_balance_notification');?>";
 
         // prepare the data
@@ -36,7 +43,7 @@ $CI = & get_instance();
             url: url,
             sortcolumn: 'day_last_payment',
             sortdirection: 'desc',
-            data:JSON.parse('<?php echo json_encode($options);?>')
+            data:JSON.parse(JSON.stringify(locations))
         };
 
         var dataAdapter = new $.jqx.dataAdapter(source);

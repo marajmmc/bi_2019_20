@@ -285,12 +285,12 @@ $locations = User_helper::get_locations();
     <div class="col-sm-2 col-xs-12 pull-right" >
         <div class="form-group">
             <label for="usr">&nbsp;</label>
-            <button type="button" class="btn btn-success form-control"> View </button>
+            <button type="button" class="btn btn-success form-control" id="btn_dashboard_view_all"> View </button>
         </div>
     </div>
 </div>
 <div class="row widget">
-    <div class="col-lg-9" style="padding: 0px !important; min-height: 150px">
+    <div class="col-lg-6" style="padding: 0px !important; min-height: 150px">
         <div class="panel with-nav-tabs panel-default panel-tab" style=" min-height: 150px; margin-bottom: 0px !important;">
             <div class="panel-heading ">
                 <ul class="nav nav-tabs">
@@ -315,22 +315,29 @@ $locations = User_helper::get_locations();
             </div>
             <div class="panel-body  bg-warning">
                 <div class="tab-content">
-                    <div class=" fade in active" id="tab_sales_amount">
-                        <div class="col-lg-4 col-xs-12 dashboard_div_invoice_amount">
+                    <div class=" fade in active">
+                        <div class="col-lg-6 col-xs-12 dashboard_div_invoice_amount">
                             <a href="#" class="btn btn-success btn-lg" role="button">
                                 BDT. <span id="invoice_amount_total"> 125441.05 </span>
                                 <br/>
                                 <p>Total Amount From Invoice's</p>
                             </a>
                         </div>
-                        <div class="col-lg-4 col-xs-12 dashboard_div_invoice_amount">
+                        <div class="col-lg-6 col-xs-12 dashboard_div_invoice_amount">
+                            <a href="#" class="btn btn-warning btn-lg" role="button">
+                                BDT. <span id="invoice_amount_due"> 125441.05 </span>
+                                <br/>
+                                <p>Total Credit Amount From Invoice's</p>
+                            </a>
+                        </div>
+                        <div class="col-lg-6 col-xs-12 dashboard_div_invoice_amount">
                             <a href="#" class="btn btn-primary btn-lg" role="button">
                                 BDT. <span id="invoice_amount_cash"> 125441.05 </span>
                                 <br/>
                                 <p>Total Cash Amount From Invoice's</p>
                             </a>
                         </div>
-                        <div class="col-lg-4 col-xs-12 dashboard_div_invoice_amount">
+                        <div class="col-lg-6 col-xs-12 dashboard_div_invoice_amount">
                             <a href="#" class="btn btn-warning btn-lg" role="button">
                                 BDT. <span id="invoice_amount_credit"> 125441.05 </span>
                                 <br/>
@@ -354,7 +361,7 @@ $locations = User_helper::get_locations();
             <strong style="font-size: 25px; padding: 5px">3055</strong>
         </div>
     </div>-->
-    <div class="col-lg-3 col-xs-12 bg-warning" style="padding: 5px; min-height: 150px">
+    <div class="col-lg-6 col-xs-12 bg-warning" style="padding: 5px; min-height: 150px">
         <div style="width: 100%; border-bottom: 1px green solid; margin-bottom: 2px;">
             <small>
                 <strong>Focused Crops
@@ -594,23 +601,19 @@ $locations = User_helper::get_locations();
             }
         });
 
+        $(document).on('click', '#btn_dashboard_view_all', function () {
+            load_invoice_amount();
+            load_report_farmer_balance_notification();
+            /*load_chart_crop_wise_sales();*/
+            load_chart_invoice_payment();
+        });
         load_invoice_amount();
         load_report_farmer_balance_notification();
         /*load_chart_crop_wise_sales();*/
         load_chart_invoice_payment();
 
-        /*var division_id = $('#division_id').val();
-        var zone_id = $('#zone_id').val();
-        var territory_id = $('#territory_id').val();
-        var district_id = $('#district_id').val();
-        var outlet_id = $('#outlet_id').val();*/
         var locations =
         {
-            /*division_id:division_id,
-            zone_id:zone_id,
-            territory_id:territory_id,
-            district_id:district_id,
-            outlet_id:outlet_id,*/
             division_id:$('#division_id').val(),
             zone_id:$('#zone_id').val(),
             territory_id:$('#territory_id').val(),
@@ -625,6 +628,7 @@ $locations = User_helper::get_locations();
         $('.tab_id_sales_amount').on('click',function()
         {
             $("#invoice_amount_total").html('')
+            $("#invoice_amount_due").html('')
             $("#invoice_amount_cash").html('')
             $("#invoice_amount_credit").html('')
             var report_type = 'month'
@@ -643,6 +647,7 @@ $locations = User_helper::get_locations();
                 success: function (data, status)
                 {
                     $("#invoice_amount_total").html(data.invoice_amount_total)
+                    $("#invoice_amount_due").html(data.invoice_amount_due)
                     $("#invoice_amount_cash").html(data.invoice_amount_cash)
                     $("#invoice_amount_credit").html(data.invoice_amount_credit)
                 },
@@ -720,17 +725,13 @@ $locations = User_helper::get_locations();
     function load_invoice_amount()
     {
         $("#invoice_amount_total").html('')
+        $("#invoice_amount_due").html('')
         $("#invoice_amount_cash").html('')
         $("#invoice_amount_credit").html('')
         var report_type = 'month'
         var url = "<?php echo site_url('Dashboard/index/invoice_amount');?>";
         var data_post =
         {
-            /*division_id:division_id,
-            zone_id:zone_id,
-            territory_id:territory_id,
-            district_id:district_id,
-            outlet_id:outlet_id,*/
             //html_id:$(elm_id).attr('href'),
             type:'month',
             value:'<?php echo date('m', time())?>'
@@ -743,6 +744,7 @@ $locations = User_helper::get_locations();
             success: function (data, status)
             {
                 $("#invoice_amount_total").html(data.invoice_amount_total)
+                $("#invoice_amount_due").html(data.invoice_amount_due)
                 $("#invoice_amount_cash").html(data.invoice_amount_cash)
                 $("#invoice_amount_credit").html(data.invoice_amount_credit)
             },
@@ -760,11 +762,6 @@ $locations = User_helper::get_locations();
         var url = "<?php echo site_url('Dashboard/index/chart_sales_crop_wise');?>";
         var data_post =
         {
-            /*division_id:division_id,
-            zone_id:zone_id,
-            territory_id:territory_id,
-            district_id:district_id,
-            outlet_id:outlet_id,*/
             html_id:$(elm_id).attr('href'),
             //type:$(elm_id).attr('data-type'),
             //value:$(elm_id).attr('data-value'),
@@ -794,11 +791,6 @@ $locations = User_helper::get_locations();
         var url = "<?php echo site_url('Dashboard/index/chart_invoice_payment_wise');?>";
         var data_post =
         {
-            /*division_id:division_id,
-            zone_id:zone_id,
-            territory_id:territory_id,
-            district_id:district_id,
-            outlet_id:outlet_id,*/
             html_id:$(elm_id).attr('href'),
             //type:$(elm_id).attr('data-type'),
             //value:$(elm_id).attr('data-value'),
@@ -828,11 +820,6 @@ $locations = User_helper::get_locations();
         var url = "<?php echo site_url('Dashboard/index/report_farmer_balance_notification');?>";
         var data_post =
         {
-            /*division_id:division_id,
-            zone_id:zone_id,
-            territory_id:territory_id,
-            district_id:district_id,
-            outlet_id:outlet_id,*/
             html_id:elm_id
         }
         $.ajax({

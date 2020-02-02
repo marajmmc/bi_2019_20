@@ -11,6 +11,14 @@ $CI = & get_instance();
 
     jQuery(document).ready(function()
     {
+        var locations={
+            division_id: $('#division_id').val(),
+            zone_id: $('#zone_id').val(),
+            territory_id: $('#territory_id').val(),
+            district_id: $('#district_id').val(),
+            outlet_id: $('#outlet_id').val(),
+        }
+
         var url = "<?php echo site_url('Dashboard/index/get_item_chart_invoice_payment_wise/'.$type.'/'.$value);?>";
         var source =
         {
@@ -20,7 +28,8 @@ $CI = & get_instance();
                 { name: 'Head' },
                 { name: 'Value' }
             ],
-            url:url
+            url:url,
+            data:JSON.parse(JSON.stringify(locations))
         };
 
         var dataAdapter = new $.jqx.dataAdapter(source, { async: false, autoBind: true, loadError: function (xhr, status, error) { alert('Error loading "' + source.url + '" : ' + error); } });
