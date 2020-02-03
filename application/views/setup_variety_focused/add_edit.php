@@ -129,11 +129,7 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
         </div>
 
         <div style="margin-bottom:20px" class="row show-grid" id="variety_container">
-            <div class="col-xs-4">
-                <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_FOCUSED_VARIETY'); ?>
-                    <span style="color:#FF0000">*</span></label>
-            </div>
-            <div class="col-lg-5 col-md-6 col-sm-8 col-xs-8" style="padding:0">
+            <div class="col-xs-12" style="padding:0">
                 <?php echo $variety_list; ?>
             </div>
         </div>

@@ -26,8 +26,10 @@ class Setup_variety_focused extends Root_Controller
     private function language_labels()
     {
         // Label
-        $this->lang->language['LABEL_FOCUSED_VARIETY'] = 'Focusable Varieties';
+        $this->lang->language['LABEL_SEASON_NAME'] = 'Season';
+        $this->lang->language['LABEL_DATE_SALES'] = 'Sales Date';
         $this->lang->language['LABEL_VARIETY_FOCUSED_COUNT'] = 'Total Focusable';
+        $this->lang->language['LABEL_FOCUSED_VARIETY'] = 'Focusable Varieties';
         // Messages
         $this->lang->language['MSG_ID_NOT_EXIST'] = 'ID Not Exist.';
         $this->lang->language['MSG_INVALID_TRY'] = 'Invalid Try.';
@@ -60,6 +62,7 @@ class Setup_variety_focused extends Root_Controller
         $data = array();
         $data['id'] = 1;
         $data['variety_focused_count'] = 1;
+        $data['focused_variety'] = 1;
         $data['outlet_name'] = 1;
         $data['district_name'] = 1;
         $data['territory_name'] = 1;
@@ -93,7 +96,7 @@ class Setup_variety_focused extends Root_Controller
             $method = 'list';
             $data = array();
             $data['system_preference_items'] = System_helper::get_preference($user->user_id, $this->controller_url, $method, $this->get_preference_headers($method));
-            $data['title'] = $this->lang->line('LABEL_OUTLET_NAME') . " Wise Focused Varieties List";
+            $data['title'] = ($this->lang->line('LABEL_OUTLET_NAME'))."-wise Focusable variety List";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/list", $data, true));
             if ($this->message) {
@@ -112,12 +115,32 @@ class Setup_variety_focused extends Root_Controller
     {
         $this->common_query(); // Call Common part of below Query Stack
 
+        /*$this->db->join($this->config->item('table_bi_setup_variety_focused_details') . ' details', "details.focus_id = vf.id AND details.revision=1", 'INNER');
+        $this->db->join($this->config->item('table_login_setup_classification_varieties') . ' v', 'v.id = details.variety_id', 'INNER');
+        $this->db->select("GROUP_CONCAT(v.name SEPARATOR ', ') AS focused_variety");
+        $this->db->group_by('details.focus_id');*/
         $items = $this->db->get()->result_array();
+
         $this->db->flush_cache(); // Flush/Clear current Query Stack
 
-        usort($items, function ($a, $b) {
-            return $b['variety_focused_count'] - $a['variety_focused_count'];
-        });
+        $this->db->from($this->config->item('table_bi_setup_variety_focused_details') . ' details');
+        $this->db->select("details.focus_id, GROUP_CONCAT( TRIM(v.name) SEPARATOR ' | ') AS focused_variety");
+        $this->db->join($this->config->item('table_login_setup_classification_varieties') . ' v', 'v.id = details.variety_id', 'INNER');
+        $this->db->where('details.revision', 1);
+        $this->db->group_by('details.focus_id');
+        $results = $this->db->get()->result_array();
+
+        $detail_items = array();
+        foreach($results as $result){
+            $detail_items[$result['focus_id']] = $result['focused_variety'];
+        }
+
+        foreach($items as &$item)
+        {
+            if($item['focus_id'] > 0){
+                $item['focused_variety'] = $detail_items[$item['focus_id']];
+            }
+        }
 
         $this->json_return($items);
     }
@@ -126,57 +149,84 @@ class Setup_variety_focused extends Root_Controller
     {
         if (isset($this->permissions['action2']) && ($this->permissions['action2'] == 1)) {
             if ($id > 0) {
-                $item_id = $id;
+                $outlet_id = $id;
             } else {
-                $item_id = $this->input->post('id');
+                $outlet_id = $this->input->post('id');
             }
+            $data = array();
 
             $this->common_query(); // Call Common part of below Query Stack
             // Additional Conditions -STARTS
-            $this->db->where('cus_info.id', $item_id);
+            $this->db->where('cus_info.customer_id', $outlet_id);
             // Additional Conditions -ENDS
             $data['item'] = $this->db->get()->row_array();
 
             $this->db->flush_cache(); // Flush/Clear current Query Stack
 
             if (!$data['item']) {
-                System_helper::invalid_try(__FUNCTION__, $item_id, 'ID Not Exists');
+                System_helper::invalid_try(__FUNCTION__, $outlet_id, 'ID Not Exists');
                 $ajax['status'] = false;
                 $ajax['system_message'] = 'Invalid Try.';
                 $this->json_return($ajax);
             }
             if (!$this->check_my_editable($data['item'])) {
-                System_helper::invalid_try(__FUNCTION__, $item_id, $this->lang->line('MSG_LOCATION_ERROR'));
+                System_helper::invalid_try(__FUNCTION__, $outlet_id, $this->lang->line('MSG_LOCATION_ERROR'));
                 $ajax['status'] = false;
                 $ajax['system_message'] = $this->lang->line('MSG_LOCATION_ERROR');
                 $this->json_return($ajax);
             }
 
-            $data['focusable_varieties'] = array();
-            if ($data['item']['variety_focused']) {
-                $data['focusable_varieties'] = json_decode($data['item']['variety_focused'], TRUE);
+            $data['item']['focusable_variety'] = Query_helper::get_info($this->config->item('table_bi_setup_variety_focused'), 'id, variety_focused_count', array('outlet_id =' . $outlet_id, 'status ="'.$this->config->item('system_status_active').'"'), 1);
+            if ($data['item']['focusable_variety']) {
+                $details = Query_helper::get_info($this->config->item('table_bi_setup_variety_focused_details'), '*', array('revision=1', 'focus_id =' . $data['item']['focusable_variety']['id']));
+                foreach($details as $detail)
+                {
+                    $data['item']['focusable_varieties'][$detail['variety_id']]['season'] = explode(',',  trim($detail['season'], ","));
+                    $data['item']['focusable_varieties'][$detail['variety_id']]['sales_date_start'] = Bi_helper::cultivation_date_display($detail['sales_date_start']);
+                    $data['item']['focusable_varieties'][$detail['variety_id']]['sales_date_end'] = Bi_helper::cultivation_date_display($detail['sales_date_end']);
+                }
+            }else{
+                $data['item']['focusable_varieties'] = array();
+            }
+
+            $result_seasons = Query_helper::get_info($this->config->item('table_bi_setup_season'), '*', array('status ="' . $this->config->item('system_status_active') . '"'));
+            foreach ($result_seasons as $result_season) {
+                $data['seasons'][$result_season['id']] = array(
+                    'name' => $result_season['name'],
+                    'date_start' => $result_season['date_start'],
+                    'date_end' => $result_season['date_end']
+                );
             }
 
             $results = Bi_helper::get_all_varieties();
 
             $data['crops'] = array();
+            $data['rowspans'] = array();
             foreach ($results as $result) {
                 $data['crops'][$result['crop_id']]['name'] = $result['crop_name'];
                 $data['crops'][$result['crop_id']]['types'][$result['crop_type_id']]['name'] = $result['crop_type_name'];
-
-                $data['crops'][$result['crop_id']]['types'][$result['crop_type_id']]['name'] = $result['crop_type_name'];
                 $data['crops'][$result['crop_id']]['types'][$result['crop_type_id']]['varieties'][$result['variety_id']] = $result['variety_name'];
+
+                if(!isset($data['rowspans']['crop'][$result['crop_id']])){
+                    $data['rowspans']['crop'][$result['crop_id']] = 0;
+                }
+                if(!isset($data['rowspans']['type'][$result['crop_type_id']])){
+                    $data['rowspans']['type'][$result['crop_type_id']] = 0;
+                }
+
+                $data['rowspans']['crop'][$result['crop_id']]++; // For calculating Crop Rows
+                $data['rowspans']['type'][$result['crop_type_id']]++; // For calculating Crop Type Rows
             }
 
             $data['variety_list'] = $this->load->view($this->controller_url . "/get_variety_info", $data, true);
 
-            $data['title'] = "Edit Focused Variety ( ID:" . $data['item']['id'] . " )";
+            $data['title'] = "Edit ".($this->lang->line('LABEL_OUTLET_NAME'))."-wise Focusable variety ( ".($this->lang->line('LABEL_OUTLET_NAME'))." ID: " . $data['item']['id'] . " )";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/add_edit", $data, true));
             if ($this->message) {
                 $ajax['system_message'] = $this->message;
             }
-            $ajax['system_page_url'] = site_url($this->controller_url . '/index/edit/' . $item_id);
+            $ajax['system_page_url'] = site_url($this->controller_url . '/index/edit/' . $outlet_id);
             $this->json_return($ajax);
         } else {
             $ajax['status'] = false;
@@ -194,71 +244,88 @@ class Setup_variety_focused extends Root_Controller
             $this->json_return($ajax);
         }
 
-        $item_id = $this->input->post('id'); // $item_id Outlet ID
-        $item = $this->input->post('item');
-        $variety = $this->input->post('variety');
+        $outlet_id = $this->input->post('id'); // $item_id Outlet ID
+        $item_head = $this->input->post('item');
+        $varieties = $this->input->post('variety');
 
         $user = User_helper::get_user();
         $time = time();
 
         $this->common_query(); // Call Common part of below Query Stack
         // Additional Conditions -STARTS
-        $this->db->where('cus_info.id', $item_id);
+        $this->db->where('cus_info.customer_id', $outlet_id);
         // Additional Conditions -ENDS
         $result = $this->db->get()->row_array();
         $this->db->flush_cache(); // Flush/Clear current Query Stack
         if (!$result) {
-            System_helper::invalid_try(__FUNCTION__, $item_id, $this->lang->line('MSG_ID_NOT_EXIST'));
+            System_helper::invalid_try(__FUNCTION__, $outlet_id, $this->lang->line('MSG_ID_NOT_EXIST'));
             $ajax['status'] = false;
             $ajax['system_message'] = $this->lang->line('MSG_INVALID_TRY');
             $this->json_return($ajax);
         }
         if (!$this->check_my_editable($result)) {
-            System_helper::invalid_try(__FUNCTION__, $item_id, $this->lang->line('MSG_LOCATION_ERROR'));
+            System_helper::invalid_try(__FUNCTION__, $outlet_id, $this->lang->line('MSG_LOCATION_ERROR'));
             $ajax['status'] = false;
             $ajax['system_message'] = $this->lang->line('MSG_LOCATION_ERROR');
             $this->json_return($ajax);
         }
-        if (!$variety) {
+        if (!$this->check_validation()) {
             $ajax['status'] = false;
-            $ajax['system_message'] = 'At least one ' . $this->lang->line('LABEL_VARIETY_NAME') . ' need to save.';
+            $ajax['system_message'] = $this->message;
             $this->json_return($ajax);
         }
 
-        sort($variety); // for checking if any changes Saved
+        $variety_focused = Query_helper::get_info($this->config->item('table_bi_setup_variety_focused'), 'id, outlet_id', array('outlet_id =' . $outlet_id, 'status ="'.$this->config->item('system_status_active').'"'), 1);
 
         $this->db->trans_start(); //DB Transaction Handle START
-        if (trim($result['variety_focused']) != '') {
-            // EDIT
-            $current_focused_varieties = json_decode($result['variety_focused'], TRUE);
-            sort($current_focused_varieties);
 
-            if ($current_focused_varieties == $variety) { // If no changes made in EDIT mode.
-                $ajax['status'] = false;
-                $ajax['system_message'] = 'Please select or, unselect atleast 1 variety';
-                $this->json_return($ajax);
-            }
+        $item_head['variety_focused_count'] = sizeof($varieties); // From Post Data
+        $item_head['outlet_id'] = $outlet_id;
 
-            //Update
-            $update_where = array('outlet_id =' . $item['outlet_id']);
-            $update_item = array();
-            $update_item['date_updated'] = $time;
-            $update_item['user_updated'] = $user->user_id;
+        if ($variety_focused['id'] > 0) {
+            // EDIT Update
+            $item_head['date_updated'] = $time;
+            $item_head['user_updated'] = $user->user_id;
+            $this->db->set('revision_count', 'revision_count+1', FALSE);
+            Query_helper::update($this->config->item('table_bi_setup_variety_focused'), $item_head, array('id =' . $variety_focused['id']), FALSE);
 
+            // Update Revision for Details Table
             $this->db->set('revision', 'revision+1', FALSE);
-            Query_helper::update($this->config->item('table_bi_setup_variety_focused'), $update_item, $update_where, FALSE);
+            Query_helper::update($this->config->item('table_bi_setup_variety_focused_details'), array(), array('focus_id =' . $variety_focused['id']), FALSE);
+
+            $item_id = $variety_focused['id'];
+        } else {
+            // Prepare Main Table Data
+            $item_head['status'] = $this->config->item('system_status_active');
+            $item_head['revision_count'] = 1;
+            $item_head['date_created'] = $time;
+            $item_head['user_created'] = $user->user_id;
+            $item_id = Query_helper::add($this->config->item('table_bi_setup_variety_focused'), $item_head, FALSE);
         }
 
-        //Insert
-        $item['variety_focused'] = json_encode($variety);
-        $item['variety_focused_count'] = sizeof($variety);
-        $item['status'] = $this->config->item('system_status_active');
-        $item['revision'] = 1;
-        $item['date_created'] = $time;
-        $item['user_created'] = $user->user_id;
-        Query_helper::add($this->config->item('table_bi_setup_variety_focused'), $item, FALSE);
-        $this->db->trans_complete(); //DB Transaction Handle END
+        //Insert Details Data
+        foreach ($varieties as $variety_id => $variety) {
+            $date_start = System_helper::get_time($variety['date_start'] . '-1970');
+            $date_end = System_helper::get_time($variety['date_end'] . '-1970');
+            if ($date_end < $date_start) {
+                $date_end = System_helper::get_time($variety['date_end'] . '-1971');
+            }
+            if ($date_end != 0) {
+                $date_end += 24 * 3600 - 1;
+            }
+            $items = array(
+                'focus_id' => $item_id,
+                'variety_id' => $variety_id,
+                'season' => ',' . (implode(',', $variety['season'])) . ',',
+                'season_count' => sizeof($variety['season']),
+                'sales_date_start' => $date_start,
+                'sales_date_end' => $date_end,
+                'revision' => 1
+            );
+            Query_helper::add($this->config->item('table_bi_setup_variety_focused_details'), $items, FALSE);
+        }
 
+        $this->db->trans_complete(); //DB Transaction Handle END
         if ($this->db->trans_status() === TRUE) {
             $ajax['status'] = true;
             $this->message = $this->lang->line("MSG_SAVED_SUCCESS");
@@ -274,37 +341,26 @@ class Setup_variety_focused extends Root_Controller
     {
         if (isset($this->permissions['action0']) && ($this->permissions['action0'] == 1)) {
             if ($id > 0) {
-                $item_id = $id;
+                $outlet_id = $id;
             } else {
-                $item_id = $this->input->post('id');
+                $outlet_id = $this->input->post('id');
             }
+
             $this->common_query(); // Call Common part of below Query Stack
             // Additional Conditions -STARTS
-            $this->db->where('cus_info.id', $item_id);
+            $this->db->where('cus_info.customer_id', $outlet_id);
             // Additional Conditions -ENDS
             $result = $this->db->get()->row_array();
             $this->db->flush_cache(); // Flush/Clear current Query Stack
 
             if (!$result) {
-                System_helper::invalid_try(__FUNCTION__, $item_id, $this->lang->line('MSG_ID_NOT_EXIST'));
+                System_helper::invalid_try(__FUNCTION__, $outlet_id, $this->lang->line('MSG_ID_NOT_EXIST'));
                 $ajax['status'] = false;
                 $ajax['system_message'] = $this->lang->line('MSG_INVALID_TRY');
                 $this->json_return($ajax);
             }
-
-            /*$focused_variety_names = array();
-            if ($result['variety_focused']) {
-                $varieties = Bi_helper::get_all_varieties('', json_decode($result['variety_focused'], TRUE));
-                $i = 0;
-                foreach ($varieties as $variety) {
-                    $focused_variety_names[] = (++$i) . '. ' . $variety['variety_name'] . ' <i style="font-size:0.85em">(' . $variety['crop_type_name'] . ', ' . $variety['crop_name'] . ')</i>';
-                }
-            }*/
-
             //---------------- Basic Info ----------------
             $data = array();
-            $data['variety_focused'] = json_decode($result['variety_focused'], TRUE);
-            $data['outlet_id'] = $result['outlet_id'];
             $data['item'][] = array
             (
                 'label_1' => $this->lang->line('LABEL_DIVISION_NAME'),
@@ -324,46 +380,60 @@ class Setup_variety_focused extends Root_Controller
                 'label_1' => $this->lang->line('LABEL_OUTLET_NAME'),
                 'value_1' => $result['outlet_name']
             );
-            //if ($focused_variety_names) {
-            if ($data['variety_focused']) {
-                //--------- System User Info ------------
-                $user_ids = array();
-                $user_ids[$result['user_created']] = $result['user_created'];
-                if ($result['user_updated'] > 0) {
-                    $user_ids[$result['user_updated']] = $result['user_updated'];
-                }
-                $user_info = System_helper::get_users_info($user_ids);
 
-                /*$data['item'][] = array
-                (
-                    'label_1' => $this->lang->line('LABEL_FOCUSED_VARIETY'),
-                    'value_1' => implode(',<br/>', $focused_variety_names)
-                );*/
-                $data['item'][] = array
-                (
-                    'label_1' => $this->lang->line('LABEL_CREATED_BY'),
-                    'value_1' => $user_info[$result['user_created']]['name'] . ' ( ' . $user_info[$result['user_created']]['employee_id'] . ' )',
-                    'label_2' => $this->lang->line('LABEL_DATE_CREATED_TIME'),
-                    'value_2' => System_helper::display_date_time($result['date_created'])
-                );
-                /* if ($result['user_updated']) {
-                    $data['item'][] = array
-                    (
-                        'label_1' => $this->lang->line('LABEL_UPDATED_BY'),
-                        'value_1' => $user_info[$result['user_updated']]['name'] . ' ( ' . $user_info[$result['user_updated']]['employee_id'] . ' )',
-                        'label_2' => $this->lang->line('LABEL_DATE_UPDATED_TIME'),
-                        'value_2' => System_helper::display_date_time($result['date_updated'])
-                    );
-                } */
+            $focused_varieties = array();
+            $data['item']['focusable_variety'] = Query_helper::get_info($this->config->item('table_bi_setup_variety_focused'), 'id, variety_focused_count', array('outlet_id =' . $outlet_id, 'status ="'.$this->config->item('system_status_active').'"'), 1);
+            if ($data['item']['focusable_variety']) {
+                $details = Query_helper::get_info($this->config->item('table_bi_setup_variety_focused_details'), '*', array('revision=1', 'focus_id =' . $data['item']['focusable_variety']['id']));
+                foreach($details as $detail)
+                {
+                    $data['item']['focusable_varieties'][$detail['variety_id']]['season'] = explode(',',  trim($detail['season'], ","));
+                    $data['item']['focusable_varieties'][$detail['variety_id']]['sales_date_start'] = Bi_helper::cultivation_date_display($detail['sales_date_start']);
+                    $data['item']['focusable_varieties'][$detail['variety_id']]['sales_date_end'] = Bi_helper::cultivation_date_display($detail['sales_date_end']);
+                    $focused_varieties[] = $detail['variety_id'];
+                }
+            }else{
+                $data['item']['focusable_varieties'] = array();
             }
 
-            $data['title'] = "Focused Variety Details ( ID:" . $item_id . " )";
+            $result_seasons = Query_helper::get_info($this->config->item('table_bi_setup_season'), '*', array('status ="' . $this->config->item('system_status_active') . '"'));
+            foreach ($result_seasons as $result_season) {
+                $data['seasons'][$result_season['id']] = array(
+                    'name' => $result_season['name'],
+                    'date_start' => $result_season['date_start'],
+                    'date_end' => $result_season['date_end']
+                );
+            }
+
+            $results = Bi_helper::get_all_varieties('', $focused_varieties);
+
+            $data['crops'] = array();
+            $data['rowspans'] = array();
+            foreach ($results as $result) {
+                $data['crops'][$result['crop_id']]['name'] = $result['crop_name'];
+                $data['crops'][$result['crop_id']]['types'][$result['crop_type_id']]['name'] = $result['crop_type_name'];
+                $data['crops'][$result['crop_id']]['types'][$result['crop_type_id']]['varieties'][$result['variety_id']] = $result['variety_name'];
+
+                if(!isset($data['rowspans']['crop'][$result['crop_id']])){
+                    $data['rowspans']['crop'][$result['crop_id']] = 0;
+                }
+                if(!isset($data['rowspans']['type'][$result['crop_type_id']])){
+                    $data['rowspans']['type'][$result['crop_type_id']] = 0;
+                }
+
+                $data['rowspans']['crop'][$result['crop_id']]++; // For calculating Crop Rows
+                $data['rowspans']['type'][$result['crop_type_id']]++; // For calculating Crop Type Rows
+            }
+
+            $data['variety_list'] = $this->load->view($this->controller_url . "/get_variety_info_view", $data, true);
+
+            $data['title'] = "Focused Variety Details ( ID:" . $outlet_id . " )";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/details", $data, true));
             if ($this->message) {
                 $ajax['system_message'] = $this->message;
             }
-            $ajax['system_page_url'] = site_url($this->controller_url . '/index/details/' . $item_id);
+            $ajax['system_page_url'] = site_url($this->controller_url . '/index/details/' . $outlet_id);
             $this->json_return($ajax);
         } else {
             $ajax['status'] = false;
@@ -389,15 +459,40 @@ class Setup_variety_focused extends Root_Controller
         return true;
     }
 
+    private function check_validation()
+    {
+        $varieties = $this->input->post('variety');
+        if (!$varieties) {
+            $this->message = 'At least One ' . $this->lang->line('LABEL_VARIETY_NAME') . ' need to Save.';
+            return false;
+        } else {
+            foreach ($varieties as $variety) {
+                if (!isset($variety['season']) || (sizeof($variety['season']) == 0)) {
+                    $this->message = 'At least One ' . $this->lang->line('LABEL_SEASON_NAME') . ' has to Select.';
+                    return false;
+                }
+                if (!isset($variety['date_start']) || (trim($variety['date_start']) == '')) {
+                    $this->message = $this->lang->line('LABEL_DATE_START') . ' field is Required.';
+                    return false;
+                }
+                if (!isset($variety['date_end']) || (trim($variety['date_end']) == '')) {
+                    $this->message = $this->lang->line('LABEL_DATE_END') . ' field is Required.';
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     private function common_query()
     {
         $this->db->start_cache();
 
         $this->db->from($this->config->item('table_login_csetup_cus_info') . ' cus_info');
-        $this->db->select('cus_info.customer_id id, cus_info.customer_id outlet_id, cus_info.name outlet_name');
+        $this->db->select('cus_info.customer_id id, cus_info.name outlet_name');
 
-        $this->db->join($this->config->item('table_bi_setup_variety_focused') . ' vf', "vf.outlet_id = cus_info.customer_id AND vf.revision = 1 AND vf.status = '" . $this->config->item('system_status_active') . "'", 'LEFT');
-        $this->db->select('vf.variety_focused, vf.variety_focused_count, vf.date_created, vf.user_created, vf.date_updated, vf.user_updated');
+        $this->db->join($this->config->item('table_bi_setup_variety_focused') . ' vf', "vf.outlet_id = cus_info.customer_id AND vf.status = '" . $this->config->item('system_status_active') . "'", 'LEFT');
+        $this->db->select('vf.id focus_id, vf.outlet_id, vf.variety_focused_count');
 
         $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = cus_info.district_id', 'INNER');
         $this->db->select('district.id district_id, district.name district_name');
@@ -423,9 +518,12 @@ class Setup_variety_focused extends Root_Controller
                 }
             }
         }
-        $this->db->where('cus_info.revision', 1);
         $this->db->where('cus_info.type', $this->config->item('system_customer_type_outlet_id'));
-        $this->db->order_by('cus_info.id', 'DESC');
+        $this->db->where('cus_info.revision', 1);
+        $this->db->order_by('division.id');
+        $this->db->order_by('zone.id');
+        $this->db->order_by('district.id');
+        $this->db->order_by('cus_info.customer_id');
 
         $this->db->stop_cache();
     }

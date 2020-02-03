@@ -26,7 +26,7 @@ while ($fiscal_current <= $fiscal_year_current['date_end']);
 $where = array(
     "status ='". $CI->config->item('system_status_active')."'"
 );
-$select = array('name','date_start','date_end','description');
+$select = array('id', 'name','date_start','date_end','description');
 $seasons = Query_helper::get_info($CI->config->item('table_bi_setup_season'), $select, $where, 0, 0, array('date_start ASC'));
 
 $time_assumed_today = System_helper::get_time(date("1970-m-d"));
@@ -48,10 +48,10 @@ foreach($seasons as &$season){
         }
     }
 }
-
 /*-------------------------- FOCUSED VARIETY --------------------------*/
+
 $CI->db->from($CI->config->item('table_login_csetup_cus_info') . ' cus_info');
-$CI->db->select('cus_info.id outlet_id, cus_info.name outlet_name');
+$CI->db->select('cus_info.customer_id outlet_id, cus_info.name outlet_name');
 
 $CI->db->join($CI->config->item('table_login_setup_location_districts') . ' district', 'district.id = cus_info.district_id', 'INNER');
 $CI->db->select('district.id district_id, district.name district_name');
@@ -94,48 +94,56 @@ foreach($results_outlet as $result_outlet)
     $current_user_outlets[$result_outlet['outlet_id']] = $result_outlet;
     $current_user_outlet_ids[] = $result_outlet['outlet_id'];
 }
-$CI->db->from($CI->config->item('table_bi_setup_variety_focused'));
-$CI->db->select('*');
-$CI->db->where('status', $CI->config->item('system_status_active'));
-$CI->db->where('revision', 1);
-$CI->db->where_in('outlet_id', $current_user_outlet_ids);
-$user_focused_varieties = $CI->db->get()->result_array();
 
-if($user_focused_varieties){
-    $user_focused_variety_ids=array();
-    foreach($user_focused_varieties as $user_focused_variety)
-    {
-        foreach(json_decode($user_focused_variety['variety_focused'], TRUE) as $focused_variety_id){
-            $user_focused_variety_ids[$focused_variety_id] = $focused_variety_id;
-        }
-    }
+$CI->db->from($CI->config->item('table_bi_setup_variety_focused_details') . ' details');
+$CI->db->select('details.*');
 
-    $results_focused_varieties = Bi_helper::get_all_varieties('', $user_focused_variety_ids);
-    $user_focused_variety_types=array();
-    foreach($results_focused_varieties as $result_focused_varieties)
-    {
-        $user_focused_variety_types[$result_focused_varieties['crop_type_id']][] = $result_focused_varieties;
-    }
+$CI->db->join($CI->config->item('table_bi_setup_variety_focused') . ' main', "main.id = details.focus_id AND main.status = '" . $CI->config->item('system_status_active') . "'", 'INNER');
+$CI->db->select('main.outlet_id, main.variety_focused_count');
 
-    $compare_current_season = array(
-        'date_start' => strtotime('+1 years', $current_season['date_start']),
-        'date_start_display' => System_helper::display_date(strtotime('+1 years', $current_season['date_start'])),
-        'date_end' => strtotime('+1 years', $current_season['date_end']),
-        'date_end_display' => System_helper::display_date(strtotime('+1 years', $current_season['date_end']))
-    );
+$CI->db->join($CI->config->item('table_login_csetup_cus_info') . ' cus_info', "cus_info.customer_id = main.outlet_id AND cus_info.revision=1", 'INNER');
+$CI->db->select('cus_info.name outlet_name');
 
-    $cultivation_condition=array(
-        'revision = 1',
-        'date_start >= '.$compare_current_season['date_start'],
-        'date_end <= '.$compare_current_season['date_end']
-    );
-    $cultivation_period = Query_helper::get_info($this->config->item('table_bi_setup_variety_cultivation_period'), array('*'), $cultivation_condition);
-}
-else
+$CI->db->join($CI->config->item('table_login_setup_classification_varieties') . ' v', 'v.id = details.variety_id', 'INNER');
+$CI->db->select('v.name variety_name');
+
+$CI->db->join($CI->config->item('table_login_setup_classification_crop_types') . ' type', 'type.id = v.crop_type_id', 'INNER');
+$CI->db->select('type.id crop_type_id, type.name crop_type_name');
+
+$CI->db->join($CI->config->item('table_login_setup_classification_crops') . ' crop', 'crop.id = type.crop_id', 'INNER');
+$CI->db->select('crop.id crop_id, crop.name crop_name');
+
+$CI->db->where('details.revision', 1);
+$CI->db->where_in('main.outlet_id', $current_user_outlet_ids);
+$CI->db->like('details.season', ",{$current_season['id']},");
+
+$CI->db->order_by('crop.id');
+$CI->db->order_by('type.id');
+$CI->db->order_by('v.id');
+$focusable_varieties = $CI->db->get()->result_array();
+
+$rowspan =array();
+foreach($focusable_varieties as &$variety)
 {
-    $cultivation_period = array();
+    $variety['sales_date_start'] = Bi_helper::cultivation_date_display($variety['sales_date_start']);
+    $variety['sales_date_end'] = Bi_helper::cultivation_date_display($variety['sales_date_end']);
+
+    if(!isset($rowspan['crop'][$variety['crop_id']])){
+        $rowspan['crop'][$variety['crop_id']] = 0;
+    }
+    if(!isset($rowspan['type'][$variety['crop_type_id']])){
+        $rowspan['type'][$variety['crop_type_id']] = 0;
+    }
+    if(!isset($rowspan['variety'][$variety['variety_id']])){
+        $rowspan['variety'][$variety['variety_id']] = 0;
+    }
+    $rowspan['crop'][$variety['crop_id']]++; // For calculating Crop Rows
+    $rowspan['type'][$variety['crop_type_id']]++; // For calculating Crop Type Rows
+    $rowspan['variety'][$variety['variety_id']]++; // For calculating Variety Rows
 }
+
 $locations = User_helper::get_locations();
+
 ?>
 
 <div class="row widget">
@@ -362,7 +370,7 @@ $locations = User_helper::get_locations();
         </div>
     </div>-->
     <div class="col-lg-6 col-xs-12 bg-warning" style="padding: 5px; min-height: 150px">
-        <div style="width: 100%; border-bottom: 1px green solid; margin-bottom: 2px;">
+        <div style="width: 100%; border-bottom: 1px green solid; margin-bottom: 3px;">
             <small>
                 <strong>Focused Crops
                     <?php if($current_season) { ?>
@@ -374,25 +382,54 @@ $locations = User_helper::get_locations();
             </small>
         </div>
 
-        <?php
-        foreach($cultivation_period as $period)
-        {
-            if(isset($user_focused_variety_types[$period['crop_type_id']]))
-            {
-                foreach($user_focused_variety_types[$period['crop_type_id']] as $type)
+        <div id="focusable_variety_container">
+            <table class="table-bordered">
+                <tr>
+                    <th><?php echo $CI->lang->line('LABEL_CROP_NAME'); ?></th>
+                    <th><?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?></th>
+                    <th><?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?></th>
+                    <th><?php echo $CI->lang->line('LABEL_OUTLET_NAME'); ?></th>
+                    <th><?php echo $CI->lang->line('LABEL_DATE_START'); ?>
+                    <th><?php echo $CI->lang->line('LABEL_DATE_END'); ?>
+                </tr>
+                <?php
+                $current_crop_id = $current_type_id = $current_variety_id = -1;
+                foreach($focusable_varieties as $focusable_variety)
                 {
-                    if(in_array($type['variety_id'], $user_focused_variety_ids))
-                    {
-                    ?>
-                        <span class="app-label-bg-none" title="<?php echo 'Crop: '.$type['crop_name'].' | Type: '.$type['crop_type_name']; ?>">
-                            <?php echo $type['variety_name']; ?>
-                        </span> &nbsp;
-                    <?php
-                    }
+                ?>
+                    <tr>
+                        <?php
+                        if ($current_crop_id != $focusable_variety['crop_id'])
+                        {
+                            $current_crop_id = $focusable_variety['crop_id'];
+                            ?>
+                            <td rowspan="<?php echo $rowspan['crop'][$current_crop_id]; ?>"><?php echo $focusable_variety['crop_name']; ?></td>
+                        <?php
+                        }
+                        if ($current_type_id != $focusable_variety['crop_type_id'])
+                        {
+                            $current_type_id = $focusable_variety['crop_type_id'];
+                        ?>
+                            <td rowspan="<?php echo $rowspan['type'][$current_type_id]; ?>"><?php echo $focusable_variety['crop_type_name']; ?></td>
+                        <?php
+                        }
+                        if ($current_variety_id != $focusable_variety['variety_id'])
+                        {
+                            $current_variety_id = $focusable_variety['variety_id'];
+                            ?>
+                            <td rowspan="<?php echo $rowspan['variety'][$current_variety_id]; ?>"><?php echo $focusable_variety['variety_name']; ?></td>
+                        <?php
+                        }
+                        ?>
+                        <td><?php echo $focusable_variety['outlet_name']; ?></td>
+                        <td><?php echo $focusable_variety['sales_date_start']; ?></td>
+                        <td><?php echo $focusable_variety['sales_date_end']; ?></td>
+                    </tr>
+                <?php
                 }
-            }
-        }
-        ?>
+                ?>
+            </table>
+        </div>
         <!--<span class="app-label-bg-none">White Love</span>
         <span class="app-label-bg-none">White Love</span>
         <span class="app-label-bg-none">Snow Star</span>-->
@@ -510,7 +547,9 @@ $locations = User_helper::get_locations();
     </div>
 
 </div>
-<style>
+<div class="clearfix"></div>
+
+<style type="text/css">
     .tab_id_notice
     {
         padding: 5px !important;
@@ -521,13 +560,14 @@ $locations = User_helper::get_locations();
     {
         min-height: 505px;;
     }
-</style>
-<div class="clearfix"></div>
-<style>
     .tab-pane
     {
         min-height: 350px;
     }
+    #focusable_variety_container{width:100%; overflow:scroll}
+    #focusable_variety_container table{width:100%}
+    #focusable_variety_container th{text-align:center}
+    #focusable_variety_container td{vertical-align:top; padding:2px;}
 </style>
 
 <script type="text/javascript">
@@ -648,7 +688,7 @@ $locations = User_helper::get_locations();
             zone_id:$('#zone_id').val(),
             territory_id:$('#territory_id').val(),
             district_id:$('#district_id').val(),
-            outlet_id:$('#outlet_id').val(),
+            outlet_id:$('#outlet_id').val()
         }
         var division_id = 0;
         var zone_id =0;
