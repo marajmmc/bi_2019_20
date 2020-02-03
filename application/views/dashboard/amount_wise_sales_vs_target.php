@@ -2,7 +2,7 @@
 $CI = & get_instance();
 ?>
 <div>
-    <div id='jqxChartInvoiceYear' style="width:100%; height:200px; position: relative; left: 0px; top: 0px;">
+    <div id='jqxChartAmountWiseSalesVsTarget' style="width:100%; height:200px; position: relative; left: 0px; top: 0px;">
 
     </div>
 </div>
@@ -19,7 +19,7 @@ $CI = & get_instance();
             outlet_id: $('#outlet_id').val(),
         }
 
-        var url = "<?php echo site_url('Dashboard/index/get_item_chart_invoice_payment_wise/'.$type.'/'.$value);?>";
+        var url = "<?php echo site_url('Dashboard/index/get_item_chart_amount_sales_vs_target/'.$type.'/'.$value);?>";
         var source =
         {
             datatype: "json",
@@ -37,7 +37,7 @@ $CI = & get_instance();
         // prepare jqxChart settings
         var settings =
         {
-            title: "Primary Consumer Analysis",
+            title: "Target Vs Achivement Analysis",
             description: "(<?php echo $title?> )",
             enableAnimations: true,
             showLegend: true,
@@ -73,6 +73,6 @@ $CI = & get_instance();
             ]
         };
         // setup the chart
-        $('#jqxChartInvoiceYear').jqxChart(settings);
+        $('#jqxChartAmountWiseSalesVsTarget').jqxChart(settings);
     });
 </script>

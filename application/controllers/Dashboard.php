@@ -60,6 +60,14 @@ class Dashboard extends Root_controller
         {
             $this->system_get_item_chart_invoice_payment_wise($type, $value);
         }
+        elseif($action=="chart_amount_sales_vs_target")
+        {
+            $this->system_chart_amount_sales_vs_target();
+        }
+        elseif($action=="get_item_chart_amount_sales_vs_target")
+        {
+            $this->system_get_item_chart_amount_sales_vs_target($type, $value);
+        }
         elseif($action=="invoice_amount")
         {
             $this->system_invoice_amount();
@@ -425,6 +433,168 @@ class Dashboard extends Root_controller
         $items[]=array('Head'=>'Cash', 'Value'=>System_helper::get_string_amount($total_amount['Cash']));
         $items[]=array('Head'=>'Credit', 'Value'=>System_helper::get_string_amount($total_amount['Credit']));
 
+        $this->json_return($items);
+    }
+    private function system_chart_amount_sales_vs_target()
+    {
+        $data=array();
+        $html_id = $this->input->post('html_id');
+        $data['type'] = $this->input->post('type');
+        $data['value'] = $this->input->post('value');
+        $data['unitInterval'] = $this->input->post('unitInterval');
+
+        if($data['type']=='today')
+        {
+            $data['title']="Today (".$data['value'].' '.date('M, Y').") Sales (%) Summary";
+            $fiscal_year_number=2;
+            $month=0;
+            $date=$data['value'];
+        }
+        elseif($data['type']=='month')
+        {
+            $data['title']="Monthly (".$this->lang->line('LABEL_MONTH_'.intval($data['value'])).") Sales (%) Summary";
+            $fiscal_year_number=2;
+            $month=$data['value'];
+            $date=0;
+        }
+        elseif($data['type']=='year')
+        {
+            $data['title']="Current Years Sales (%) Summary";
+            $fiscal_year_number=$data['value'];
+            $month=0;//date('m', time());
+            $date=0;
+        }
+        else
+        {
+            $fiscal_year_number=0;
+            $month=0;//date('m', time());
+            $date=0;
+        }
+        $data['fiscal_years']=$this->get_fiscal_years($fiscal_year_number, $month, $date);
+        $ajax['status']=true;
+        $ajax['system_content'][]=array("id"=>$html_id,"html"=>$this->load->view($this->controller_url."/amount_wise_sales_vs_target",$data,true));
+        if($this->message)
+        {
+            $ajax['system_message']=$this->message;
+        }
+        $this->json_return($ajax);
+    }
+    public function system_get_item_chart_amount_sales_vs_target($type,$value)
+    {
+        $location_post=array
+        (
+            'division_id'=>$this->input->get('division_id'),
+            'zone_id'=>$this->input->get('zone_id'),
+            'territory_id'=>$this->input->get('territory_id'),
+            'district_id'=>$this->input->get('district_id'),
+            'outlet_id'=>$this->input->get('outlet_id'),
+        );
+        $locations=$this->get_locations($location_post);
+        if($type=='today')
+        {
+            $fiscal_year_number=0;
+            $month=0;
+            $date=$value;
+        }
+        elseif($type=='month')
+        {
+            $fiscal_year_number=0;
+            $month=$value;
+            $date=0;
+        }
+        elseif($type=='year')
+        {
+            $fiscal_year_number=0;
+            $month=0;
+            $date=0;
+        }
+        else
+        {
+            $fiscal_year_number=0;
+            $month=0;
+            $date=0;
+        }
+        $fiscal_years=$this->get_fiscal_years($fiscal_year_number, $month, $date);
+        foreach($fiscal_years as $fy)
+        {
+            $this->db->from($this->config->item('table_pos_sale').' sale');
+            $this->db->select('SUM(sale.amount_payable) sale_amount, sale.sales_payment_method');
+
+            $this->db->join($this->config->item('table_login_csetup_cus_info').' outlet_info','outlet_info.customer_id = sale.outlet_id and outlet_info.revision =1','INNER');
+            $this->db->join($this->config->item('table_login_setup_location_districts').' d','d.id = outlet_info.district_id','INNER');
+            $this->db->join($this->config->item('table_login_setup_location_territories').' t','t.id = d.territory_id','INNER');
+            $this->db->join($this->config->item('table_login_setup_location_zones').' zone','zone.id = t.zone_id','INNER');
+
+            $this->db->select('sale.outlet_id');
+            $this->db->select('d.id district_id');
+            $this->db->select('t.id territory_id');
+            $this->db->select('zone.id zone_id');
+            $this->db->select('zone.division_id division_id');
+            if($locations['division_id']>0)
+            {
+                $this->db->where('zone.division_id',$locations['division_id']);
+                if($locations['zone_id']>0)
+                {
+                    $this->db->where('zone.id',$locations['zone_id']);
+                    if($locations['territory_id']>0)
+                    {
+                        $this->db->where('t.id',$locations['territory_id']);
+                        if($locations['district_id']>0)
+                        {
+                            $this->db->where('d.id',$locations['district_id']);
+                            if($locations['outlet_id']>0)
+                            {
+                                $this->db->where('outlet_info.customer_id',$locations['outlet_id']);
+                            }
+                        }
+                    }
+                }
+            }
+            $this->db->where('sale.date_sale >=',$fy['date_start']);
+            $this->db->where('sale.date_sale <=',$fy['date_end']);
+            $this->db->where('sale.status',$this->config->item('system_status_active'));
+            $this->db->group_by('sales_payment_method');
+            $results=$this->db->get()->result_array();
+            $amount=array();
+            foreach($results as $result)
+            {
+                if(isset($amount[$result['sales_payment_method']]))
+                {
+                    $amount[$result['sales_payment_method']]+=$result['sale_amount'];
+                }
+                else
+                {
+                    $amount[$result['sales_payment_method']]=$result['sale_amount'];
+                }
+                if(isset($amount['Total']))
+                {
+                    $amount['Total']+=$result['sale_amount'];
+                }
+                else
+                {
+                    $amount['Total']=$result['sale_amount'];
+                }
+            }
+        }
+        $total_amount['Total']=0;
+        $total_amount['Cash']=0;
+        $total_amount['Credit']=0;
+        if(isset($amount['Total']))
+        {
+            $total_amount['Total']=$amount['Total'];
+            if(isset($amount['Cash']))
+            {
+                $total_amount['Cash']=($amount['Cash']*100)/$amount['Total'];
+            }
+            if(isset($amount['Credit']))
+            {
+                $total_amount['Credit']=($amount['Credit']*100)/$amount['Total'];
+            }
+        }
+        /*$items[]=array('Head'=>'Cash', 'Value'=>100);
+        $items[]=array('Head'=>'Credit', 'Value'=>200);*/
+        $items[]=array('Head'=>'Achivement', 'Value'=>System_helper::get_string_amount($total_amount['Cash']));
+        $items[]=array('Head'=>'Target', 'Value'=>System_helper::get_string_amount($total_amount['Credit']));
         $this->json_return($items);
     }
     private function system_invoice_amount()

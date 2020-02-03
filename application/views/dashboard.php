@@ -468,9 +468,37 @@ $locations = User_helper::get_locations();
                     </li>-->
                 </ul>
             </div>
-            <div class="panel-body">
+            <div class="panel-body" style="min-height: 220px; height: 220px;">
                 <div class="tab-content">
                     <div class="tab-pane fade in active" id="tab_invoices_year" style=" ">&nbsp;</div>
+                </div>
+            </div>
+        </div>
+        <div class="panel with-nav-tabs panel-default panel-tab">
+            <div class="panel-heading">
+                <ul class="nav nav-tabs">
+                    <li class="active"><a href="#tab_amount_sale_vs_target" data-toggle="tab" class="dropdown tab_id_amount_sale_vs_target" id="tab_id_amount_sale_vs_target_today" data-type="today" data-unit-interval="10" data-value="<?php echo date('d', time())?>">Today</a></li>
+                    <li class="dropdown">
+                        <a href="#" data-toggle="dropdown" class="dropdown">Month <span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <?php
+                            foreach($fiscal_months as $key => $fiscal_month)
+                            {
+                                ?>
+                                <li>
+                                    <a href="#tab_amount_sale_vs_target" class="dropdown tab_id_amount_sale_vs_target" data-toggle="tab" data-type="month" data-unit-interval="500" data-value="<?php echo $key?>"><?php echo $fiscal_month?></a>
+                                </li>
+                            <?php
+                            }
+                            ?>
+                        </ul>
+                    </li>
+                    <li><a href="#tab_amount_sale_vs_target" data-toggle="tab" class="dropdown tab_id_amount_sale_vs_target" id="tab_id_invoice_years" data-type="year" data-unit-interval="10000" data-value="0">Year</a></li>
+                </ul>
+            </div>
+            <div class="panel-body" style="min-height: 220px; height: 220px;">
+                <div class="tab-content">
+                    <div class="tab-pane fade in active" id="tab_amount_sale_vs_target" style=" ">&nbsp;</div>
                 </div>
             </div>
         </div>
@@ -606,11 +634,13 @@ $locations = User_helper::get_locations();
             load_report_farmer_balance_notification();
             /*load_chart_crop_wise_sales();*/
             load_chart_invoice_payment();
+            load_chart_amount_sales_vs_target();
         });
         load_invoice_amount();
         load_report_farmer_balance_notification();
         /*load_chart_crop_wise_sales();*/
         load_chart_invoice_payment();
+        load_chart_amount_sales_vs_target();
 
         var locations =
         {
@@ -720,6 +750,39 @@ $locations = User_helper::get_locations();
             });
 
         })
+        $('.tab_id_amount_sale_vs_target').on('click',function()
+        {
+            $($(this).attr('href')).html('')
+             var url = "<?php echo site_url('Dashboard/index/chart_amount_sales_vs_target');?>";
+             var data=
+             {
+                 division_id:division_id,
+                 zone_id:zone_id,
+                 territory_id:territory_id,
+                 district_id:district_id,
+                 outlet_id:outlet_id,
+                 html_id:$(this).attr('href'),
+                 type:$(this).attr('data-type'),
+                 value:$(this).attr('data-value'),
+                 unitInterval:$(this).attr('data-unit-interval')
+             }
+             $.ajax({
+                 url: url,
+                 type: 'post',
+                 dataType: "JSON",
+                 data: data,
+                 success: function (data, status)
+                 {
+
+                 },
+                 error: function (xhr, desc, err)
+                 {
+
+
+                 }
+            });
+
+        })
 
     });
     function load_invoice_amount()
@@ -789,6 +852,35 @@ $locations = User_helper::get_locations();
         var elm_id="#tab_id_invoice_today";
         $($(elm_id).attr('href')).html('')
         var url = "<?php echo site_url('Dashboard/index/chart_invoice_payment_wise');?>";
+        var data_post =
+        {
+            html_id:$(elm_id).attr('href'),
+            //type:$(elm_id).attr('data-type'),
+            //value:$(elm_id).attr('data-value'),
+            type:'month',
+            value:'<?php echo date('m', time())?>',
+            unitInterval:$(elm_id).attr('data-unit-interval')
+        }
+        $.ajax({
+            url: url,
+            type: 'post',
+            dataType: "JSON",
+            data: data_post,
+            success: function (data, status)
+            {
+
+            },
+            error: function (xhr, desc, err)
+            {
+
+            }
+        });
+    }
+    function load_chart_amount_sales_vs_target()
+    {
+        var elm_id="#tab_id_amount_sale_vs_target_today";
+        $($(elm_id).attr('href')).html('')
+        var url = "<?php echo site_url('Dashboard/index/chart_amount_sales_vs_target');?>";
         var data_post =
         {
             html_id:$(elm_id).attr('href'),
