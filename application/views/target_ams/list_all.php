@@ -132,17 +132,16 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 columnsreorder: true,
                 columns: [
                     { text: '<?php echo $CI->lang->line('LABEL_ID'); ?>', pinned: true, dataField: 'id', width: '50', cellsalign: 'right', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['id']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_OUTLET_NAME'); ?>', pinned: true, dataField: 'outlet_name', width: '220', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['outlet_name']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_YEAR'); ?>', pinned: true, dataField: 'year', width: '60', cellsalign: 'right', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['year']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_MONTH'); ?>', pinned: true, dataField: 'month', width: '100', cellsalign: 'right', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['month']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_AMOUNT_TARGET'); ?>', pinned: true, dataField: 'amount_target', width: '140', cellsalign: 'right', filtertype: 'none', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['amount_target']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_DISTRICT_NAME'); ?>', dataField: 'district_name', width: '120', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['district_name']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_TERRITORY_NAME'); ?>', dataField: 'territory_name', width: '120', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['territory_name']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_ZONE_NAME'); ?>', dataField: 'zone_name', width: '120', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['zone_name']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_DIVISION_NAME'); ?>', dataField: 'division_name', width: '120', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['division_name']?0:1;?>},
+                    { text: '<?php echo $CI->lang->line('LABEL_AMOUNT_ALLOCATED'); ?>', pinned: true, dataField: 'amount_allocated', width: '140', cellsalign: 'right', filtertype: 'none', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['amount_allocated']?0:1;?>},
+                    { text: '<?php echo $CI->lang->line('LABEL_AMOUNT_REMAINING'); ?>', pinned: true, dataField: 'amount_remaining', width: '140', cellsalign: 'right', filtertype: 'none', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['amount_remaining']?0:1;?>},
+                    <?php if(!($CI->locations['division_id'] > 0)){ ?>
+                    { text: '<?php echo $CI->lang->line('LABEL_LOCATION'); ?>', dataField: 'location', width: '160', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['location']?0:1;?>},
+                    <?php } ?>
                     { text: '<?php echo $CI->lang->line('LABEL_NO_OF_EDIT'); ?>', dataField: 'no_of_edit', width: '80', cellsalign: 'right', filtertype: 'none', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['no_of_edit']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_STATUS_FORWARD'); ?>', dataField: 'status_forward', width: '80', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['status_forward']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_STATUS_APPROVE'); ?>', dataField: 'status_approve', width: '80', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['status_approve']?0:1;?>}
+                    { text: '<?php echo $CI->lang->line('LABEL_STATUS_FORWARD'); ?>', dataField: 'status_forward', width: '80', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['status_forward']?0:1;?>}
                 ]
             });
     });

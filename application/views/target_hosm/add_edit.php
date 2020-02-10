@@ -24,25 +24,6 @@ $action_buttons[] = array(
     'data-form' => '#save_form'
 );
 $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
-
-$zone_display = $territory_display = $district_display = $outlet_display = 'display:none';
-
-if($item['division_id'] > 0 || $CI->locations['division_id'] > 0)
-{
-    $zone_display='';
-}
-if($item['zone_id'] > 0 || $CI->locations['zone_id'] > 0)
-{
-    $territory_display='';
-}
-if($item['territory_id'] > 0 || $CI->locations['territory_id'] > 0)
-{
-    $district_display='';
-}
-if($item['district_id'] > 0 || $CI->locations['district_id'] > 0)
-{
-    $outlet_display='';
-}
 ?>
 
 <form class="form_valid" id="save_form" action="<?php echo site_url($CI->controller_url . '/index/save'); ?>" method="post">
@@ -124,155 +105,54 @@ if($item['district_id'] > 0 || $CI->locations['district_id'] > 0)
 
     <div class="row show-grid">
         <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_DIVISION_NAME'); ?>
-                <span style="color:#FF0000">*</span></label>
+            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_AMOUNT_TARGET'); ?> &nbsp;</label>
         </div>
         <div class="col-sm-4 col-xs-8">
-            <?php
-            if ($item['division_id'] > 0)
-            {
-                ?>
-                <label class="control-label"><?php echo $item['division_name']; ?></label>
-            <?php
-            }
-            else if ($CI->locations['division_id'] > 0)
-            {
-                ?>
-                <label class="control-label"><?php echo $CI->locations['division_name']; ?></label>
-            <?php
-            }
-            else
-            {
-                ?>
-                <select id="division_id" class="form-control">
-                    <option value=""><?php echo $CI->lang->line('SELECT'); ?></option>
-                </select>
-            <?php
-            }
-            ?>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th style="width:1%;white-space:nowrap"><?php echo $CI->lang->line('LABEL_SL_NO'); ?></th>
+                        <th><?php echo $item['label_location']; ?></th>
+                        <th><?php echo $CI->lang->line('LABEL_AMOUNT_TARGET'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php
+                $i=1;
+                $sum=0;
+                foreach($item['target_locations'] as $location){
+                    $target_amount = '';
+                    if(isset($item['targets'][$location['id']])){
+                        $target_amount = $item['targets'][$location['id']];
+                        $sum += $target_amount;
+                    }
+                    ?>
+                    <tr>
+                        <td><?php echo $i++; ?></td>
+                        <td><?php echo $location['name']; ?></td>
+                        <td>
+                            <input type="text" class="form-control float_type_positive price_unit_tk amount_target" value="<?php echo $target_amount; ?>" name="amount_target[<?php echo $location['id']; ?>]" />
+                        </td>
+                    </tr>
+                <?php } ?>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2"><label class="control-label pull-right">
+                            <?php echo $CI->lang->line('LABEL_AMOUNT_TARGET_TOTAL'); ?> :
+                        </td>
+                        <td><label class="control-label pull-right" id="amount_target_total">
+                            <?php echo System_helper::get_string_amount($sum); ?>
+                        </label></td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
     </div>
 
-    <div style="<?php echo $zone_display; ?>" class="row show-grid" id="zone_id_container">
-        <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_ZONE_NAME'); ?>
-                <span style="color:#FF0000">*</span></label>
-        </div>
-        <div class="col-sm-4 col-xs-8">
-            <?php
-            if ($item['zone_id'] > 0)
-            {
-                ?>
-                <label class="control-label"><?php echo $item['zone_name']; ?></label>
-            <?php
-            }
-            else if ($CI->locations['zone_id'] > 0)
-            {
-                ?>
-                <label class="control-label"><?php echo $CI->locations['zone_name']; ?></label>
-            <?php
-            }
-            else
-            {
-                ?>
-                <select id="zone_id" class="form-control">
-                    <option value=""><?php echo $CI->lang->line('SELECT'); ?></option>
-                </select>
-            <?php
-            }
-            ?>
-        </div>
-    </div>
+    <?php
 
-    <div style="<?php echo $territory_display; ?>" class="row show-grid" id="territory_id_container">
-        <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_TERRITORY_NAME'); ?>
-                <span style="color:#FF0000">*</span></label>
-        </div>
-        <div class="col-sm-4 col-xs-8">
-            <?php
-            if ($item['territory_id'] > 0)
-            {
-                ?>
-                <label class="control-label"><?php echo $item['territory_name']; ?></label>
-            <?php
-            }
-            else if ($CI->locations['territory_id'] > 0)
-            {
-                ?>
-                <label class="control-label"><?php echo $CI->locations['territory_name']; ?></label>
-            <?php
-            }
-            else
-            {
-                ?>
-                <select id="territory_id" class="form-control">
-                    <option value=""><?php echo $CI->lang->line('SELECT'); ?></option>
-                </select>
-            <?php
-            }
-            ?>
-        </div>
-    </div>
-
-    <div style="<?php echo $district_display; ?>" class="row show-grid" id="district_id_container">
-        <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_DISTRICT_NAME'); ?>
-                <span style="color:#FF0000">*</span></label>
-        </div>
-        <div class="col-sm-4 col-xs-8">
-            <?php
-            if ($item['district_id'] > 0)
-            {
-                ?>
-                <label class="control-label"><?php echo $item['district_name']; ?></label>
-            <?php
-            }
-            else if ($CI->locations['district_id'] > 0)
-            {
-                ?>
-                <label class="control-label"><?php echo $CI->locations['district_name']; ?></label>
-            <?php
-            }
-            else
-            {
-                ?>
-                <select id="district_id" class="form-control">
-                    <option value=""><?php echo $CI->lang->line('SELECT'); ?></option>
-                </select>
-            <?php
-            }
-            ?>
-        </div>
-    </div>
-
-    <div style="<?php echo $outlet_display; ?>" class="row show-grid" id="outlet_id_container">
-        <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_OUTLET_NAME'); ?>
-                <span style="color:#FF0000">*</span></label>
-        </div>
-        <div class="col-sm-4 col-xs-8">
-            <?php
-            if ($item['outlet_id'] > 0)
-            {
-                ?>
-                <label class="control-label"><?php echo $item['outlet_name']; ?></label>
-                <input type="hidden" name="item[outlet_id]" value="<?php echo $item['outlet_id']; ?>" />
-            <?php
-            }
-            else
-            {
-                ?>
-                <select id="outlet_id" name="item[outlet_id]" class="form-control">
-                    <option value=""><?php echo $CI->lang->line('SELECT'); ?></option>
-                </select>
-            <?php
-            }
-            ?>
-        </div>
-    </div>
-
-    <?php /* <div class="row show-grid">
+    /* <div class="row show-grid">
         <div class="col-xs-4">
             <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_REMARKS'); ?> &nbsp;</label>
         </div>
@@ -305,49 +185,51 @@ if($item['district_id'] > 0 || $CI->locations['district_id'] > 0)
         </div>
     </div> */ ?>
 
-    <div class="row show-grid" id="target_container">
-        <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_AMOUNT_TARGET'); ?>
-                <span style="color:#FF0000">*</span></label>
-        </div>
-        <div class="col-sm-4 col-xs-8">
-            <input type="text" class="form-control float_type_positive price_unit_tk" value="<?php echo $item['amount_target']; ?>" name="item[amount_target]" />
-        </div>
-    </div>
-
 </div>
 
 </form>
 
-<style type="text/css"> label { margin-top: 5px;} </style>
+<style type="text/css"> label { margin-top: 5px;} th{text-align:center} </style>
 
 <script type="text/javascript">
     jQuery(document).ready(function ($) {
         system_preset({controller: '<?php echo $CI->router->class; ?>'});
         system_off_events(); // Triggers
 
-        $('#division_id').html(get_dropdown_with_select(system_divisions));
+        $(document).on("input", ".amount_target", function (event) {
+            var sum = parseFloat(0);
+            var item_amount = parseFloat(0);
+            $(".amount_target").each(function (e) {
+                item_amount = parseFloat($(this).val());
+                if (!isNaN(item_amount) && (item_amount > 0)) {
+                    sum += item_amount;
+                }
+            });
+            $("#amount_target_total").text(get_string_amount(sum));
+        });
+
+        //$('#division_id').html(get_dropdown_with_select(system_divisions));
 
         <?php
-        if($CI->locations['division_id'] > 0)
+        /*if($CI->locations['division_id'] > 0)
         {
-            ?> $('#zone_id').html(get_dropdown_with_select(system_zones[<?php echo $CI->locations['division_id']; ?>])); <?php
-        }
+            */?><!-- $('#zone_id').html(get_dropdown_with_select(system_zones[<?php /*echo $CI->locations['division_id']; */?>])); <?php
+/*        }
         if($CI->locations['zone_id'] > 0)
         {
-            ?> $('#territory_id').html(get_dropdown_with_select(system_territories[<?php echo $CI->locations['zone_id']; ?>])); <?php
-        }
+            */?> $('#territory_id').html(get_dropdown_with_select(system_territories[<?php /*echo $CI->locations['zone_id']; */?>])); <?php
+/*        }
         if($CI->locations['territory_id'] > 0)
         {
-            ?> $('#district_id').html(get_dropdown_with_select(system_districts[<?php echo $CI->locations['territory_id']; ?>])); <?php
-        }
+            */?> $('#district_id').html(get_dropdown_with_select(system_districts[<?php /*echo $CI->locations['territory_id']; */?>])); <?php
+/*        }
         if($CI->locations['district_id'] > 0)
         {
-            ?> $('#upazilla_id').html(get_dropdown_with_select($system_outlets[<?php echo $CI->locations['district_id']; ?>])); <?php
-        }
+            */?> $('#upazilla_id').html(get_dropdown_with_select($system_outlets[<?php /*echo $CI->locations['district_id']; */?>])); --><?php
+/*        }*/
         ?>
 
-        $(document).on('change', '#division_id', function () {
+        /*$(document).on('change', '#division_id', function () {
             $('#zone_id').val('');
             $('#territory_id').val('');
             $('#district_id').val('');
@@ -406,6 +288,6 @@ if($item['district_id'] > 0 || $CI->locations['district_id'] > 0)
                     $('#outlet_id').html(get_dropdown_with_select(system_outlets[district_id]));
                 }
             }
-        });
+        });*/
     });
 </script>

@@ -52,6 +52,10 @@ $lang['MSG_LOGIN_VERIFICATION_FAIL_10'] = 'Verification Code mismatched';
 $lang['MSG_LOGIN_VERIFICATION_FAIL_110'] = 'Verification Code Expired or already used';
 $lang['MSG_LOGIN_VERIFICATION_FAIL_1110'] = 'Verification Code Expired';
 
+$lang['MSG_ID_NOT_EXIST'] = 'ID Not Exist.';
+$lang['MSG_INVALID_TRY'] = 'Invalid Try.';
+$lang['MSG_LOCATION_ERROR'] = 'Trying to Access Other Location';
+
 //Action buttons
 $lang['ACTION_DASHBOARD'] = 'Dashboard';
 $lang['ACTION_NEW'] = 'New';

@@ -28,14 +28,11 @@ $CI = & get_instance();
         <th colspan="2"><?php echo $CI->lang->line('LABEL_DATE_SALES'); ?></th>
     </tr>
     <tr>
-        <th style="text-align:center"><?php echo $CI->lang->line('LABEL_DATE_START'); ?>
-        </th>
-        <th style="text-align:center"><?php echo $CI->lang->line('LABEL_DATE_END'); ?>
-        </th>
+        <th style="text-align:center"><?php echo $CI->lang->line('LABEL_DATE_START'); ?></th>
+        <th style="text-align:center"><?php echo $CI->lang->line('LABEL_DATE_END'); ?></th>
     </tr>
     <?php
     $current_crop_id = $current_type_id = -1;
-
     $i = 1;
     foreach ($crops as $crop_id => $crop) {
         foreach ($crop['types'] as $type_id => $type) {

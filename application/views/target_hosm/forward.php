@@ -29,6 +29,39 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
         $CI->load->view('info_basic', $data);
         ?>
 
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <label class=""><a class="external text-danger" data-toggle="collapse" data-target="#target_distribution" href="#">+ <?php echo $details_title; ?></a></label>
+                </h4>
+            </div>
+            <div id="target_distribution" class="panel-collapse collapse in">
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Location</th>
+                        <th><?php echo $CI->lang->line('LABEL_AMOUNT_TARGET'); ?></th>
+                    </tr><?php
+                    $sum=0;
+                    foreach($details as $detail){ ?>
+                        <tr>
+                            <td><?php echo $detail['name']; ?></td>
+                            <td><?php echo System_helper::get_string_amount($detail['amount_target']); ?></td>
+                        </tr>
+                        <?php
+                        $sum += $detail['amount_target'];
+                    }
+                    ?>
+                    <tr>
+                        <th style="text-align:right">Total:</th>
+                        <td>
+                            <?php echo System_helper::get_string_amount($sum); ?> <br/>
+                            <span style="font-size:0.85em">( <b>In-words:</b> <?php echo Bi_helper::get_string_amount_inword($sum); ?> )</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
         <div class="row show-grid">
             <div class="col-xs-4">
                 <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_STATUS_FORWARD'); ?> <span style="color:#FF0000">*</span></label>
@@ -58,12 +91,16 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 </div>
             </div>
         </div>
-
     </div>
 
     <div class="clearfix"></div>
-
 </form>
+
+<style>
+    #target_distribution table{width:500px; margin:0 auto}
+    th{text-align:center}
+    #target_distribution td:last-child{text-align:right}
+</style>
 
 <script type="text/javascript">
     $(document).ready(function () {
