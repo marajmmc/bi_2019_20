@@ -105,7 +105,7 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
 
     <div class="row show-grid">
         <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_AMOUNT_TARGET'); ?> &nbsp;</label>
+            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_AMOUNT_TARGET'); ?> <span style="color:#FF0000">*</span></label>
         </div>
         <div class="col-sm-4 col-xs-8">
             <table class="table table-bordered">
@@ -113,7 +113,7 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
                     <tr>
                         <th style="width:1%;white-space:nowrap"><?php echo $CI->lang->line('LABEL_SL_NO'); ?></th>
                         <th><?php echo $item['label_location']; ?></th>
-                        <th><?php echo $CI->lang->line('LABEL_AMOUNT_TARGET'); ?></th>
+                        <th><?php echo $CI->lang->line('LABEL_AMOUNT_TARGET'); ?> <span style="color:#FF0000">*</span></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -150,41 +150,6 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
         </div>
     </div>
 
-    <?php
-
-    /* <div class="row show-grid">
-        <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_REMARKS'); ?> &nbsp;</label>
-        </div>
-        <div class="col-sm-4 col-xs-8">
-            <textarea class="form-control" name="item[remarks]" rows="5"><?php echo $item['remarks']; ?></textarea>
-        </div>
-    </div>
-
-    <div style="" class="row show-grid" id="crop_id_container">
-        <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>
-                <span style="color:#FF0000">*</span></label>
-        </div>
-        <div class="col-sm-4 col-xs-8">
-            <?php
-            if ($item['crop_id'] > 0)
-            {
-                ?>
-                <label class="control-label"><?php echo $item['crop_name']; ?></label>
-                <input type="hidden" name="item[crop_id]" value="<?php echo $item['crop_id']; ?>" />
-            <?php
-            }
-            else
-            {
-                ?>
-                <select id="crop_id" name="item[crop_id]" class="form-control">
-                    <option value=""><?php echo $this->lang->line('SELECT'); ?></option>
-                </select>
-            <?php } ?>
-        </div>
-    </div> */ ?>
-
 </div>
 
 </form>
@@ -207,87 +172,5 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
             });
             $("#amount_target_total").text(get_string_amount(sum));
         });
-
-        //$('#division_id').html(get_dropdown_with_select(system_divisions));
-
-        <?php
-        /*if($CI->locations['division_id'] > 0)
-        {
-            */?><!-- $('#zone_id').html(get_dropdown_with_select(system_zones[<?php /*echo $CI->locations['division_id']; */?>])); <?php
-/*        }
-        if($CI->locations['zone_id'] > 0)
-        {
-            */?> $('#territory_id').html(get_dropdown_with_select(system_territories[<?php /*echo $CI->locations['zone_id']; */?>])); <?php
-/*        }
-        if($CI->locations['territory_id'] > 0)
-        {
-            */?> $('#district_id').html(get_dropdown_with_select(system_districts[<?php /*echo $CI->locations['territory_id']; */?>])); <?php
-/*        }
-        if($CI->locations['district_id'] > 0)
-        {
-            */?> $('#upazilla_id').html(get_dropdown_with_select($system_outlets[<?php /*echo $CI->locations['district_id']; */?>])); --><?php
-/*        }*/
-        ?>
-
-        /*$(document).on('change', '#division_id', function () {
-            $('#zone_id').val('');
-            $('#territory_id').val('');
-            $('#district_id').val('');
-            $('#outlet_id').val('');
-            var division_id = $('#division_id').val();
-            $('#zone_id_container').hide();
-            $('#territory_id_container').hide();
-            $('#district_id_container').hide();
-            $('#outlet_id_container').hide();
-            $("#system_report_container").html('');
-            if (division_id > 0) {
-                if (system_zones[division_id] !== undefined) {
-                    $('#zone_id_container').show();
-                    $('#zone_id').html(get_dropdown_with_select(system_zones[division_id]));
-                }
-            }
-        });
-        $(document).on('change', '#zone_id', function () {
-            $('#territory_id').val('');
-            $('#district_id').val('');
-            $('#outlet_id').val('');
-            var zone_id = $('#zone_id').val();
-            $('#territory_id_container').hide();
-            $('#district_id_container').hide();
-            $('#outlet_id_container').hide();
-            $("#system_report_container").html('');
-            if (zone_id > 0) {
-                if (system_territories[zone_id] !== undefined) {
-                    $('#territory_id_container').show();
-                    $('#territory_id').html(get_dropdown_with_select(system_territories[zone_id]));
-                }
-            }
-        });
-        $(document).on('change', '#territory_id', function () {
-            $('#district_id').val('');
-            $('#outlet_id').val('');
-            $('#outlet_id_container').hide();
-            $('#district_id_container').hide();
-            $("#system_report_container").html('');
-            var territory_id = $('#territory_id').val();
-            if (territory_id > 0) {
-                if (system_districts[territory_id] !== undefined) {
-                    $('#district_id_container').show();
-                    $('#district_id').html(get_dropdown_with_select(system_districts[territory_id]));
-                }
-            }
-        });
-        $(document).on('change', '#district_id', function () {
-            $('#outlet_id').val('');
-            $("#system_report_container").html('');
-            var district_id = $('#district_id').val();
-            $('#outlet_id_container').hide();
-            if (district_id > 0) {
-                if (system_outlets[district_id] !== undefined) {
-                    $('#outlet_id_container').show();
-                    $('#outlet_id').html(get_dropdown_with_select(system_outlets[district_id]));
-                }
-            }
-        });*/
     });
 </script>
