@@ -369,7 +369,10 @@ $locations = User_helper::get_locations();
             <strong style="font-size: 25px; padding: 5px">3055</strong>
         </div>
     </div>-->
-    <div class="col-lg-6 col-xs-12 bg-warning" style="padding: 5px; min-height: 150px">
+    <div class="col-lg-1 col-xs-12 bg-warning" style="padding: 5px; min-height: 150px">
+        sdf
+    </div>
+    <div class="col-lg-5 col-xs-12 bg-warning" style="padding: 5px; min-height: 150px; height: 150px">
         <div style="width: 100%; border-bottom: 1px green solid; margin-bottom: 3px;">
             <small>
                 <strong>Focused Crops
