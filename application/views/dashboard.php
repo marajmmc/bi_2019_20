@@ -3,7 +3,7 @@ $CI = & get_instance();
 $CI->load->helper('bi_helper');
 
 $user = User_helper::get_user();
-$user_locations = User_helper::get_locations();
+$locations = User_helper::get_locations();
 
 /*---------------------------- FISCAL YEAR ----------------------------*/
 $time_today = System_helper::get_time(date('Y-m-d'));
@@ -21,129 +21,6 @@ do
     $fiscal_current = strtotime( '+1 months', $fiscal_current);
 }
 while ($fiscal_current <= $fiscal_year_current['date_end']);
-
-/*---------------------------- SEASON CODE ----------------------------*/
-$where = array(
-    "status ='". $CI->config->item('system_status_active')."'"
-);
-$select = array('id', 'name','date_start','date_end','description');
-$seasons = Query_helper::get_info($CI->config->item('table_bi_setup_season'), $select, $where, 0, 0, array('date_start ASC'));
-
-$time_assumed_today = System_helper::get_time(date("1970-m-d"));
-$current_season=array();
-foreach($seasons as &$season){
-    if(($time_assumed_today >= $season['date_start']) && ($time_assumed_today <= $season['date_end']))
-    {
-        $current_season = $season;
-        break;
-    }
-    else if(date('Y', $season['date_end']) > date('Y', $season['date_start']))
-    {
-        $season['date_end'] = strtotime('-1 years', $season['date_end']);
-        $season['date_start'] = strtotime('-1 years', $season['date_start']);
-        if(($time_assumed_today >= $season['date_start']) && ($time_assumed_today <= $season['date_end']))
-        {
-            $current_season = $season;
-            break;
-        }
-    }
-}
-/*-------------------------- FOCUSED VARIETY --------------------------*/
-
-$CI->db->from($CI->config->item('table_login_csetup_cus_info') . ' cus_info');
-$CI->db->select('cus_info.customer_id outlet_id, cus_info.name outlet_name');
-
-$CI->db->join($CI->config->item('table_login_setup_location_districts') . ' district', 'district.id = cus_info.district_id', 'INNER');
-$CI->db->select('district.id district_id, district.name district_name');
-
-$CI->db->join($CI->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
-$CI->db->select('territory.id territory_id, territory.name territory_name');
-
-$CI->db->join($CI->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
-$CI->db->select('zone.id zone_id, zone.name zone_name');
-
-$CI->db->join($CI->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
-$CI->db->select('division.id division_id, division.name division_name');
-
-$CI->db->where('cus_info.revision', 1);
-$CI->db->where('cus_info.type', $CI->config->item('system_customer_type_outlet_id'));
-
-if ($user_locations['division_id'] > 0) {
-    $CI->db->where('division.id', $user_locations['division_id']);
-    if ($user_locations['zone_id'] > 0) {
-        $CI->db->where('zone.id', $user_locations['zone_id']);
-        if ($user_locations['territory_id'] > 0) {
-            $CI->db->where('territory.id', $user_locations['territory_id']);
-            if ($user_locations['district_id'] > 0) {
-                $CI->db->where('district.id', $user_locations['district_id']);
-            }
-        }
-    }
-}
-$CI->db->order_by('division.id');
-$CI->db->order_by('zone.id');
-$CI->db->order_by('territory.id');
-$CI->db->order_by('district.id');
-$CI->db->order_by('cus_info.customer_id');
-
-$results_outlet = $CI->db->get()->result_array();
-$current_user_outlets = array();
-$current_user_outlet_ids = array();
-foreach($results_outlet as $result_outlet)
-{
-    $current_user_outlets[$result_outlet['outlet_id']] = $result_outlet;
-    $current_user_outlet_ids[] = $result_outlet['outlet_id'];
-}
-
-$CI->db->from($CI->config->item('table_bi_setup_variety_focused_details') . ' details');
-$CI->db->select('details.*');
-
-$CI->db->join($CI->config->item('table_bi_setup_variety_focused') . ' main', "main.id = details.focus_id AND main.status = '" . $CI->config->item('system_status_active') . "'", 'INNER');
-$CI->db->select('main.outlet_id, main.variety_focused_count');
-
-$CI->db->join($CI->config->item('table_login_csetup_cus_info') . ' cus_info', "cus_info.customer_id = main.outlet_id AND cus_info.revision=1", 'INNER');
-$CI->db->select('cus_info.name outlet_name');
-
-$CI->db->join($CI->config->item('table_login_setup_classification_varieties') . ' v', 'v.id = details.variety_id', 'INNER');
-$CI->db->select('v.name variety_name');
-
-$CI->db->join($CI->config->item('table_login_setup_classification_crop_types') . ' type', 'type.id = v.crop_type_id', 'INNER');
-$CI->db->select('type.id crop_type_id, type.name crop_type_name');
-
-$CI->db->join($CI->config->item('table_login_setup_classification_crops') . ' crop', 'crop.id = type.crop_id', 'INNER');
-$CI->db->select('crop.id crop_id, crop.name crop_name');
-
-$CI->db->where('details.revision', 1);
-$CI->db->where_in('main.outlet_id', $current_user_outlet_ids);
-$CI->db->like('details.season', ",{$current_season['id']},");
-
-$CI->db->order_by('crop.id');
-$CI->db->order_by('type.id');
-$CI->db->order_by('v.id');
-$focusable_varieties = $CI->db->get()->result_array();
-
-$rowspan =array();
-foreach($focusable_varieties as &$variety)
-{
-    $variety['sales_date_start'] = Bi_helper::cultivation_date_display($variety['sales_date_start']);
-    $variety['sales_date_end'] = Bi_helper::cultivation_date_display($variety['sales_date_end']);
-
-    if(!isset($rowspan['crop'][$variety['crop_id']])){
-        $rowspan['crop'][$variety['crop_id']] = 0;
-    }
-    if(!isset($rowspan['type'][$variety['crop_type_id']])){
-        $rowspan['type'][$variety['crop_type_id']] = 0;
-    }
-    if(!isset($rowspan['variety'][$variety['variety_id']])){
-        $rowspan['variety'][$variety['variety_id']] = 0;
-    }
-    $rowspan['crop'][$variety['crop_id']]++; // For calculating Crop Rows
-    $rowspan['type'][$variety['crop_type_id']]++; // For calculating Crop Type Rows
-    $rowspan['variety'][$variety['variety_id']]++; // For calculating Variety Rows
-}
-
-$locations = User_helper::get_locations();
-
 ?>
 
 <div class="row widget">
@@ -369,73 +246,17 @@ $locations = User_helper::get_locations();
             <strong style="font-size: 25px; padding: 5px">3055</strong>
         </div>
     </div>-->
+
     <div class="col-lg-1 col-xs-12 bg-warning" style="padding: 5px; min-height: 150px">
         sdf
     </div>
-    <div class="col-lg-5 col-xs-12 bg-warning" style="padding: 5px; min-height: 150px; height: 150px">
-        <div style="width: 100%; border-bottom: 1px green solid; margin-bottom: 3px;">
-            <small>
-                <strong>Focused Crops
-                    <?php if($current_season) { ?>
-                    [ Season: <?php echo $current_season['name'].' ('.date('M, d',$current_season['date_start']).' - '.date('M, d',$current_season['date_end']).')'; ?> ]
-                    <?php } else { ?>
-                    [ Season Not Set. ]
-                    <?php } ?>
-                </strong>
-            </small>
-        </div>
 
-        <div id="focusable_variety_container">
-            <table class="table-bordered">
-                <tr>
-                    <th><?php echo $CI->lang->line('LABEL_CROP_NAME'); ?></th>
-                    <th><?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?></th>
-                    <th><?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?></th>
-                    <th><?php echo $CI->lang->line('LABEL_OUTLET_NAME'); ?></th>
-                    <th><?php echo $CI->lang->line('LABEL_DATE_START'); ?>
-                    <th><?php echo $CI->lang->line('LABEL_DATE_END'); ?>
-                </tr>
-                <?php
-                $current_crop_id = $current_type_id = $current_variety_id = -1;
-                foreach($focusable_varieties as $focusable_variety)
-                {
-                ?>
-                    <tr>
-                        <?php
-                        if ($current_crop_id != $focusable_variety['crop_id'])
-                        {
-                            $current_crop_id = $focusable_variety['crop_id'];
-                            ?>
-                            <td rowspan="<?php echo $rowspan['crop'][$current_crop_id]; ?>"><?php echo $focusable_variety['crop_name']; ?></td>
-                        <?php
-                        }
-                        if ($current_type_id != $focusable_variety['crop_type_id'])
-                        {
-                            $current_type_id = $focusable_variety['crop_type_id'];
-                        ?>
-                            <td rowspan="<?php echo $rowspan['type'][$current_type_id]; ?>"><?php echo $focusable_variety['crop_type_name']; ?></td>
-                        <?php
-                        }
-                        if ($current_variety_id != $focusable_variety['variety_id'])
-                        {
-                            $current_variety_id = $focusable_variety['variety_id'];
-                            ?>
-                            <td rowspan="<?php echo $rowspan['variety'][$current_variety_id]; ?>"><?php echo $focusable_variety['variety_name']; ?></td>
-                        <?php
-                        }
-                        ?>
-                        <td><?php echo $focusable_variety['outlet_name']; ?></td>
-                        <td><?php echo $focusable_variety['sales_date_start']; ?></td>
-                        <td><?php echo $focusable_variety['sales_date_end']; ?></td>
-                    </tr>
-                <?php
-                }
-                ?>
-            </table>
+    <div class="col-lg-5 col-xs-12 bg-warning" style="padding:5px; min-height: 150px; height: 150px">
+        <div id="div_focusable_varieties">
+
+            <!----------------Focusable Variety here... (AJAX Data)----------------->
+
         </div>
-        <!--<span class="app-label-bg-none">White Love</span>
-        <span class="app-label-bg-none">White Love</span>
-        <span class="app-label-bg-none">Snow Star</span>-->
     </div>
 </div>
 <div class="row widget tab-section-2">
@@ -567,10 +388,10 @@ $locations = User_helper::get_locations();
     {
         min-height: 350px;
     }
-    #focusable_variety_container{width:100%; overflow:scroll}
-    #focusable_variety_container table{width:100%}
-    #focusable_variety_container th{text-align:center}
-    #focusable_variety_container td{vertical-align:top; padding:2px;}
+    #div_focusable_varieties {height:100%; overflow: scroll; border: 1px solid green}
+    #div_focusable_varieties table {width:100%}
+    #div_focusable_varieties th {text-align:center}
+    #div_focusable_varieties td {vertical-align:top; padding:3px; white-space:nowrap}
 </style>
 
 <script type="text/javascript">
@@ -684,6 +505,7 @@ $locations = User_helper::get_locations();
         /*load_chart_crop_wise_sales();*/
         load_chart_invoice_payment();
         load_chart_amount_sales_vs_target();
+        load_focusable_varieties();
 
         var locations =
         {
@@ -708,7 +530,6 @@ $locations = User_helper::get_locations();
             var url = "<?php echo site_url('Dashboard/index/invoice_amount');?>";
             var data_post =
             {
-
                 type:$(this).attr('data-type'),
                 value:$(this).attr('data-value')
             }
@@ -726,7 +547,6 @@ $locations = User_helper::get_locations();
                 },
                 error: function (xhr, desc, err)
                 {
-
 
                 }
             });
@@ -755,10 +575,8 @@ $locations = User_helper::get_locations();
                  error: function (xhr, desc, err)
                  {
 
-
                  }
             });
-
         })
         $('.tab_id_invoices_years').on('click',function()
         {
@@ -788,10 +606,8 @@ $locations = User_helper::get_locations();
                  error: function (xhr, desc, err)
                  {
 
-
                  }
             });
-
         })
         $('.tab_id_amount_sale_vs_target').on('click',function()
         {
@@ -821,12 +637,9 @@ $locations = User_helper::get_locations();
                  error: function (xhr, desc, err)
                  {
 
-
                  }
             });
-
         })
-
     });
     function load_invoice_amount()
     {
@@ -855,8 +668,7 @@ $locations = User_helper::get_locations();
                 $("#invoice_amount_credit").html(data.invoice_amount_credit)
             },
             error: function (xhr, desc, err)
-            {.0000
-
+            {
 
             }
         });
@@ -953,6 +765,30 @@ $locations = User_helper::get_locations();
         var elm_id="#div_report_farmer_balance_notification";
         $($(elm_id).attr('href')).html('')
         var url = "<?php echo site_url('Dashboard/index/report_farmer_balance_notification');?>";
+        var data_post =
+        {
+            html_id:elm_id
+        }
+        $.ajax({
+            url: url,
+            type: 'post',
+            dataType: "JSON",
+            data: data_post,
+            success: function (data, status)
+            {
+
+            },
+            error: function (xhr, desc, err)
+            {
+
+            }
+        });
+    }
+    function load_focusable_varieties()
+    {
+        var elm_id="#div_focusable_varieties";
+        $(elm_id).html('');
+        var url = "<?php echo site_url('Dashboard/index/focusable_varieties');?>";
         var data_post =
         {
             html_id:elm_id

@@ -80,6 +80,10 @@ class Dashboard extends Root_controller
         {
             $this->system_get_item_report_farmer_balance_notification();
         }
+        elseif($action=="focusable_varieties")
+        {
+            $this->system_focusable_varieties();
+        }
 
     }
 
@@ -1009,5 +1013,142 @@ class Dashboard extends Root_controller
         $location['outlet_id']=isset($location_post['outlet_id'])?$location_post['outlet_id']:0;
         return $location;
     }
+    public function system_focusable_varieties()
+    {
+        $user_locations = User_helper::get_locations();
+        $data = array();
 
+        /*------------------------------------- SEASON CODE -------------------------------------*/
+        $where = array(
+            "status ='". $this->config->item('system_status_active')."'"
+        );
+        $select = array('id', 'name','date_start','date_end','description');
+        $seasons = Query_helper::get_info($this->config->item('table_bi_setup_season'), $select, $where, 0, 0, array('date_start ASC'));
+
+        $time_assumed_today = System_helper::get_time(date("1970-m-d"));
+        $current_season=array();
+        foreach($seasons as &$season){
+            if(($time_assumed_today >= $season['date_start']) && ($time_assumed_today <= $season['date_end']))
+            {
+                $current_season = $season;
+                break;
+            }
+            else if(date('Y', $season['date_end']) > date('Y', $season['date_start']))
+            {
+                $season['date_end'] = strtotime('-1 years', $season['date_end']);
+                $season['date_start'] = strtotime('-1 years', $season['date_start']);
+                if(($time_assumed_today >= $season['date_start']) && ($time_assumed_today <= $season['date_end']))
+                {
+                    $current_season = $season;
+                    break;
+                }
+            }
+        }
+        $data['current_season'] = $current_season;
+
+        /*---------------------------------------- FOCUSED VARIETY ----------------------------------------*/
+        $this->db->from($this->config->item('table_login_csetup_cus_info') . ' cus_info');
+        $this->db->select('cus_info.customer_id outlet_id, cus_info.name outlet_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = cus_info.district_id', 'INNER');
+        $this->db->select('district.id district_id, district.name district_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
+        $this->db->select('territory.id territory_id, territory.name territory_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
+        $this->db->select('zone.id zone_id, zone.name zone_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
+        $this->db->select('division.id division_id, division.name division_name');
+
+        $this->db->where('cus_info.revision', 1);
+        $this->db->where('cus_info.type', $this->config->item('system_customer_type_outlet_id'));
+
+        if ($user_locations['division_id'] > 0) {
+            $this->db->where('division.id', $user_locations['division_id']);
+            if ($user_locations['zone_id'] > 0) {
+                $this->db->where('zone.id', $user_locations['zone_id']);
+                if ($user_locations['territory_id'] > 0) {
+                    $this->db->where('territory.id', $user_locations['territory_id']);
+                    if ($user_locations['district_id'] > 0) {
+                        $this->db->where('district.id', $user_locations['district_id']);
+                    }
+                }
+            }
+        }
+        $this->db->order_by('division.id');
+        $this->db->order_by('zone.id');
+        $this->db->order_by('territory.id');
+        $this->db->order_by('district.id');
+        $this->db->order_by('cus_info.customer_id');
+
+        $results_outlet = $this->db->get()->result_array();
+        $current_user_outlets = array();
+        $current_user_outlet_ids = array();
+        foreach($results_outlet as $result_outlet)
+        {
+            $current_user_outlets[$result_outlet['outlet_id']] = $result_outlet;
+            $current_user_outlet_ids[] = $result_outlet['outlet_id'];
+        }
+
+        $this->db->from($this->config->item('table_bi_setup_variety_focused_details') . ' details');
+        $this->db->select('details.*');
+
+        $this->db->join($this->config->item('table_bi_setup_variety_focused') . ' main', "main.id = details.focus_id AND main.status = '" . $this->config->item('system_status_active') . "'", 'INNER');
+        $this->db->select('main.outlet_id, main.variety_focused_count');
+
+        $this->db->join($this->config->item('table_login_csetup_cus_info') . ' cus_info', "cus_info.customer_id = main.outlet_id AND cus_info.revision=1", 'INNER');
+        $this->db->select('cus_info.name outlet_name');
+
+        $this->db->join($this->config->item('table_login_setup_classification_varieties') . ' v', 'v.id = details.variety_id', 'INNER');
+        $this->db->select('v.name variety_name');
+
+        $this->db->join($this->config->item('table_login_setup_classification_crop_types') . ' type', 'type.id = v.crop_type_id', 'INNER');
+        $this->db->select('type.id crop_type_id, type.name crop_type_name');
+
+        $this->db->join($this->config->item('table_login_setup_classification_crops') . ' crop', 'crop.id = type.crop_id', 'INNER');
+        $this->db->select('crop.id crop_id, crop.name crop_name');
+
+        $this->db->where('details.revision', 1);
+        $this->db->where_in('main.outlet_id', $current_user_outlet_ids);
+        $this->db->like('details.season', ",{$current_season['id']},");
+
+        $this->db->order_by('crop.id');
+        $this->db->order_by('type.id');
+        $this->db->order_by('v.id');
+        $focusable_varieties = $this->db->get()->result_array();
+
+        $rowspan =array();
+        foreach($focusable_varieties as &$variety)
+        {
+            $variety['sales_date_start'] = Bi_helper::cultivation_date_display($variety['sales_date_start']);
+            $variety['sales_date_end'] = Bi_helper::cultivation_date_display($variety['sales_date_end']);
+
+            if(!isset($rowspan['crop'][$variety['crop_id']])){
+                $rowspan['crop'][$variety['crop_id']] = 0;
+            }
+            if(!isset($rowspan['type'][$variety['crop_type_id']])){
+                $rowspan['type'][$variety['crop_type_id']] = 0;
+            }
+            if(!isset($rowspan['variety'][$variety['variety_id']])){
+                $rowspan['variety'][$variety['variety_id']] = 0;
+            }
+            $rowspan['crop'][$variety['crop_id']]++; // For calculating Crop Rows
+            $rowspan['type'][$variety['crop_type_id']]++; // For calculating Crop Type Rows
+            $rowspan['variety'][$variety['variety_id']]++; // For calculating Variety Rows
+        }
+
+        $data['focusable_varieties'] = $focusable_varieties;
+        $data['rowspan'] = $rowspan;
+
+        $html_id=$this->input->post('html_id');
+        $ajax['status']=true;
+        $ajax['system_content'][]=array("id"=>$html_id,"html"=>$this->load->view($this->controller_url."/focusable_varieties",$data,true));
+        if($this->message)
+        {
+            $ajax['system_message']=$this->message;
+        }
+        $this->json_return($ajax);
+    }
 }
