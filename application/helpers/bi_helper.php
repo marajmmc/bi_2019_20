@@ -875,7 +875,7 @@ class Bi_helper
         $i = 0;
         $str = array();
         $words = array(
-            0 => 'Zero', 1 => 'One', 2 => 'Two',
+            0 => '', 1 => 'One', 2 => 'Two',
             3 => 'Three', 4 => 'Four', 5 => 'Five', 6 => 'Six',
             7 => 'Seven', 8 => 'Eight', 9 => 'Nine',
             10 => 'Ten', 11 => 'Eleven', 12 => 'Twelve',
@@ -901,6 +901,8 @@ class Bi_helper
             else $str[] = null;
         }
         $Taka = implode('', array_reverse($str));
+
+        $words[0] = 'Zero';
         $Paisa = ($decimal) ? ", " . ($words[$decimal / 10] . " " . $words[$decimal % 10]) . ' Paisa' : '';
 
         return ($Taka ? $Taka . 'Taka' : '') . $Paisa;
