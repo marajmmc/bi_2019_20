@@ -117,7 +117,6 @@ class Setup_event_approve extends Root_Controller
         {
 
         }
-
         return $data;
     }
     private function system_set_preference($method)

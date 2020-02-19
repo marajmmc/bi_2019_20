@@ -46,7 +46,7 @@ $CI = & get_instance();
             padding: { left: 5, top: 0, right: 5, bottom: 5 },
             titlePadding: { left: 0, top: 0, right: 0, bottom: 0 },
             source: dataAdapter,
-            colorScheme: 'scheme11',
+            colorScheme: 'scheme05',
             seriesGroups:
             [
                 {

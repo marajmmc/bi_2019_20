@@ -128,7 +128,7 @@ $CI = & get_instance();
         $("#system_jqx_container_report_farmer_balance_notification").jqxGrid(
             {
                 width: '100%',
-                height: '545px',
+                height: '250px',
                 source: dataAdapter,
                 filterable: true,
                 sortable: true,

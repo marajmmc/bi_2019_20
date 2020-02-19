@@ -18,7 +18,7 @@ $CI = & get_instance();
             district_id: $('#district_id').val(),
             outlet_id: $('#outlet_id').val(),
         }
-        var url = "<?php echo site_url('Dashboard/index/get_item_chart_sales_crop_wise/'.$type.'/'.$value);?>";
+        var url = "<?php echo site_url('Dashboard/index/get_items_chart_sales_crop_wise_last_three_years/'.$type.'/'.$value);?>";
         var source =
         {
             datatype: "json",
@@ -93,3 +93,4 @@ $CI = & get_instance();
         $('#jqxChartSalesYears').jqxChart(settings);
     });
 </script>
+

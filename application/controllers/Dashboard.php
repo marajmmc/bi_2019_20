@@ -44,21 +44,21 @@ class Dashboard extends Root_controller
     }
     public function index($action="",$type="", $value=0)
     {
-        if($action=="chart_sales_crop_wise")
+        if($action=="chart_sales_crop_wise_last_three_years")
         {
-            $this->system_chart_sales_crop_wise();
+            $this->system_chart_sales_crop_wise_last_three_years();
         }
-        elseif($action=="get_item_chart_sales_crop_wise")
+        elseif($action=="get_item_chart_sales_crop_wise_last_three_years")
         {
-            $this->system_get_items_sales_crop_wise($type, $value);
+            $this->system_get_items_chart_sales_crop_wise_last_three_years($type, $value);
         }
-        elseif($action=="chart_invoice_payment_wise")
+        elseif($action=="chart_invoice_payment_wise_cash_credit")
         {
-            $this->system_chart_invoice_payment_wise();
+            $this->system_chart_invoice_payment_wise_cash_credit();
         }
-        elseif($action=="get_item_chart_invoice_payment_wise")
+        elseif($action=="get_item_chart_invoice_payment_wise_cash_credit")
         {
-            $this->system_get_item_chart_invoice_payment_wise($type, $value);
+            $this->system_get_item_chart_invoice_payment_wise_cash_credit($type, $value);
         }
         elseif($action=="chart_amount_sales_vs_target")
         {
@@ -87,15 +87,15 @@ class Dashboard extends Root_controller
 
     }
 
-    private function system_chart_sales_crop_wise()
+    private function system_chart_sales_crop_wise_last_three_years()
     {
         $data=array();
         $html_id = $this->input->post('html_id');
-        $locations_post = $this->input->post('locations');
+        //$locations_post = $this->input->post('locations');
         $data['type'] = $this->input->post('type');
         $data['value'] = $this->input->post('value');
         $data['unitInterval'] = $this->input->post('unitInterval');
-        $data['locations']=$this->get_locations($locations_post);
+        //$data['locations']=$this->get_locations($locations_post);
 
         if($data['type']=='today')
         {
@@ -126,14 +126,14 @@ class Dashboard extends Root_controller
         }
         $data['fiscal_years']=$this->get_fiscal_years($fiscal_year_number, $month, $date);
         $ajax['status']=true;
-        $ajax['system_content'][]=array("id"=>$html_id,"html"=>$this->load->view($this->controller_url."/sales_crop_wise",$data,true));
+        $ajax['system_content'][]=array("id"=>$html_id,"html"=>$this->load->view($this->controller_url."/chart_sales_crop_wise_last_three_years",$data,true));
         if($this->message)
         {
             $ajax['system_message']=$this->message;
         }
         $this->json_return($ajax);
     }
-    private function system_get_items_sales_crop_wise($type,$value)
+    private function system_get_items_chart_sales_crop_wise_last_three_years($type,$value)
     {
         $location_post=array
         (
@@ -277,7 +277,7 @@ class Dashboard extends Root_controller
 
         $this->json_return($items);
     }
-    private function system_chart_invoice_payment_wise()
+    private function system_chart_invoice_payment_wise_cash_credit()
     {
         $data=array();
         $html_id = $this->input->post('html_id');
@@ -314,14 +314,14 @@ class Dashboard extends Root_controller
         }
         $data['fiscal_years']=$this->get_fiscal_years($fiscal_year_number, $month, $date);
         $ajax['status']=true;
-        $ajax['system_content'][]=array("id"=>$html_id,"html"=>$this->load->view($this->controller_url."/invoice_payment_wise",$data,true));
+        $ajax['system_content'][]=array("id"=>$html_id,"html"=>$this->load->view($this->controller_url."/chart_invoice_payment_wise_cash_credit",$data,true));
         if($this->message)
         {
             $ajax['system_message']=$this->message;
         }
         $this->json_return($ajax);
     }
-    public function system_get_item_chart_invoice_payment_wise($type,$value)
+    public function system_get_item_chart_invoice_payment_wise_cash_credit($type,$value)
     {
         $location_post=array
         (
@@ -518,7 +518,10 @@ class Dashboard extends Root_controller
             $month=0;
             $date=0;
         }
+
         $fiscal_years=$this->get_fiscal_years($fiscal_year_number, $month, $date);
+        /// achivement
+        $amount_sales=0;
         foreach($fiscal_years as $fy)
         {
             $this->db->from($this->config->item('table_pos_sale').' sale');
@@ -557,48 +560,46 @@ class Dashboard extends Root_controller
             $this->db->where('sale.date_sale >=',$fy['date_start']);
             $this->db->where('sale.date_sale <=',$fy['date_end']);
             $this->db->where('sale.status',$this->config->item('system_status_active'));
-            $this->db->group_by('sales_payment_method');
-            $results=$this->db->get()->result_array();
-            $amount=array();
-            foreach($results as $result)
-            {
-                if(isset($amount[$result['sales_payment_method']]))
-                {
-                    $amount[$result['sales_payment_method']]+=$result['sale_amount'];
-                }
-                else
-                {
-                    $amount[$result['sales_payment_method']]=$result['sale_amount'];
-                }
-                if(isset($amount['Total']))
-                {
-                    $amount['Total']+=$result['sale_amount'];
-                }
-                else
-                {
-                    $amount['Total']=$result['sale_amount'];
-                }
-            }
+            //$this->db->group_by('sales_payment_method');
+            $result=$this->db->get()->row_array();
+            $amount_sales+=$result['sale_amount'];
         }
-        $total_amount['Total']=0;
-        $total_amount['Cash']=0;
-        $total_amount['Credit']=0;
-        if(isset($amount['Total']))
+
+        // target
+        $amount_target=0;
+        foreach($fiscal_years as $fy)
         {
-            $total_amount['Total']=$amount['Total'];
-            if(isset($amount['Cash']))
+            $this->db->from($this->config->item('table_bi_target_tsme').' item');
+            $this->db->select('SUM(item.amount_target) amount_target');
+            $this->db->select("CONCAT_WS('-', year, lpad(month,2,'0'), '01') AS date_string");
+            $this->db->select("TIMESTAMPDIFF(SECOND, '1970-01-01', CONCAT_WS('-', year, lpad(month,2,'0'), '01')) AS date_target ");
+
+            $this->db->join($this->config->item('table_login_setup_location_territories').' t','t.id = item.territory_id','INNER');
+            $this->db->join($this->config->item('table_login_setup_location_zones').' zone','zone.id = t.zone_id','INNER');
+
+            if($locations['division_id']>0)
             {
-                $total_amount['Cash']=($amount['Cash']*100)/$amount['Total'];
+                $this->db->where('zone.division_id',$locations['division_id']);
+                if($locations['zone_id']>0)
+                {
+                    $this->db->where('zone.id',$locations['zone_id']);
+                    if($locations['territory_id']>0)
+                    {
+                        $this->db->where('t.id',$locations['territory_id']);
+                    }
+                }
             }
-            if(isset($amount['Credit']))
-            {
-                $total_amount['Credit']=($amount['Credit']*100)/$amount['Total'];
-            }
+            /*$this->db->where('item.date_sale >=',$fy['date_start']);
+
+            $this->db->where('item.date_sale <=',$fy['date_end']);
+            $this->db->where('sale.status',$this->config->item('system_status_active'));*/
+            //$this->db->group_by('sales_payment_method');
+            $this->db->having(array('date_target >=' => $fy['date_start'], 'date_target <=' => $fy['date_end']));
+            $result=$this->db->get()->row_array();
+            $amount_target+=$result['amount_target'];
         }
-        /*$items[]=array('Head'=>'Cash', 'Value'=>100);
-        $items[]=array('Head'=>'Credit', 'Value'=>200);*/
-        $items[]=array('Head'=>'Achivement', 'Value'=>System_helper::get_string_amount($total_amount['Cash']));
-        $items[]=array('Head'=>'Target', 'Value'=>System_helper::get_string_amount($total_amount['Credit']));
+        $items[]=array('Head'=>'Target', 'Value'=>System_helper::get_string_amount($amount_target));
+        $items[]=array('Head'=>'Achivement', 'Value'=>System_helper::get_string_amount($amount_sales));
         $this->json_return($items);
     }
     private function system_invoice_amount()
@@ -725,6 +726,8 @@ class Dashboard extends Root_controller
         $fiscal_years=array();
         for($i=sizeof($results)-1; $i>=0; $i--)
         {
+            $results[$i]['start_date']=date('d-m-Y',$results[$i]['date_start']);
+            $results[$i]['end_date']=date('d-m-Y',$results[$i]['date_end']);
             $fiscal_years[$results[$i]['id']]=$results[$i];
         }
         if($month>0)
@@ -761,6 +764,8 @@ class Dashboard extends Root_controller
                         $fy['date_end']=strtotime('01-'.($month+$num_of_months).'-'.$year_end)-1;
                     }
                 }
+                $fy['start_date']=date('d-m-Y',$fy['date_start']);
+                $fy['end_date']=date('d-m-Y',$fy['date_end']);
             }
         }
         elseif($date>0)
@@ -779,12 +784,16 @@ class Dashboard extends Root_controller
                 //$year_start=date('Y', $fy['date_start']);
                 $fy['date_start']=strtotime($date.'-'.$month.'-'.$year_start);
                 $fy['date_end']=strtotime(($date+1).'-'.$month.'-'.$year_start)-1;
+
+                $fy['start_date']=date('d-m-Y',$fy['date_start']);
+                $fy['end_date']=date('d-m-Y',$fy['date_end']);
             }
         }
         else
         {
 
         }
+
         return $fiscal_years;
     }
     private function system_report_farmer_balance_notification()
@@ -1015,7 +1024,16 @@ class Dashboard extends Root_controller
     }
     public function system_focusable_varieties()
     {
-        $user_locations = User_helper::get_locations();
+        //$user_locations = User_helper::get_locations();
+        $location_post=array
+        (
+            'division_id'=>$this->input->get('division_id'),
+            'zone_id'=>$this->input->get('zone_id'),
+            'territory_id'=>$this->input->get('territory_id'),
+            'district_id'=>$this->input->get('district_id'),
+            'outlet_id'=>$this->input->get('outlet_id'),
+        );
+        $locations=$this->get_locations($location_post);
         $data = array();
 
         /*------------------------------------- SEASON CODE -------------------------------------*/
@@ -1050,37 +1068,45 @@ class Dashboard extends Root_controller
         $this->db->from($this->config->item('table_login_csetup_cus_info') . ' cus_info');
         $this->db->select('cus_info.customer_id outlet_id, cus_info.name outlet_name');
 
-        $this->db->join($this->config->item('table_login_setup_location_districts') . ' district', 'district.id = cus_info.district_id', 'INNER');
-        $this->db->select('district.id district_id, district.name district_name');
+        $this->db->join($this->config->item('table_login_setup_location_districts') . ' districts', 'districts.id = cus_info.district_id', 'INNER');
+        $this->db->select('districts.id district_id, districts.name district_name');
 
-        $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = district.territory_id', 'INNER');
-        $this->db->select('territory.id territory_id, territory.name territory_name');
+        $this->db->join($this->config->item('table_login_setup_location_territories') . ' territories', 'territories.id = districts.territory_id', 'INNER');
+        $this->db->select('territories.id territory_id, territories.name territory_name');
 
-        $this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = territory.zone_id', 'INNER');
-        $this->db->select('zone.id zone_id, zone.name zone_name');
+        $this->db->join($this->config->item('table_login_setup_location_zones') . ' zones', 'zones.id = territories.zone_id', 'INNER');
+        $this->db->select('zones.id zone_id, zones.name zone_name');
 
-        $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = zone.division_id', 'INNER');
-        $this->db->select('division.id division_id, division.name division_name');
+        $this->db->join($this->config->item('table_login_setup_location_divisions') . ' divisions', 'divisions.id = zones.division_id', 'INNER');
+        $this->db->select('divisions.id division_id, divisions.name division_name');
 
         $this->db->where('cus_info.revision', 1);
         $this->db->where('cus_info.type', $this->config->item('system_customer_type_outlet_id'));
 
-        if ($user_locations['division_id'] > 0) {
-            $this->db->where('division.id', $user_locations['division_id']);
-            if ($user_locations['zone_id'] > 0) {
-                $this->db->where('zone.id', $user_locations['zone_id']);
-                if ($user_locations['territory_id'] > 0) {
-                    $this->db->where('territory.id', $user_locations['territory_id']);
-                    if ($user_locations['district_id'] > 0) {
-                        $this->db->where('district.id', $user_locations['district_id']);
+        if($locations['division_id']>0)
+        {
+            $this->db->where('zones.division_id',$locations['division_id']);
+            if($locations['zone_id']>0)
+            {
+                $this->db->where('zones.id',$locations['zone_id']);
+                if($locations['territory_id']>0)
+                {
+                    $this->db->where('territories.id',$locations['territory_id']);
+                    if($locations['district_id']>0)
+                    {
+                        $this->db->where('districts.id',$locations['district_id']);
+                        if($locations['outlet_id']>0)
+                        {
+                            $this->db->where('cus_info.customer_id',$locations['outlet_id']);
+                        }
                     }
                 }
             }
         }
-        $this->db->order_by('division.id');
-        $this->db->order_by('zone.id');
-        $this->db->order_by('territory.id');
-        $this->db->order_by('district.id');
+        $this->db->order_by('divisions.id');
+        $this->db->order_by('zones.id');
+        $this->db->order_by('territories.id');
+        $this->db->order_by('districts.id');
         $this->db->order_by('cus_info.customer_id');
 
         $results_outlet = $this->db->get()->result_array();

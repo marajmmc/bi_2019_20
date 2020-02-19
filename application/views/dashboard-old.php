@@ -234,87 +234,29 @@ while ($fiscal_current <= $fiscal_year_current['date_end']);
             </div>
         </div>
     </div>
-    <!-- Invoice wise sales -->
-    <div class="col-md-3" style="padding: 0px !important; ">
-        <div class="panel with-nav-tabs panel-default panel-tab">
-            <div class="panel-heading">
-                <ul class="nav nav-tabs">
-                    <li class="active"><a href="#tab_chart_invoice_payment_cash_credit" data-toggle="tab" class="dropdown" data-toggle="tab" onclick="load_chart_invoice_payment_cash_credit('today', <?php echo date('d', time())?>)">Today</a></li>
-                    <li class="dropdown">
-                        <a href="#" data-toggle="dropdown" class="dropdown">Month <span class="caret"></span></a>
-                        <ul class="dropdown-menu" role="menu">
-                            <?php
-                            foreach($fiscal_months as $key => $fiscal_month)
-                            {
-                                ?>
-                                <li>
-                                    <a href="#tab_chart_invoice_payment_cash_credit" class="dropdown" data-toggle="tab" onclick="load_chart_invoice_payment_cash_credit('month', <?php echo $key?>)"><?php echo $fiscal_month?></a>
-                                </li>
-                            <?php
-                            }
-                            ?>
-                        </ul>
-                    </li>
-                    <li><a href="#tab_chart_invoice_payment_cash_credit" data-toggle="tab" class="dropdown " onclick="load_chart_invoice_payment_cash_credit('year', 0)">Year</a></li>
-                </ul>
-            </div>
-            <div class="panel-body" style="min-height: 206px; height: 206px;">
-                <div class="tab-content">
-                    <div class="tab-pane fade in active" id="tab_chart_invoice_payment_cash_credit" style=" ">&nbsp;</div>
-                </div>
-            </div>
+    <!--<div class="col-lg-1 bg-success" style="padding: 0px !important; ">
+        <div style="text-align: center; background-color: #449d44; color:#fff; border: 1px solid green; border-top: 5px solid green; margin-bottom: 10px; min-height: 70px">
+            <small>No of Due Invoice.</small>
+            <hr style="margin: 5px !important;"/>
+            <strong style="font-size: 25px; padding: 5px">3055</strong>
         </div>
-    </div>
-    <div class="col-md-3" style="padding: 0px !important; ">
-        <div class="panel with-nav-tabs panel-default panel-tab">
-            <div class="panel-heading">
-                <ul class="nav nav-tabs">
-                    <li class="active"><a href="#tab_chart_amount_sales_vs_target" data-toggle="tab" class="dropdown" onclick="load_chart_amount_sales_vs_target('today', <?php echo date('d', time())?>)">Today</a></li>
-                    <li class="dropdown">
-                        <a href="#" data-toggle="dropdown" class="dropdown">Month <span class="caret"></span></a>
-                        <ul class="dropdown-menu" role="menu">
-                            <?php
-                            foreach($fiscal_months as $key => $fiscal_month)
-                            {
-                                ?>
-                                <li>
-                                    <a href="#tab_chart_amount_sales_vs_target" class="dropdown" data-toggle="tab" onclick="load_chart_amount_sales_vs_target('month', <?php echo $key?>)"><?php echo $fiscal_month?></a>
-                                </li>
-                            <?php
-                            }
-                            ?>
-                        </ul>
-                    </li>
-                    <li><a href="#tab_chart_amount_sales_vs_target" data-toggle="tab" class="dropdown"  onclick="load_chart_amount_sales_vs_target('year', 0)">Year</a></li>
-                </ul>
-            </div>
-            <div class="panel-body" style="min-height: 206px; height: 206px;">
-                <div class="tab-content">
-                    <div class="tab-pane fade in active" id="tab_chart_amount_sales_vs_target" style=" ">&nbsp;</div>
-                </div>
-            </div>
+        <div style="text-align: center; background-color: #449d44; color:#fff; border: 1px solid green; border-top: 5px solid green; min-height: 70px">
+            <small>No of Due Invoice.</small>
+            <hr style="margin: 5px !important;"/>
+            <strong style="font-size: 25px; padding: 5px">3055</strong>
         </div>
-    </div>
-
-</div>
-<div class="row widget tab-section-2">
-    <!-- Focusable variety -->
+    </div>-->
     <div class="col-lg-6 col-xs-12 bg-warning" style="padding:5px; min-height: 150px; height: 250px">
         <div id="div_focusable_varieties">
 
-        </div>
-    </div>
-    <!-- Farmer balance Notification -->
-    <div class="col-md-6" style="padding: 0px !important; ">
-        <div id="div_report_farmer_balance_notification">
+            <!----------------Focusable Variety here... (AJAX Data)----------------->
 
         </div>
     </div>
 </div>
-
 <div class="row widget tab-section-2">
-    <!-- Crop wise three years sales -->
-    <div class="col-md-12" style="padding: 0px !important; ">
+    <!-- crop wise sales  -->
+    <div class="col-md-6" style="padding: 0px !important; ">
         <div class="panel with-nav-tabs panel-default  panel-tab">
             <div class="panel-heading">
                 <ul class="nav nav-tabs">
@@ -344,6 +286,71 @@ while ($fiscal_current <= $fiscal_year_current['date_end']);
             </div>
         </div>
     </div>
+    <!-- Invoice wise sales -->
+    <div class="col-md-3" style="padding: 0px !important; ">
+        <div class="panel with-nav-tabs panel-default panel-tab">
+            <div class="panel-heading">
+                <ul class="nav nav-tabs">
+                    <li class="active"><a href="#tab_chart_invoice_payment_cash_credit" data-toggle="tab" class="dropdown" data-toggle="tab" onclick="load_chart_invoice_payment_cash_credit('today', <?php echo date('d', time())?>)">Today</a></li>
+                    <li class="dropdown">
+                        <a href="#" data-toggle="dropdown" class="dropdown">Month <span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <?php
+                            foreach($fiscal_months as $key => $fiscal_month)
+                            {
+                                ?>
+                                <li>
+                                    <a href="#tab_chart_invoice_payment_cash_credit" class="dropdown" data-toggle="tab" onclick="load_chart_invoice_payment_cash_credit('month', <?php echo $key?>)"><?php echo $fiscal_month?></a>
+                                </li>
+                            <?php
+                            }
+                            ?>
+                        </ul>
+                    </li>
+                    <li><a href="#tab_chart_invoice_payment_cash_credit" data-toggle="tab" class="dropdown " onclick="load_chart_invoice_payment_cash_credit('year', 0)">Year</a></li>
+                </ul>
+            </div>
+            <div class="panel-body" style="min-height: 220px; height: 220px;">
+                <div class="tab-content">
+                    <div class="tab-pane fade in active" id="tab_chart_invoice_payment_cash_credit" style=" ">&nbsp;</div>
+                </div>
+            </div>
+        </div>
+        <div class="panel with-nav-tabs panel-default panel-tab">
+            <div class="panel-heading">
+                <ul class="nav nav-tabs">
+                    <li class="active"><a href="#tab_chart_amount_sales_vs_target" data-toggle="tab" class="dropdown" onclick="load_chart_amount_sales_vs_target('today', <?php echo date('d', time())?>)">Today</a></li>
+                    <li class="dropdown">
+                        <a href="#" data-toggle="dropdown" class="dropdown">Month <span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <?php
+                            foreach($fiscal_months as $key => $fiscal_month)
+                            {
+                                ?>
+                                <li>
+                                    <a href="#tab_chart_amount_sales_vs_target" class="dropdown" data-toggle="tab" onclick="load_chart_amount_sales_vs_target('month', <?php echo $key?>)"><?php echo $fiscal_month?></a>
+                                </li>
+                            <?php
+                            }
+                            ?>
+                        </ul>
+                    </li>
+                    <li><a href="#tab_chart_amount_sales_vs_target" data-toggle="tab" class="dropdown"  onclick="load_chart_amount_sales_vs_target('year', 0)">Year</a></li>
+                </ul>
+            </div>
+            <div class="panel-body" style="min-height: 220px; height: 220px;">
+                <div class="tab-content">
+                    <div class="tab-pane fade in active" id="tab_chart_amount_sales_vs_target" style=" ">&nbsp;</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3" style="padding: 0px !important; ">
+        <div id="div_report_farmer_balance_notification">
+
+        </div>
+    </div>
+
 </div>
 <div class="clearfix"></div>
 

@@ -7,8 +7,6 @@ $CI = & get_instance();
     </div>
 </div>
 <script type="text/javascript">
-
-
     jQuery(document).ready(function()
     {
         var locations={
@@ -19,7 +17,7 @@ $CI = & get_instance();
             outlet_id: $('#outlet_id').val(),
         }
 
-        var url = "<?php echo site_url('Dashboard/index/get_item_chart_invoice_payment_wise/'.$type.'/'.$value);?>";
+        var url = "<?php echo site_url('Dashboard/index/get_item_chart_invoice_payment_wise_cash_credit/'.$type.'/'.$value);?>";
         var source =
         {
             datatype: "json",
@@ -46,7 +44,7 @@ $CI = & get_instance();
             padding: { left: 5, top: 0, right: 5, bottom: 5 },
             titlePadding: { left: 0, top: 0, right: 0, bottom: 0 },
             source: dataAdapter,
-            colorScheme: 'scheme11',
+            colorScheme: 'scheme01',
             seriesGroups:
             [
                 {
