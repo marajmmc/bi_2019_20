@@ -398,7 +398,7 @@ while ($fiscal_current <= $fiscal_year_current['date_end']);
         {
             load_invoice_amount('month','<?php echo date('m', time())?>');
             load_focusable_varieties();
-            /*load_chart_crop_wise_sales_last_three_years('month', '<?php //echo date('m', time())?>', 500)*/
+            //load_chart_crop_wise_sales_last_three_years('month', '<?php //echo date('m', time())?>', 500)
             load_chart_invoice_payment_cash_credit('month','<?php echo date('m', time())?>');
             load_chart_amount_sales_vs_target('month','<?php echo date('m', time())?>');
             load_report_farmer_balance_notification();
@@ -600,11 +600,11 @@ while ($fiscal_current <= $fiscal_year_current['date_end']);
             district_id:$('#district_id').val(),
             outlet_id:$('#outlet_id').val()
         }
-        var division_id = 0;
+        /*var division_id = 0;
         var zone_id =0;
         var territory_id = 0;
         var district_id = 0;
-        var outlet_id = 0;
+        var outlet_id = 0;*/
         return locations;
     }
     $(document).ready(function ()

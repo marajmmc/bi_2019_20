@@ -16,6 +16,7 @@ $CI = & get_instance();
             district_id: $('#district_id').val(),
             outlet_id: $('#outlet_id').val(),
         }
+        console.log(locations);
 
         var url = "<?php echo site_url('Dashboard/index/get_item_chart_invoice_payment_wise_cash_credit/'.$type.'/'.$value);?>";
         var source =
