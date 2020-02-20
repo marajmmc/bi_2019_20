@@ -48,7 +48,7 @@ class Dashboard extends Root_controller
         {
             $this->system_chart_sales_crop_wise_last_three_years();
         }
-        elseif($action=="get_item_chart_sales_crop_wise_last_three_years")
+        elseif($action=="get_items_chart_sales_crop_wise_last_three_years")
         {
             $this->system_get_items_chart_sales_crop_wise_last_three_years($type, $value);
         }
@@ -566,6 +566,7 @@ class Dashboard extends Root_controller
         }
 
         // target
+        $sales_avg=0;
         $amount_target=0;
         foreach($fiscal_years as $fy)
         {
@@ -598,8 +599,33 @@ class Dashboard extends Root_controller
             $result=$this->db->get()->row_array();
             $amount_target+=$result['amount_target'];
         }
-        $items[]=array('Head'=>'Target', 'Value'=>System_helper::get_string_amount($amount_target));
-        $items[]=array('Head'=>'Achivement', 'Value'=>System_helper::get_string_amount($amount_sales));
+        //$amount_target=150.00;
+        $chart_head_target='';
+        if($amount_target)
+        {
+            $sales_avg=(($amount_sales/$amount_target)*100);
+            if($sales_avg<=100)
+            {
+                $amount_sales_avg=System_helper::get_string_amount($sales_avg);
+                $chart_head_target='Due';
+            }
+            else
+            {
+                $amount_sales_avg=System_helper::get_string_amount(100);
+                $chart_head_target='Complete';
+            }
+            $amount_targets_avg=System_helper::get_string_amount(100-$amount_sales_avg);
+        }
+        else
+        {
+            $amount_sales_avg=0;
+            $amount_targets_avg=0;
+            $chart_head_target='is not set';
+        }
+
+
+        $items[]=array('Head'=>'Target '.$chart_head_target, 'Value'=>$amount_targets_avg);
+        $items[]=array('Head'=>'Achievement '.System_helper::get_string_amount($sales_avg).'%', 'Value'=>$amount_sales_avg);
         $this->json_return($items);
     }
     private function system_invoice_amount()
