@@ -1250,7 +1250,7 @@ class Dashboard extends Root_controller
 
         $results_outlet = $this->db->get()->result_array();
         $current_user_outlets = array();
-        $current_user_outlet_ids = array();
+        $current_user_outlet_ids[0] = 0;
         foreach($results_outlet as $result_outlet)
         {
             $current_user_outlets[$result_outlet['outlet_id']] = $result_outlet;
