@@ -588,7 +588,7 @@ class Dashboard extends Root_controller
                 $this->db->select('items.amount_target');
                 $this->db->select("TIMESTAMPDIFF(SECOND, '1970-01-01', CONCAT_WS('-', items.year, lpad(items.month,2,'0'), '01')) AS date_target ");
                 $this->db->join($this->config->item('table_bms_target_ams').' zone_target','zone_target.id = items.ams_id','INNER');
-                $this->db->where('zone_target.zone_id', $zone_id);
+                $this->db->where('zone_target.zone_id', $locations['zone_id']);
                 $this->db->having(array('date_target >=' => $date_start_target, 'date_target <=' => $date_end_target));
                 $queries=$this->db->get()->result_array();
             }
@@ -598,7 +598,7 @@ class Dashboard extends Root_controller
                 $this->db->select('items.amount_target');
                 $this->db->select("TIMESTAMPDIFF(SECOND, '1970-01-01', CONCAT_WS('-', items.year, lpad(items.month,2,'0'), '01')) AS date_target ");
                 $this->db->join($this->config->item('table_bms_target_dsm').' division_target','division_target.id = items.dsm_id','INNER');
-                $this->db->where('division_target.division_id', $division_id);
+                $this->db->where('division_target.division_id', $locations['division_id']);
                 $this->db->having(array('date_target >=' => $date_start_target, 'date_target <=' => $date_end_target));
                 $queries=$this->db->get()->result_array();
             }
