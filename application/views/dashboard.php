@@ -453,7 +453,7 @@ while ($fiscal_current <= $fiscal_year_current['date_end']);
         {
             //$( "#dashboard_div_invoice_amount_due" ).effect( "fade" );
             $( "#invoice_amount_due" ).effect( "pulsate" );
-        }, 3000);
+        }, 5000);
 
     }
     function load_focusable_varieties()

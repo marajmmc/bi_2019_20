@@ -570,34 +570,50 @@ class Dashboard extends Root_controller
         $amount_target=0;
         foreach($fiscal_years as $fy)
         {
-            $this->db->from($this->config->item('table_bi_target_tsme').' item');
-            $this->db->select('SUM(item.amount_target) amount_target');
-            $this->db->select("CONCAT_WS('-', year, lpad(month,2,'0'), '01') AS date_string");
-            $this->db->select("TIMESTAMPDIFF(SECOND, '1970-01-01', CONCAT_WS('-', year, lpad(month,2,'0'), '01')) AS date_target ");
+            $date_start_target=System_helper::get_time('01-'.date('m-Y',$fy['date_start']));
+            $date_end_target=System_helper::get_time(date('t-m-Y',$fy['date_end']));
 
-            $this->db->join($this->config->item('table_login_setup_location_territories').' t','t.id = item.territory_id','INNER');
-            $this->db->join($this->config->item('table_login_setup_location_zones').' zone','zone.id = t.zone_id','INNER');
-
-            if($locations['division_id']>0)
+            if($locations['territory_id']>0)
             {
-                $this->db->where('zone.division_id',$locations['division_id']);
-                if($locations['zone_id']>0)
-                {
-                    $this->db->where('zone.id',$locations['zone_id']);
-                    if($locations['territory_id']>0)
-                    {
-                        $this->db->where('t.id',$locations['territory_id']);
-                    }
-                }
+                $this->db->from($this->config->item('table_bms_target_tsme').' items');
+                $this->db->select('amount_target');
+                $this->db->select("TIMESTAMPDIFF(SECOND, '1970-01-01', CONCAT_WS('-', items.year, lpad(items.month,2,'0'), '01')) AS date_target ");
+                $this->db->where('items.territory_id', $locations['territory_id']);
+                $this->db->having(array('date_target >=' => $date_start_target, 'date_target <=' => $date_end_target));
+                $queries=$this->db->get()->result_array();
             }
-            /*$this->db->where('item.date_sale >=',$fy['date_start']);
-
-            $this->db->where('item.date_sale <=',$fy['date_end']);
-            $this->db->where('sale.status',$this->config->item('system_status_active'));*/
-            //$this->db->group_by('sales_payment_method');
-            $this->db->having(array('date_target >=' => $fy['date_start'], 'date_target <=' => $fy['date_end']));
-            $result=$this->db->get()->row_array();
-            $amount_target+=$result['amount_target'];
+            elseif($locations['zone_id']>0)
+            {
+                $this->db->from($this->config->item('table_bms_target_tsme').' items');
+                $this->db->select('amount_target');
+                $this->db->select("TIMESTAMPDIFF(SECOND, '1970-01-01', CONCAT_WS('-', items.year, lpad(items.month,2,'0'), '01')) AS date_target ");
+                $this->db->join($this->config->item('table_bms_target_ams').' zone_target','zone_target.id = items.ams_id','INNER');
+                $this->db->where('zone_target.zone_id', $zone_id);
+                $this->db->having(array('date_target >=' => $date_start_target, 'date_target <=' => $date_end_target));
+                $queries=$this->db->get()->result_array();
+            }
+            elseif($locations['division_id']>0)
+            {
+                $this->db->from($this->config->item('table_bms_target_ams').' items');
+                $this->db->select('amount_target');
+                $this->db->select("TIMESTAMPDIFF(SECOND, '1970-01-01', CONCAT_WS('-', items.year, lpad(items.month,2,'0'), '01')) AS date_target ");
+                $this->db->join($this->config->item('table_bms_target_dsm').' division_target','division_target.id = items.dsm_id','INNER');
+                $this->db->where('division_target.division_id', $division_id);
+                $this->db->having(array('date_target >=' => $date_start_target, 'date_target <=' => $date_end_target));
+                $queries=$this->db->get()->result_array();
+            }
+            else
+            {
+                $this->db->from($this->config->item('table_bms_target_dsm').' items');
+                $this->db->select('amount_target');
+                $this->db->select("TIMESTAMPDIFF(SECOND, '1970-01-01', CONCAT_WS('-', items.year, lpad(items.month,2,'0'), '01')) AS date_target ");
+                $this->db->having(array('date_target >=' => $date_start_target, 'date_target <=' => $date_end_target));
+                $queries=$this->db->get()->result_array();
+            }
+            foreach($queries as $result)
+            {
+                $amount_target+=$result['amount_target'];
+            }
         }
         //$amount_target=150.00;
         $chart_head_target='';

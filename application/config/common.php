@@ -6,3 +6,4 @@ require_once($configs_path.'user_group.php');
 require_once($configs_path.'table_bi.php');
 require_once($configs_path.'table_login.php');
 require_once($configs_path.'table_pos.php');
+require_once($configs_path.'table_bms.php');
