@@ -581,6 +581,7 @@ class Dashboard extends Root_controller
                 $this->db->join($this->config->item('table_bms_target_zone').' zone_target','zone_target.id = items.target_zone_id','INNER');
                 $this->db->where('items.territory_id', $locations['territory_id']);
                 $this->db->where('items.status', $this->config->item('system_status_active'));
+                $this->db->where('zone_target.status', $this->config->item('system_status_active'));
                 $this->db->where('zone_target.status_forward', $this->config->item('system_status_forwarded'));
                 $this->db->having(array('date_target >=' => $date_start_target, 'date_target <=' => $date_end_target));
                 $queries=$this->db->get()->result_array();
@@ -593,6 +594,7 @@ class Dashboard extends Root_controller
                 $this->db->join($this->config->item('table_bms_target_zone').' zone_target','zone_target.id = items.target_zone_id','INNER');
                 $this->db->where('zone_target.zone_id', $locations['zone_id']);
                 $this->db->where('items.status', $this->config->item('system_status_active'));
+                $this->db->where('zone_target.status', $this->config->item('system_status_active'));
                 $this->db->where('zone_target.status_forward', $this->config->item('system_status_forwarded'));
                 $this->db->having(array('date_target >=' => $date_start_target, 'date_target <=' => $date_end_target));
                 $queries=$this->db->get()->result_array();
@@ -605,6 +607,7 @@ class Dashboard extends Root_controller
                 $this->db->join($this->config->item('table_bms_target_division').' division_target','division_target.id = items.target_division_id','INNER');
                 $this->db->where('division_target.division_id', $locations['division_id']);
                 $this->db->where('items.status', $this->config->item('system_status_active'));
+                $this->db->where('division_target.status', $this->config->item('system_status_active'));
                 $this->db->where('division_target.status_forward', $this->config->item('system_status_forwarded'));
                 $this->db->having(array('date_target >=' => $date_start_target, 'date_target <=' => $date_end_target));
                 $queries=$this->db->get()->result_array();
