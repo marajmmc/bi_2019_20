@@ -364,7 +364,7 @@ class Bi_helper
         if(is_array($variety_id) && (sizeof($variety_id) > 0)){
             $CI->db->where_in('v.id', $variety_id);
         }
-        elseif ($variety_id > 0) {
+        elseif (is_numeric($variety_id) && ($variety_id > 0)) {
             $CI->db->where('v.id', $variety_id);
         }
 

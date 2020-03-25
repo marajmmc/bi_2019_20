@@ -35,6 +35,7 @@ class Setup_variety_focused extends Root_Controller
         $this->lang->language['MSG_INVALID_TRY'] = 'Invalid Try.';
         $this->lang->language['MSG_LOCATION_ERROR'] = 'Trying to Access Focused Variety of Other Location';
         $this->lang->language['MSG_SEASON_ERROR'] = 'No season is Set. Setup season first.';
+        $this->lang->language['MSG_VARIETY_ERROR'] = 'No focused variety is Set.';
     }
 
     public function index($action = "list", $id = 0)
@@ -411,11 +412,19 @@ class Setup_variety_focused extends Root_Controller
             }
 
             $result_seasons = Query_helper::get_info($this->config->item('table_bi_setup_season'), '*', array('status ="' . $this->config->item('system_status_active') . '"'));
+            // Validation
             if (!$result_seasons) {
                 $ajax['status'] = false;
                 $ajax['system_message'] = $this->lang->line('MSG_SEASON_ERROR');
                 $this->json_return($ajax);
             }
+            // Validation
+            if (!$focused_varieties) {
+                $ajax['status'] = false;
+                $ajax['system_message'] = $this->lang->line('MSG_VARIETY_ERROR');
+                $this->json_return($ajax);
+            }
+
             $data['seasons'] = array();
             foreach ($result_seasons as $result_season) {
                 $data['seasons'][$result_season['id']] = array(
