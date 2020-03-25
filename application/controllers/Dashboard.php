@@ -1196,7 +1196,8 @@ class Dashboard extends Root_controller
         $seasons = Query_helper::get_info($this->config->item('table_bi_setup_season'), $select, $where, 0, 0, array('date_start ASC'));
 
         $time_assumed_today = System_helper::get_time(date("1970-m-d"));
-        $current_season=array();
+
+        $current_season=array('id' => 0); // Initialize Empty Season
         foreach($seasons as &$season){
             if(($time_assumed_today >= $season['date_start']) && ($time_assumed_today <= $season['date_end']))
             {
