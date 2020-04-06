@@ -179,8 +179,8 @@ while ($fiscal_current <= $fiscal_year_current['date_end']);
         <div class="panel with-nav-tabs panel-default panel-tab" style=" min-height: 150px; margin-bottom: 0px !important;">
             <div class="panel-heading ">
                 <ul class="nav nav-tabs">
-                    <li class="active"><a href="#tab_sales_amount" data-toggle="tab" class="dropdown tab_id_sales_amount" id="tab_id_sales_amount_today" data-type="today" data-value="<?php echo date('d', time())?>" onclick="load_invoice_amount('today', '<?php echo date('d', time())?>')">Today</a></li>
-                    <li class="dropdown">
+                    <li><a href="#tab_sales_amount" data-toggle="tab" class="dropdown tab_id_sales_amount" id="tab_id_sales_amount_today" data-type="today" data-value="<?php echo date('d', time())?>" onclick="load_invoice_amount('today', '<?php echo date('d', time())?>')">Today</a></li>
+                    <li class="active" class="dropdown">
                         <a href="#" data-toggle="dropdown" class="dropdown">Month <span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
                             <?php
@@ -239,8 +239,8 @@ while ($fiscal_current <= $fiscal_year_current['date_end']);
         <div class="panel with-nav-tabs panel-default panel-tab">
             <div class="panel-heading">
                 <ul class="nav nav-tabs">
-                    <li class="active"><a href="#tab_chart_invoice_payment_cash_credit" data-toggle="tab" class="dropdown" data-toggle="tab" onclick="load_chart_invoice_payment_cash_credit('today', <?php echo date('d', time())?>)">Today</a></li>
-                    <li class="dropdown">
+                    <li><a href="#tab_chart_invoice_payment_cash_credit" data-toggle="tab" class="dropdown" data-toggle="tab" onclick="load_chart_invoice_payment_cash_credit('today', <?php echo date('d', time())?>)">Today</a></li>
+                    <li class="active" class="dropdown">
                         <a href="#" data-toggle="dropdown" class="dropdown">Month <span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
                             <?php
@@ -269,8 +269,8 @@ while ($fiscal_current <= $fiscal_year_current['date_end']);
         <div class="panel with-nav-tabs panel-default panel-tab">
             <div class="panel-heading">
                 <ul class="nav nav-tabs">
-                    <li class="active"><a href="#tab_chart_amount_sales_vs_target" data-toggle="tab" class="dropdown" onclick="load_chart_amount_sales_vs_target('today', <?php echo date('d', time())?>)">Today</a></li>
-                    <li class="dropdown">
+                    <li><a href="#tab_chart_amount_sales_vs_target" data-toggle="tab" class="dropdown" onclick="load_chart_amount_sales_vs_target('today', <?php echo date('d', time())?>)">Today</a></li>
+                    <li class="active" class="dropdown">
                         <a href="#" data-toggle="dropdown" class="dropdown">Month <span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
                             <?php

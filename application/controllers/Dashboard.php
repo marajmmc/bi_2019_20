@@ -838,7 +838,7 @@ class Dashboard extends Root_controller
         $ajax['invoice_amount_total']=isset($amount['Total'])?System_helper::get_string_amount($amount['Total']):System_helper::get_string_amount(0);
         $ajax['invoice_amount_cash']=isset($amount['Cash'])?System_helper::get_string_amount($amount['Cash']):System_helper::get_string_amount(0);
         $ajax['invoice_amount_credit']=isset($amount['Credit'])?System_helper::get_string_amount($amount['Credit']):System_helper::get_string_amount(0);
-        $ajax['invoice_amount_due']=$amount['amount_credit_due'];
+        $ajax['invoice_amount_due']=System_helper::get_string_amount($amount['amount_credit_due']);
         if($this->message)
         {
             $ajax['system_message']=$this->message;
