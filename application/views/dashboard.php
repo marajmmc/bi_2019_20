@@ -180,14 +180,14 @@ while ($fiscal_current <= $fiscal_year_current['date_end']);
             <div class="panel-heading ">
                 <ul class="nav nav-tabs">
                     <li><a href="#tab_sales_amount" data-toggle="tab" class="dropdown tab_id_sales_amount" id="tab_id_sales_amount_today" data-type="today" data-value="<?php echo date('d', time())?>" onclick="load_invoice_amount('today', '<?php echo date('d', time())?>')">Today</a></li>
-                    <li class="active" class="dropdown">
+                    <li class="dropdown active">
                         <a href="#" data-toggle="dropdown" class="dropdown">Month <span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
                             <?php
                             foreach($fiscal_months as $key => $fiscal_month)
                             {
                                 ?>
-                                <li>
+                                <li class="<?php if($key==date('m',time())){echo "active";}?>">
                                     <a href="#tab_sales_amount" class="dropdown tab_id_sales_amount" data-toggle="tab" data-type="month" data-unit-interval="500" data-value="<?php echo $key?>" onclick="load_invoice_amount('month', '<?php echo $key?>')"><?php echo $fiscal_month?></a>
                                 </li>
                             <?php
@@ -240,14 +240,14 @@ while ($fiscal_current <= $fiscal_year_current['date_end']);
             <div class="panel-heading">
                 <ul class="nav nav-tabs">
                     <li><a href="#tab_chart_invoice_payment_cash_credit" data-toggle="tab" class="dropdown" data-toggle="tab" onclick="load_chart_invoice_payment_cash_credit('today', <?php echo date('d', time())?>)">Today</a></li>
-                    <li class="active" class="dropdown">
+                    <li class="dropdown active">
                         <a href="#" data-toggle="dropdown" class="dropdown">Month <span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
                             <?php
                             foreach($fiscal_months as $key => $fiscal_month)
                             {
                                 ?>
-                                <li>
+                                <li class="<?php if($key==date('m',time())){echo "active";}?>">
                                     <a href="#tab_chart_invoice_payment_cash_credit" class="dropdown" data-toggle="tab" onclick="load_chart_invoice_payment_cash_credit('month', <?php echo $key?>)"><?php echo $fiscal_month?></a>
                                 </li>
                             <?php
@@ -270,14 +270,14 @@ while ($fiscal_current <= $fiscal_year_current['date_end']);
             <div class="panel-heading">
                 <ul class="nav nav-tabs">
                     <li><a href="#tab_chart_amount_sales_vs_target" data-toggle="tab" class="dropdown" onclick="load_chart_amount_sales_vs_target('today', <?php echo date('d', time())?>)">Today</a></li>
-                    <li class="active" class="dropdown">
+                    <li class="dropdown active">
                         <a href="#" data-toggle="dropdown" class="dropdown">Month <span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
                             <?php
                             foreach($fiscal_months as $key => $fiscal_month)
                             {
                                 ?>
-                                <li>
+                                <li class="<?php if($key==date('m',time())){echo "active";}?>">
                                     <a href="#tab_chart_amount_sales_vs_target" class="dropdown" data-toggle="tab" onclick="load_chart_amount_sales_vs_target('month', <?php echo $key?>)"><?php echo $fiscal_month?></a>
                                 </li>
                             <?php
@@ -318,7 +318,7 @@ while ($fiscal_current <= $fiscal_year_current['date_end']);
         <div class="panel with-nav-tabs panel-default  panel-tab">
             <div class="panel-heading">
                 <ul class="nav nav-tabs">
-                    <li class="active"><a href="#tab_chart_sales_crop_wise_last_three_years" data-toggle="tab" class="dropdown" onclick="load_chart_crop_wise_sales_last_three_years('today', <?php echo date('d', time())?>, 10)">Today</a></li>
+                    <li><a href="#tab_chart_sales_crop_wise_last_three_years" data-toggle="tab" class="dropdown" onclick="load_chart_crop_wise_sales_last_three_years('today', <?php echo date('d', time())?>, 10)">Today</a></li>
                     <li class="dropdown">
                         <a href="#" data-toggle="dropdown" class="dropdown">Month <span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
